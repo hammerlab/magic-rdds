@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.hammerlab</groupId>
+  <artifactId>magic-rdds</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+    <relativePath />
+  </parent>
+
+  <packaging>jar</packaging>
+  <name>Magic RDDs: Extra Functionality for Spark RDDs</name>
+
+  <properties>
+
+    <java.version>1.7</java.version>
+    <scala.version>2.10.5</scala.version>
+    <scala.version.prefix>2.10</scala.version.prefix>
+
+    <spark.version>1.6.1</spark.version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>Apache License</name>
+      <url>https://raw.github.com/hammerlab/magic-rdds/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:hammerlab/magic-rdds.git</connection>
+    <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
+    <url>scm:git:git@github.com:hammerlab/magic-rdds.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <build>
+    <outputDirectory>target/scala-${scala.version}/classes</outputDirectory>
+    <testOutputDirectory>target/scala-${scala.version}/test-classes</testOutputDirectory>
+    <plugins>
+      <!-- disable surefire -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
+      <!-- enable scalatest -->
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <configuration>
+          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+          <junitxml>.</junitxml>
+          <filereports>MagicRDDTestSuite.txt</filereports>
+          <!--
+              As explained here: http://stackoverflow.com/questions/1660441/java-flag-to-enable-extended-serialization-debugging-info
+              The second option allows us better debugging for serialization-based errors.
+          -->
+          <argLine>-Xmx1024m -Dsun.io.serialization.extendedDebugInfo=true</argLine>
+          <stdout>F</stdout>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.1</version>
+        <configuration>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>reference.conf</resource>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+          </transformers>
+          <shadedArtifactAttached>true</shadedArtifactAttached>
+          <finalName>magic-rdds-with-dependencies-${project.version}</finalName>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>META-INF/LICENSE</exclude>
+                <exclude>META-INF/license</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <artifactSet>
+            <excludes>
+              <exclude>org.eclipse.jdt:*</exclude>
+              <exclude>org.scalatest:*</exclude>
+              <exclude>org.apache.maven:lib:tests</exclude>
+            </excludes>
+          </artifactSet>
+          <relocations>
+            <relocation>
+              <pattern>com.google.common</pattern>
+              <shadedPattern>org.bdgenomics.guavarelocated</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.5</version>
+        <executions>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>add-source</goal>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <args>
+                <arg>-g:vars</arg>
+              </args>
+            </configuration>
+          </execution>
+          <execution>
+            <id>scala-test-compile-first</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-scaladocs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>doc-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
+          <recompileMode>incremental</recompileMode>
+          <useZincServer>true</useZincServer>
+          <args>
+            <arg>-unchecked</arg>
+            <arg>-optimise</arg>
+            <arg>-deprecation</arg>
+          </args>
+          <jvmArgs>
+            <jvmArg>-Xms64m</jvmArg>
+            <jvmArg>-Xms1024m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+          </jvmArgs>
+          <javacArgs>
+            <javacArg>-source</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-target</javacArg>
+            <javacArg>${java.version}</javacArg>
+          </javacArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
+
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+  </repositories>
+
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <!--Test deps-->
+        <dependency>
+          <groupId>com.holdenkarau</groupId>
+          <artifactId>spark-testing-base_2.10</artifactId>
+          <version>${spark.version}_0.3.3</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest_2.10</artifactId>
+          <version>2.2.2</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>no-tests</id>
+      <dependencies/>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.version.prefix}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.esotericsoftware.kryo</groupId>
+      <artifactId>kryo</artifactId>
+      <version>2.21</version>
+    </dependency>
+    <dependency>
+      <groupId>org.spire-math</groupId>
+      <artifactId>spire_2.10</artifactId>
+      <version>0.11.0</version>
+    </dependency>
+  </dependencies>
+
+</project>
