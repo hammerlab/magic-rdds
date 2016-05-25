@@ -60,38 +60,59 @@ class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
     )
   }
 
-//  def copyOne(fn: (Iterator[T], Option[T]) => Iterator[T], fillOpt: Option[T] = None): RDD[T] =
-//    copyN(
-//      1,
-//      (it: Iterator[T], arr: Array[T]) => fn(it, arr.headOption),
-//      fillOpt
-//    )
-//
-//  def copyOne(fn: (Iterator[T], T) => Iterator[T], fill: T): RDD[T] =
-//    copyOne(
-//      (it: Iterator[T], lastOpt: Option[T]) => fn(it, lastOpt.get),
-//      Some(fill)
-//    )
-//
-//  def copyTwo(fn: (Iterator[T], Option[(T, T)]) => Iterator[T], fillOpt: Option[T] = None): RDD[T] =
-//    copyN(
-//      2,
-//      (it: Iterator[T], arr: Array[T]) =>
-//        fn(
-//          it,
-//          if (arr.length >= 2)
-//            Some((arr(0), arr(1)))
-//          else
-//            None
-//        ),
-//      fillOpt
-//    )
-//
-//  def copyTwo(fn: (Iterator[T], (T, T)) => Iterator[T], fill: T): RDD[T] =
-//    copyTwo(
-//      (it: Iterator[T], lastOpt: Option[(T, T)]) =>
-//        fn(it, lastOpt.get), Some(fill)
-//    )
+  def shift(fn: Iterator[T] => Iterator[T]): RDD[T] = {
+    val shiftedElemsRDD =
+      rdd
+        .mapPartitionsWithIndex((partitionIdx, iter) =>
+          if (partitionIdx == 0)
+            Iterator()
+          else
+            for {
+              (elem, idx) <- fn(iter).zipWithIndex
+            } yield
+              (partitionIdx - 1, idx) -> elem
+        )
+        .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
+        .values
+
+    val numShiftedElemsRDD =
+      rdd
+        .mapPartitionsWithIndex((partitionIdx, iter) =>
+          if (partitionIdx == 0)
+            Iterator()
+          else
+            Iterator(partitionIdx -> fn(iter).size)
+        )
+        .partitionBy(KeyPartitioner(rdd))
+        .values
+
+    rdd.zipPartitions(numShiftedElemsRDD, shiftedElemsRDD)((elems, numToDropIter, newElemsIter) => {
+
+      elems.drop(
+        if (numToDropIter.hasNext)
+          numToDropIter.next()
+        else
+          0
+      ) ++ newElemsIter
+    })
+  }
+
+  def copyFirstElems(fn: Iterator[T] => Iterator[T]): RDD[T] = {
+    val firstElemsRDD =
+      rdd
+        .mapPartitionsWithIndex((partitionIdx, iter) =>
+          if (partitionIdx == 0)
+            Iterator()
+          else
+            for {
+              (elem, idx) <- fn(iter).zipWithIndex
+            } yield
+              (partitionIdx - 1, idx) -> elem
+        )
+        .repartitionAndSortWithinPartitions(KeyPartitioner(rdd)).values
+
+    rdd.zipPartitions(firstElemsRDD)(_ ++ _)
+  }
 
   def shiftPartitions[U: ClassTag]: RDD[T] =
     rdd

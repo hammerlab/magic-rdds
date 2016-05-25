@@ -17,8 +17,6 @@ class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
     )
   }
 
-  //lazy val firstElemOpts: Array[(Int, Option[T])] = firstElemsMap(x => x)
-
   def firstElemsMap[U: ClassTag](fn: T => U): scala.collection.Map[Int, U] =
     rdd.mapPartitionsWithIndex((idx, it) =>
       if (it.hasNext)
@@ -37,9 +35,33 @@ class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
     )
   }
 
-  def firstElemBoundsRDD[U: ClassTag](fn: T => U): RDD[(Option[U], Option[U])] =
-    rdd.sparkContext.parallelize(firstElemBounds(fn), rdd.getNumPartitions)
-
+  lazy val elemBoundsRDD: RDD[(Option[T], Option[T])] = {
+    rdd
+      .mapPartitionsWithIndex((idx, it) => {
+        if (it.hasNext) {
+          val firstElem = it.next()
+          if (idx > 0)
+            Iterator((idx, false) -> firstElem, (idx - 1, true) -> firstElem)
+          else
+            Iterator((idx, false) -> firstElem)
+        } else
+          Iterator()
+      })
+      .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
+      .mapPartitions(it => {
+        var lowerBoundOpt: Option[T] = None
+        var upperBoundOpt: Option[T] = None
+        for {
+          ((idx, isUpper), elem) <- it
+        } {
+          if (isUpper)
+            upperBoundOpt = Some(elem)
+          else
+            lowerBoundOpt = Some(elem)
+        }
+        Iterator((lowerBoundOpt, upperBoundOpt))
+      })
+  }
 }
 
 object PartitionFirstElemsRDD {

@@ -1,11 +1,9 @@
 package org.hammerlab.magic.rdd
 
-import com.holdenkarau.spark.testing.SharedSparkContext
-import org.scalatest.{FunSuite, Matchers}
+import org.hammerlab.magic.rdd.SlidingRDD._
+import org.hammerlab.magic.util.SparkSuite
 
-import SlidingRDD._
-
-class SlidingRDDTest extends FunSuite with SharedSparkContext with Matchers {
+class SlidingRDDTest extends SparkSuite {
 
   def lToT(l: IndexedSeq[Int]): (Int, Int, Int) = (l(0), l(1), l(2))
 

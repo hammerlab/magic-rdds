@@ -43,44 +43,7 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
       )
 
   def slideUntil(sentinel: T): RDD[Seq[T]] = {
-    val N = rdd.getNumPartitions
-    val firstSplit: RDD[(Int, ArrayBuffer[T])] =
-      rdd.mapPartitionsWithIndex((idx, iter) =>
-          if (idx == 0)
-            Iterator()
-          else {
-            val toSentinel: ArrayBuffer[T] = ArrayBuffer()
-            val buffered = iter.buffered
-            while (buffered.hasNext && buffered.head != sentinel) {
-              toSentinel.append(buffered.next())
-            }
-            if (!buffered.hasNext) {
-              throw new IllegalArgumentException(s"Partition $idx did not include sentinel $sentinel:\n${toSentinel.take(100).mkString(",")}")
-            }
-            Iterator(
-              (idx - 1) → toSentinel
-            )
-          }
-      ).partitionBy(new KeyPartitioner(N))
-
-    rdd.zipPartitions(firstSplit)((iter, tailIter) ⇒ {
-      val (partitionIdx, tail) =
-        if (tailIter.hasNext) {
-          val (pIdx, buf) = tailIter.next()
-          (pIdx, buf.toIterator)
-        } else {
-          (N - 1, Iterator())
-        }
-
-      val it =
-        (if (partitionIdx == 0)
-          iter
-        else
-          iter.dropWhile(_ != sentinel)
-        ) ++ tail
-
-      new TakeUntilIterator[T](it, sentinel)
-    })
+    rdd.shift(it => it.takeWhile(_ != sentinel)).mapPartitions(new TakeUntilIterator(_, sentinel))
   }
 
 }

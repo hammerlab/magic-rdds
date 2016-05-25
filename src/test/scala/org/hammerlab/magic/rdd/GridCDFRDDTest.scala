@@ -1,11 +1,10 @@
 package org.hammerlab.magic.rdd
 
-import com.holdenkarau.spark.testing.SharedSparkContext
-import org.scalatest.{FunSuite, Matchers}
+import org.hammerlab.magic.util.SparkSuite
 
 import scala.math.ceil
 
-abstract class GridCDFRDDTest(n: Int) extends FunSuite with SharedSparkContext with Matchers {
+abstract class GridCDFRDDTest(n: Int) extends SparkSuite {
   val input =
     for {
       r ← 0 until n
