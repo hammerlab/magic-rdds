@@ -1,0 +1,87 @@
+package org.hammerlab.magic.rdd
+
+import org.hammerlab.magic.util.{RDDUtil, SparkSuite}
+import RunLengthRDD._
+
+class RunLengthRDDTest extends SparkSuite {
+
+  def check(partitionStrs: Iterable[Char]*)(expected: String) = {
+    val rle = RDDUtil(partitionStrs).runLengthEncode.collect
+
+    val str =
+      (for {
+        (ch, num) <- rle
+      } yield
+        s"$num*$ch"
+        ).mkString(" ")
+
+    str should be(expected)
+  }
+
+  test("simple") {
+    check(
+      "000001111000110",
+      "00000",
+      "11111",
+      "10101010"
+    )(
+      "5*0 4*1 3*0 2*1 6*0 6*1 1*0 1*1 1*0 1*1 1*0 1*1 1*0"
+    )
+  }
+
+  test("singletons") {
+    check(
+      "00000",
+      "00000",
+      "00000",
+      "11111",
+      "11111",
+      "00000"
+    )(
+      "15*0 10*1 5*0"
+    )
+  }
+
+  test("one partition") {
+    check(
+      "00000"
+    )(
+      "5*0"
+    )
+  }
+
+  test("no singletons") {
+    check(
+      "01",
+      "10",
+      "01",
+      "10"
+    )(
+      "1*0 2*1 2*0 2*1 1*0"
+    )
+  }
+
+  test("empty partitions") {
+    check(
+      "000111",
+      "",
+      "",
+      "111"
+    )(
+      "3*0 6*1"
+    )
+  }
+
+  test("empty start") {
+    check(
+      "",
+      "",
+      "000",
+      "000111",
+      "111",
+      ""
+    )(
+      "6*0 6*1"
+    )
+  }
+}

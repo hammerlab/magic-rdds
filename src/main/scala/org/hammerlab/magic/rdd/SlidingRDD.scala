@@ -1,11 +1,9 @@
 package org.hammerlab.magic.rdd
 
-import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.TakeUntilIterator
 import org.hammerlab.magic.rdd.BorrowElemsRDD._
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {

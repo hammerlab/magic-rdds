@@ -10,8 +10,9 @@ import org.apache.spark.{SparkContext, SparkEnv}
 import scala.reflect.ClassTag
 
 class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
+  def saveCompressed(path: String, codec: Class[_ <: CompressionCodec] = classOf[BZip2Codec]): RDD[T] = saveSequenceFile(path, Some(codec))
   def saveSequenceFile(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))
-  def saveSequenceFile(path: String, codec: Option[Class[_ <: CompressionCodec]]): RDD[T] = {
+  def saveSequenceFile(path: String, codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
       .mapPartitions(iter => {
         val serializer = SparkEnv.get.serializer.newInstance()
@@ -34,7 +35,7 @@ object SequenceFileSerializableRDD {
 }
 
 class SequenceFileSparkContext(val sc: SparkContext) {
-  def fromSequenceFile[T](path: String)(implicit ct: ClassTag[T]): RDD[T] = {
+  def fromSequenceFile[T](path: String, codec: Option[Class[_ <: CompressionCodec]] = None)(implicit ct: ClassTag[T]): RDD[T] = {
     sc
       .sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 2)
       .mapPartitions[T](iter => {
@@ -44,5 +45,8 @@ class SequenceFileSparkContext(val sc: SparkContext) {
         })
       })
   }
+
+  def fromSequenceFile[T](path: String, codec: Class[_ <: CompressionCodec])(implicit ct: ClassTag[T]): RDD[T] =
+    fromSequenceFile(path, Some(codec))
 }
 

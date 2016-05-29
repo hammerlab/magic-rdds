@@ -22,7 +22,7 @@ object RunLengthIterator {
     override def hasNext: Boolean = it.hasNext
 
     override def next(): (T, Int) = {
-      var ret = it.head
+      var ret = it.next()
       while (it.hasNext && it.head._1 == ret._1) {
         ret = (ret._1, ret._2 + it.next()._2)
       }

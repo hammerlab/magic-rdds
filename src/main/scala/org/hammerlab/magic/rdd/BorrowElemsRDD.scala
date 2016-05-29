@@ -4,59 +4,89 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
+import org.apache.spark.zip.ZipPartitionsWithIndexRDD._
+
 class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
 
   def shift(n: Int, fill: T): RDD[T] = shift(n, Some(fill))
-  def shift(n: Int, fillOpt: Option[T] = None): RDD[T] = {
+  def shift(n: Int, partitionOverrides: Map[Int, Int], allowIncompletePartitions: Boolean): RDD[T] = shift(n, None, partitionOverrides, allowIncompletePartitions)
+  def shift(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = shift(n, Some(fill), partitionOverrides)
+  def shift(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map(), allowIncompletePartitions: Boolean = false): RDD[T] = {
     copyN(
       n,
-      (partitionIdx: Int, it: Iterator[T], arr: Array[T]) =>
+      (partitionIdx: Int, it: Iterator[T], tail: Iterator[T]) =>
         (
           if (partitionIdx == 0)
             it
           else
             it.drop(n)
-        ) ++ arr.toIterator,
-      fillOpt
+        ) ++ tail,
+      fillOpt,
+      partitionOverrides,
+      allowIncompletePartitions
     )
   }
 
   def copy(n: Int, fill: T): RDD[T] = copy(n, Some(fill))
-  def copy(n: Int, fillOpt: Option[T] = None): RDD[T] = {
+  def copy(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = copy(n, Some(fill), partitionOverrides)
+  def copy(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] = {
     copyN(
       n,
-      (_: Int, it: Iterator[T], arr: Array[T]) => it ++ arr.toIterator,
-      fillOpt
+      (_: Int, it: Iterator[T], tail: Iterator[T]) => it ++ tail,
+      fillOpt,
+      partitionOverrides
     )
   }
 
-  def copyN(n: Int, fn: (Int, Iterator[T], Array[T]) => Iterator[T], fill: T): RDD[T] = copyN(n, fn, Some(fill))
-  def copyN(n: Int, fn: (Int, Iterator[T], Array[T]) => Iterator[T], fillOpt: Option[T] = None): RDD[T] = {
+  def copyN(n: Int,
+            fn: (Int, Iterator[T], Iterator[T]) => Iterator[T],
+            fill: T,
+            partitionOverrides: Map[Int, Int]): RDD[T] =
+    copyN(n, fn, Some(fill), partitionOverrides)
+
+  def copyN(n: Int,
+            fn: (Int, Iterator[T], Iterator[T]) => Iterator[T],
+            fillOpt: Option[T] = None,
+            partitionOverrides: Map[Int, Int] = Map(),
+            allowIncompletePartitions: Boolean = false): RDD[T] = {
     val N = rdd.getNumPartitions
 
-    val firstSplit: RDD[(Int, Array[T])] =
-      rdd.mapPartitionsWithIndex((idx, iter) =>
-        if (idx == 0)
-          fillOpt.map(fill => (N - 1) -> Array.fill(n)(fill)).toIterator
-        else {
-          val copiedElems = iter.take(n).toArray
-          if (copiedElems.length < n) {
-            throw new NoSuchElementException(
-              s"Found only ${copiedElems.length} elements in partition $idx; needed ≥ $n"
-            )
-          }
-          Iterator(
-            (idx - 1) → copiedElems
-          )
-        }
-      ).partitionBy(new KeyPartitioner(N))
+    val partitionOverridesBroadcast = rdd.sparkContext.broadcast(partitionOverrides)
 
-    rdd.zipPartitions(firstSplit)((iter, tailIter) ⇒
-      if (tailIter.hasNext) {
-        val (partitionIdx, arr) = tailIter.next()
-        fn(partitionIdx, iter, arr)
-      } else
-        fn(N - 1, iter, Array())
+    val copiedElemsRDD: RDD[T] =
+      rdd
+        .mapPartitionsWithIndex((partitionIdx, iter) =>
+          if (partitionIdx == 0)
+            fillOpt.toSeq.flatMap(fill =>
+              (0 until n).map(i => (N - 1, 0, i) -> fill)
+            ).toIterator
+          else {
+            val copiedElems =
+              if (allowIncompletePartitions)
+                iter.take(n)
+              else {
+                val copiedElemsArr = iter.take(n).toArray
+                if (copiedElemsArr.length < n) {
+                  throw new NoSuchElementException(
+                    s"Found ${copiedElemsArr.length} elements in partition $partitionIdx; needed ≥ $n"
+                  )
+                }
+                copiedElemsArr.iterator
+              }
+
+            // By default, send elements one partition to "the left".
+            val sendToIdx = partitionOverridesBroadcast.value.getOrElse(partitionIdx, partitionIdx - 1)
+            for {
+              (elem, idx) <- copiedElems.zipWithIndex
+            } yield
+              (sendToIdx, partitionIdx, idx) → elem
+          }
+        )
+        .repartitionAndSortWithinPartitions(new KeyPartitioner(N))
+        .values
+
+    rdd.zipPartitionsWithIndex(copiedElemsRDD)((partitionIdx, iter, tailIter) ⇒
+      fn(partitionIdx, iter, tailIter)
     )
   }
 
