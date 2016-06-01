@@ -46,7 +46,7 @@ object RDDStats {
             prevOpt.isEmpty ||
               firstOpt.isEmpty ||
               ordering.lteq(prevOpt.get, firstOpt.get)
-            )
+          )
 
       bounds += boundsOpt
       counts += count
