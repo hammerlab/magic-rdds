@@ -10,7 +10,7 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
   def sliding2(fill: T): RDD[(T, T)] = sliding2(Some(fill))
   def sliding2(fillOpt: Option[T] = None): RDD[(T, T)] =
     rdd
-      .copy(1, fillOpt)
+      .copyLeft(1, fillOpt)
       .mapPartitions(
         _
           .sliding(2)
@@ -21,7 +21,7 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
   def sliding3(fill: T): RDD[(T, T, T)] = sliding3(Some(fill))
   def sliding3(fillOpt: Option[T] = None): RDD[(T, T, T)] =
     rdd
-      .copy(2, fillOpt)
+      .copyLeft(2, fillOpt)
       .mapPartitions(
         _
           .sliding(3)
@@ -33,7 +33,7 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
   def sliding(n: Int, fill: T): RDD[Seq[T]] = sliding(n, Some(fill))
   def sliding(n: Int, fillOpt: Option[T] = None): RDD[Seq[T]] =
     rdd
-      .copy(n - 1, fillOpt)
+      .copyLeft(n - 1, fillOpt)
       .mapPartitions(
         _
           .sliding(n)
@@ -41,7 +41,7 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
       )
 
   def slideUntil(sentinel: T): RDD[Seq[T]] = {
-    rdd.shift(it => it.takeWhile(_ != sentinel)).mapPartitions(new TakeUntilIterator(_, sentinel))
+    rdd.shiftLeft(it => it.takeWhile(_ != sentinel)).mapPartitions(new TakeUntilIterator(_, sentinel))
   }
 
 }

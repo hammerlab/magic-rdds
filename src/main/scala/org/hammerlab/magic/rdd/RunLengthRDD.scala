@@ -2,14 +2,10 @@ package org.hammerlab.magic.rdd
 
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.{RangeAccruingIterator, RunLengthIterator}
-import BorrowElemsRDD._
+import org.hammerlab.magic.rdd.BorrowElemsRDD._
 
 import scala.collection.SortedSet
-import scala.collection.immutable.Range
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-
-case class CollapsePartitions[T](start: Int, end: Int, elem: T, count: Int)
 
 class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val runLengthEncode = {
@@ -43,7 +39,7 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
       }).toMap
 
     runLengthPartitions
-      .shift(1, partitionOverrides, allowIncompletePartitions = true)
+      .shiftLeft(1, partitionOverrides, allowIncompletePartitions = true)
       .mapPartitions(it => RunLengthIterator.reencode(it.buffered))
 
   }

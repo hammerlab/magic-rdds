@@ -8,10 +8,10 @@ import org.apache.spark.zip.ZipPartitionsWithIndexRDD._
 
 class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
 
-  def shift(n: Int, fill: T): RDD[T] = shift(n, Some(fill))
-  def shift(n: Int, partitionOverrides: Map[Int, Int], allowIncompletePartitions: Boolean): RDD[T] = shift(n, None, partitionOverrides, allowIncompletePartitions)
-  def shift(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = shift(n, Some(fill), partitionOverrides)
-  def shift(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map(), allowIncompletePartitions: Boolean = false): RDD[T] = {
+  def shiftLeft(n: Int, fill: T): RDD[T] = shiftLeft(n, Some(fill))
+  def shiftLeft(n: Int, partitionOverrides: Map[Int, Int], allowIncompletePartitions: Boolean): RDD[T] = shiftLeft(n, None, partitionOverrides, allowIncompletePartitions)
+  def shiftLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = shiftLeft(n, Some(fill), partitionOverrides)
+  def shiftLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map(), allowIncompletePartitions: Boolean = false): RDD[T] = {
     copyN(
       n,
       (partitionIdx: Int, it: Iterator[T], tail: Iterator[T]) =>
@@ -27,9 +27,9 @@ class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
     )
   }
 
-  def copy(n: Int, fill: T): RDD[T] = copy(n, Some(fill))
-  def copy(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = copy(n, Some(fill), partitionOverrides)
-  def copy(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] = {
+  def copyLeft(n: Int, fill: T): RDD[T] = copyLeft(n, Some(fill))
+  def copyLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = copyLeft(n, Some(fill), partitionOverrides)
+  def copyLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] = {
     copyN(
       n,
       (_: Int, it: Iterator[T], tail: Iterator[T]) => it ++ tail,
@@ -90,7 +90,7 @@ class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
     )
   }
 
-  def shift(fn: Iterator[T] => Iterator[T]): RDD[T] = {
+  def shiftLeft(fn: Iterator[T] => Iterator[T]): RDD[T] = {
     val shiftedElemsRDD =
       rdd
         .mapPartitionsWithIndex((partitionIdx, iter) =>
