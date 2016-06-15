@@ -2,6 +2,7 @@ package org.hammerlab.magic.rdd
 
 import java.nio.ByteBuffer
 
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.{BZip2Codec, CompressionCodec}
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.rdd.RDD
@@ -10,7 +11,12 @@ import org.apache.spark.{SparkContext, SparkEnv}
 import scala.reflect.ClassTag
 
 class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
-  def saveCompressed(path: String, codec: Class[_ <: CompressionCodec] = classOf[BZip2Codec]): RDD[T] = saveSequenceFile(path, Some(codec))
+  def saveCompressed(path: String): RDD[T] = saveSequenceFile(path, Some(classOf[BZip2Codec]))
+  def saveCompressed(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))
+
+  def saveCompressed(path: Path): RDD[T] = saveSequenceFile(path.toString, Some(classOf[BZip2Codec]))
+  def saveCompressed(path: Path, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path.toString, Some(codec))
+
   def saveSequenceFile(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))
   def saveSequenceFile(path: String, codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
