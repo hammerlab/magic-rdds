@@ -27,6 +27,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 0") {
     check(
       0 to 0,
+      "mean:\t0,\tstddev:\t0,\tmad:\t0",
       "elems:\t0",
       "sorted:\t0"
     )
@@ -35,6 +36,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 1") {
     check(
       0 to 1,
+      "mean:\t0.5,\tstddev:\t0.5,\tmad:\t0.5",
       "elems:\t0, 1",
       "sorted:\t0, 1"
     )
@@ -43,6 +45,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("1 to 0") {
     check(
       1 to 0 by -1,
+      "mean:\t0.5,\tstddev:\t0.5,\tmad:\t0.5",
       "elems:\t1, 0",
       "sorted:\t0, 1"
     )
@@ -51,6 +54,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 2") {
     check(
       0 to 2,
+      "mean:\t1,\tstddev:\t0.8,\tmad:\t1",
       "elems:\t0, 1, 2",
       "sorted:\t0, 1, 2",
       "50:\t1"
@@ -60,6 +64,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("2 to 0") {
     check(
       2 to 0 by -1,
+      "mean:\t1,\tstddev:\t0.8,\tmad:\t1",
       "elems:\t2, 1, 0",
       "sorted:\t0, 1, 2",
       "50:\t1"
@@ -69,6 +74,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 3") {
     check(
       0 to 3,
+      "mean:\t1.5,\tstddev:\t1.1,\tmad:\t1",
       "elems:\t0, 1, 2, 3",
       "sorted:\t0, 1, 2, 3",
       "50:\t1.5"
@@ -78,6 +84,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("3 to 0") {
     check(
       3 to 0 by -1,
+      "mean:\t1.5,\tstddev:\t1.1,\tmad:\t1",
       "elems:\t3, 2, 1, 0",
       "sorted:\t0, 1, 2, 3",
       "50:\t1.5"
@@ -87,6 +94,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 4") {
     check(
       0 to 4,
+      "mean:\t2,\tstddev:\t1.4,\tmad:\t1",
       "elems:\t0, 1, 2, 3, 4",
       "sorted:\t0, 1, 2, 3, 4",
       "25:\t1",
@@ -98,6 +106,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("4 to 0") {
     check(
       4 to 0 by -1,
+      "mean:\t2,\tstddev:\t1.4,\tmad:\t1",
       "elems:\t4, 3, 2, 1, 0",
       "sorted:\t0, 1, 2, 3, 4",
       "25:\t1",
@@ -109,6 +118,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 10") {
     check(
       0 to 10,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
       "sorted:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
       "10:\t1",
@@ -122,6 +132,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("10 to 0") {
     check(
       10 to 0 by -1,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0",
       "sorted:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
       "10:\t1",
@@ -138,6 +149,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 5,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t9, 3, 7, 1, 6, …, 4, 8, 2, 0, 10",
       "sorted:\t0, 1, 2, 3, 4, …, 6, 7, 8, 9, 10",
       "10:\t1",
@@ -152,6 +164,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 4,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t9, 3, 7, 1, …, 8, 2, 0, 10",
       "sorted:\t0, 1, 2, 3, …, 7, 8, 9, 10",
       "10:\t1",
@@ -166,6 +179,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 3,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t9, 3, 7, …, 2, 0, 10",
       "sorted:\t0, 1, 2, …, 8, 9, 10",
       "10:\t1",
@@ -180,6 +194,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 2,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t9, 3, …, 0, 10",
       "sorted:\t0, 1, …, 9, 10",
       "10:\t1",
@@ -194,6 +209,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 1,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "elems:\t9, …, 10",
       "sorted:\t0, …, 10",
       "10:\t1",
@@ -208,6 +224,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffled0to10,
       numToSample = 0,
+      "mean:\t5,\tstddev:\t3.2,\tmad:\t3",
       "10:\t1",
       "25:\t2.5",
       "50:\t5",
@@ -219,6 +236,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("0 to 100") {
     check(
       0 to 100,
+      "mean:\t50,\tstddev:\t29.2,\tmad:\t25",
       "elems:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, …, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100",
       "sorted:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, …, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100",
       "1:\t1",
@@ -236,6 +254,7 @@ class StatsSuite extends FunSuite with Matchers {
   test("100 to 0") {
     check(
       100 to 0 by -1,
+      "mean:\t50,\tstddev:\t29.2,\tmad:\t25",
       "elems:\t100, 99, 98, 97, 96, 95, 94, 93, 92, 91, …, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0",
       "sorted:\t0, 1, 2, 3, 4, 5, 6, 7, 8, 9, …, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100",
       "1:\t1",

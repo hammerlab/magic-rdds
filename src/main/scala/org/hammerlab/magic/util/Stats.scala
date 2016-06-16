@@ -1,21 +1,19 @@
 package org.hammerlab.magic.util
 
-import org.hammerlab.magic.iterator.{OptionIterator, RunLengthIterator}
-
-import spire.math.Numeric
+import org.hammerlab.magic.iterator.RunLengthIterator
 import spire.implicits._
+import spire.math.Numeric
 
 import scala.collection.mutable.ArrayBuffer
 
 case class Stats[T](n: Int,
-                    firstElems: Seq[(T, Int)],
-                    numFirstElems: Int,
-                    lastElems: Seq[(T, Int)],
-                    numLastElems: Int,
-                    leastElems: Seq[(T, Int)],
-                    numLeastElems: Int,
-                    greatestElems: Seq[(T, Int)],
-                    numGreatestElems: Int,
+                    mean: Double,
+                    stddev: Double,
+                    mad: Double,
+                       firstElems: Seq[(T, Int)],    numFirstElems: Int,
+                        lastElems: Seq[(T, Int)],     numLastElems: Int,
+                       leastElems: Seq[(T, Int)],    numLeastElems: Int,
+                    greatestElems: Seq[(T, Int)], numGreatestElems: Int,
                     percentiles: Seq[(Double, Double)]) {
 
   def elemsToStr(elems: Seq[(T, Int)]): String =
@@ -63,6 +61,8 @@ case class Stats[T](n: Int,
     else {
       val strings = ArrayBuffer[String]()
 
+      strings += s"mean:\t${prettyDouble(mean)},\tstddev:\t${prettyDouble(stddev)},\tmad:\t${prettyDouble(mad)}"
+
       if (firstElems.nonEmpty) {
         strings += s"elems:\t${rangeToStr(firstElems, numFirstElems, lastElems, numLastElems)}"
         strings += s"sorted:\t${rangeToStr(leastElems, numLeastElems, greatestElems, numGreatestElems)}"
@@ -86,6 +86,9 @@ object Stats {
 
     val nd = n.toDouble
     denominators.takeWhile(_ <= n).flatMap(d => {
+      val loPercentile = 100.0 / d
+      val hiPercentile = 100.0 - loPercentile
+
       val loFrac = nd / d
 
       val loFloor = math.floor(loFrac).toInt
@@ -104,14 +107,21 @@ object Stats {
              values(hiCeil).toDouble() * loRemainder + values(hiFloor).toDouble() * (1 - loRemainder)
           )
 
-      val loPercentile = 100.0 / d
-      val hiPercentile = 100.0 - loPercentile
-
       if (d == 2)
         Iterator(loPercentile -> lo)
       else
         Iterator(loPercentile -> lo, hiPercentile -> hi)
     }).toVector.sortBy(_._1)
+  }
+
+  def getMedian[T: Numeric](sorted: Vector[T]): Double = {
+    val n = sorted.length
+    if (n == 0)
+      -1
+    else if (n % 2 == 0)
+      (sorted(n / 2 - 1) + sorted(n / 2)).toDouble() / 2.0
+    else
+      sorted(n / 2).toDouble()
   }
 
   def apply[T: Numeric: Ordering](v: Iterable[T], numToSample: Int = 10): Stats[T] = {
@@ -120,6 +130,25 @@ object Stats {
     val sorted = values.sorted
 
     val n = values.length
+
+    val median = getMedian(sorted)
+
+    val medianDeviationsBuilder = Vector.newBuilder[Double]
+
+    var sum = 0.0
+    var sumSquares = 0.0
+    for (value <- sorted) {
+      val d = value.toDouble
+      sum += d
+      sumSquares += d * d
+      medianDeviationsBuilder += math.abs(d - median)
+    }
+
+    val medianDeviations = medianDeviationsBuilder.result().sorted
+    val mad = getMedian(medianDeviations)
+
+    val mean = sum / n
+    val stddev = math.sqrt(sumSquares / n - mean * mean)
 
     // Count occurrences of the first N distinct values.
     val (firstElems, numFirstElems) = runLengthEncodeWithSum(values.iterator, numToSample)
@@ -133,14 +162,9 @@ object Stats {
     // Count occurrences of the greatest N distinct values.
     val (greatestElems, numGreatestElems) = runLengthEncodeWithSum(sorted.reverseIterator, numToSample, reverse = true)
 
-    // Compute some nice, round percentile values, excluding ones that are already includes in the "first N" and
-    // "last N".
-
-    val firstNPercentile = numLeastElems * 100.0 / (n - 1)
-    val lastNPercentile =  100 * (1 - numGreatestElems.toDouble / (n - 1))
-
     Stats(
       n,
+      mean, stddev, mad,
       firstElems, numFirstElems,
       lastElems, numLastElems,
       leastElems, numLeastElems,
