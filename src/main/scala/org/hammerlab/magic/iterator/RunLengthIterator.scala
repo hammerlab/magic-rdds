@@ -1,10 +1,13 @@
 package org.hammerlab.magic.iterator
 
-class RunLengthIterator[T] private(it: BufferedIterator[T]) extends Iterator[(T, Int)] {
+import spire.math.Integral
+import spire.implicits._
+
+class RunLengthIterator[K] private(it: BufferedIterator[K]) extends Iterator[(K, Int)] {
 
   override def hasNext: Boolean = it.hasNext
 
-  override def next(): (T, Int) = {
+  override def next(): (K, Int) = {
     val elem = it.head
     var count = 0
     while (it.hasNext && it.head == elem) {
@@ -16,12 +19,12 @@ class RunLengthIterator[T] private(it: BufferedIterator[T]) extends Iterator[(T,
 }
 
 object RunLengthIterator {
-  def apply[T](it: Iterator[T]): RunLengthIterator[T] = new RunLengthIterator(it.buffered)
+  def apply[K](it: Iterator[K]): RunLengthIterator[K] = new RunLengthIterator(it.buffered)
 
-  def reencode[T](it: BufferedIterator[(T, Int)]): Iterator[(T, Int)] = new Iterator[(T, Int)] {
+  def reencode[K, V: Integral](it: BufferedIterator[(K, V)]): Iterator[(K, V)] = new Iterator[(K, V)] {
     override def hasNext: Boolean = it.hasNext
 
-    override def next(): (T, Int) = {
+    override def next(): (K, V) = {
       var ret = it.next()
       while (it.hasNext && it.head._1 == ret._1) {
         ret = (ret._1, ret._2 + it.next()._2)

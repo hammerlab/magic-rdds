@@ -1,5 +1,6 @@
 package org.hammerlab.magic.rdd
 
+import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.{RangeAccruingIterator, RunLengthIterator}
 import org.hammerlab.magic.rdd.BorrowElemsRDD._
@@ -46,5 +47,10 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
 }
 
 object RunLengthRDD {
+
+  def registerKryo(kryo: Kryo): Unit = {
+    kryo.register(classOf[Array[Int]])
+  }
+
   implicit def rddToRunLengthRDD[T: ClassTag](rdd: RDD[T]): RunLengthRDD[T] = new RunLengthRDD(rdd)
 }

@@ -7,6 +7,7 @@ import org.apache.hadoop.io.compress.{BZip2Codec, CompressionCodec}
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkContext, SparkEnv}
+import org.hammerlab.magic.hadoop.UnsplittableSequenceFileInputFormat
 
 import scala.reflect.ClassTag
 
@@ -41,18 +42,29 @@ object SequenceFileSerializableRDD {
 }
 
 class SequenceFileSparkContext(val sc: SparkContext) {
-  def fromSequenceFile[T](path: String, codec: Option[Class[_ <: CompressionCodec]] = None)(implicit ct: ClassTag[T]): RDD[T] = {
-    sc
-      .sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 2)
-      .mapPartitions[T](iter => {
-        val serializer = SparkEnv.get.serializer.newInstance()
-        iter.map(x => {
-          serializer.deserialize(ByteBuffer.wrap(x._2.getBytes))
-        })
-      })
+
+  def unsplittableSequenceFile[K, V](path: String,
+                                     keyClass: Class[K],
+                                     valueClass: Class[V],
+                                     minPartitions: Int
+                                    ): RDD[(K, V)] = {
+    val inputFormatClass = classOf[UnsplittableSequenceFileInputFormat[K, V]]
+    sc.hadoopFile(path, inputFormatClass, keyClass, valueClass, minPartitions)
   }
 
-  def fromSequenceFile[T](path: String, codec: Class[_ <: CompressionCodec])(implicit ct: ClassTag[T]): RDD[T] =
-    fromSequenceFile(path, Some(codec))
+  def fromSequenceFile[T: ClassTag](path: String, splittable: Boolean = true): RDD[T] = {
+    (
+      if (splittable)
+        sc.sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
+      else
+        unsplittableSequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
+    )
+    .mapPartitions[T](iter => {
+      val serializer = SparkEnv.get.serializer.newInstance()
+      iter.map(x => {
+        serializer.deserialize(ByteBuffer.wrap(x._2.getBytes))
+      })
+    })
+  }
 }
 

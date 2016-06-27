@@ -1,5 +1,6 @@
 package org.hammerlab.magic.rdd
 
+import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.hammerlab.magic.util.Stats
 
@@ -10,13 +11,19 @@ import scala.reflect.ClassTag
 private case class PartitionStats[T: ClassTag](boundsOpt: Option[(T, T)], count: Long, isSorted: Boolean)
 
 case class RDDStats[T: ClassTag] private(partitionBounds: ArrayBuffer[Option[(T, T)]],
-                                         partitionCounts: ArrayBuffer[Long],
+                                         partitionSizes: ArrayBuffer[Long],
                                          isSorted: Boolean) extends Serializable {
-  lazy val countStats = Stats(partitionCounts)
-  lazy val nonEmptyCountStats = Stats(partitionCounts.filter(_ > 0))
+  lazy val countStats = Stats(partitionSizes)
+  lazy val nonEmptyCountStats = Stats(partitionSizes.filter(_ > 0))
 }
 
 object RDDStats {
+
+  def registerKryo(kryo: Kryo): Unit = {
+    kryo.register(classOf[Array[PartitionStats[_]]])
+    kryo.register(classOf[PartitionStats[_]])
+  }
+
   private val rddMap = mutable.Map[Int, RDDStats[_]]()
   implicit def rddToPartitionBoundsRDD[T: ClassTag](
     rdd: RDD[T]
