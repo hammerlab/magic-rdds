@@ -278,8 +278,8 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       shuffledDigits,
       "num:	100,	mean:	4.3,	stddev:	2.9,	mad:	2",
-      "elems:	9, 6, 2, 5, 7, 9, 0, 5, 4, 6, …, 1, 9, 0(2), 8, 0, 7(2), 0, 6, 2, 4",
-      "sorted:	0(15), 1(7), 2(9), 3(10), 4(10), 5(11), 6(11), 7(9), 8(9), 9(9)",
+      "elems:	9, 6, 2, 5, 7, 9, 0, 5, 4, 6, …, 1, 9, 0×2, 8, 0, 7×2, 0, 6, 2, 4",
+      "sorted:	0×15, 1×7, 2×9, 3×10, 4×10, 5×11, 6×11, 7×9, 8×9, 9×9",
       "5:	0",
       "10:	0",
       "25:	2",
@@ -297,7 +297,7 @@ class StatsSuite extends FunSuite with Matchers {
       numToSample = 4,
       "num:	100,	mean:	4.3,	stddev:	2.9,	mad:	2",
       "elems:	9, 6, 2, 5, …, 0, 6, 2, 4",
-      "sorted:	0(15), 1(7), 2(9), 3(10), …, 6(11), 7(9), 8(9), 9(9)",
+      "sorted:	0×15, 1×7, 2×9, 3×10, …, 6×11, 7×9, 8×9, 9×9",
       "5:	0",
       "10:	0",
       "25:	2",
@@ -314,7 +314,7 @@ class StatsSuite extends FunSuite with Matchers {
       numToSample = 4,
       onlySampleSorted = true,
       "num:	100,	mean:	4.3,	stddev:	2.9,	mad:	2",
-      "sorted:	0(15), 1(7), 2(9), 3(10), …, 6(11), 7(9), 8(9), 9(9)",
+      "sorted:	0×15, 1×7, 2×9, 3×10, …, 6×11, 7×9, 8×9, 9×9",
       "5:	0",
       "10:	0",
       "25:	2",
@@ -331,7 +331,7 @@ class StatsSuite extends FunSuite with Matchers {
     check(
       sortedShuffledDigits,
       "num:	100,	mean:	4.3,	stddev:	2.9,	mad:	2",
-      "elems:	0(15), 1(7), 2(9), 3(10), 4(10), 5(11), 6(11), 7(9), 8(9), 9(9)",
+      "elems:	0×15, 1×7, 2×9, 3×10, 4×10, 5×11, 6×11, 7×9, 8×9, 9×9",
       "5:	0",
       "10:	0",
       "25:	2",
@@ -348,7 +348,7 @@ class StatsSuite extends FunSuite with Matchers {
       numToSample = 4,
       onlySampleSorted = true,
       "num:	100,	mean:	4.3,	stddev:	2.9,	mad:	2",
-      "elems:	0(15), 1(7), 2(9), 3(10), …, 6(11), 7(9), 8(9), 9(9)",
+      "elems:	0×15, 1×7, 2×9, 3×10, …, 6×11, 7×9, 8×9, 9×9",
       "5:	0",
       "10:	0",
       "25:	2",
@@ -383,22 +383,22 @@ class StatsHistSuite extends FunSuite with Matchers {
     )
   }
 
-  test("0(5) 1(5)") {
+  test("0×5 1×5") {
     check(
       List(0 -> 5, 1 -> 5),
       "num:	10,	mean:	0.5,	stddev:	0.5,	mad:	0.5",
-      "elems:	0(5), 1(5)",
+      "elems:	0×5, 1×5",
       "25:	0",
       "50:	0.5",
       "75:	1"
     )
   }
 
-  test("0(4) 1(6)") {
+  test("0×4 1×6") {
     check(
       List(0 -> 4, 1 -> 6),
       "num:	10,	mean:	0.6,	stddev:	0.5,	mad:	0",
-      "elems:	0(4), 1(6)",
+      "elems:	0×4, 1×6",
       "25:	0",
       "50:	1",
       "75:	1"
@@ -409,7 +409,7 @@ class StatsHistSuite extends FunSuite with Matchers {
     check(
       (1 to 10).map(i => i -> i),
       "num:	55,	mean:	7,	stddev:	2.4,	mad:	2",
-      "elems:	1, 2(2), 3(3), 4(4), 5(5), 6(6), 7(7), 8(8), 9(9), 10(10)",
+      "elems:	1, 2×2, 3×3, 4×4, 5×5, 6×6, 7×7, 8×8, 9×9, 10×10",
       "5:	2.7",
       "10:	3.4",
       "25:	5",
@@ -419,8 +419,6 @@ class StatsHistSuite extends FunSuite with Matchers {
       "95:	10"
     )
   }
-
-  //def run(v: Int, n: Int): Array[(Int, Int)] = Array.fill(n)(v)
 
   test("singletons") {
     check(
@@ -439,8 +437,8 @@ class StatsHistSuite extends FunSuite with Matchers {
     check(
       List(0 -> 1, 0 -> 1, 10 -> 3, 10 -> 4, 3 -> 5, 0 -> 2, 3 -> 1),
       "num:	17,	mean:	5.2,	stddev:	4.2,	mad:	3",
-      "elems:	0(2), 10(7), 3(5), 0(2), 3",
-      "sorted:	0(4), 3(6), 10(7)",
+      "elems:	0×2, 10×7, 3×5, 0×2, 3",
+      "sorted:	0×4, 3×6, 10×7",
       "10:	0",
       "25:	3",
       "50:	3",
@@ -458,8 +456,8 @@ class StatsHistSuite extends FunSuite with Matchers {
         2 ->   1000000000
       ),
       "num:	12000000100,	mean:	1.2,	stddev:	0.4,	mad:	0",
-      "elems:	1(10000000000), 2(1000000000), 1(100), 2(1000000000)",
-      "sorted:	1(10000000100), 2(2000000000)",
+      "elems:	1×10000000000, 2×1000000000, 1×100, 2×1000000000",
+      "sorted:	1×10000000100, 2×2000000000",
       "0.0:	1",
       "0.1:	1",
       "1:	1",
