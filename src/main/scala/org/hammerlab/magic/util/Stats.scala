@@ -105,6 +105,16 @@ case class Stats[K, V: Integral](n: V,
 
 object Stats {
 
+  def empty[K, V: Integral]: Stats[K, V] = new Stats(
+    n = Integral[V].zero,
+    mean = 0,
+    stddev = 0,
+    mad = 0,
+    samplesOpt = None,
+    sortedSamplesOpt = None,
+    percentiles = Nil
+  )
+
   def getRunPercentiles[K: Numeric, V: Integral](values: Seq[(K, V)],
                                                  ps: Seq[(Double, Double)]): Vector[(Double, Double)] =
     getRunPercentiles(
@@ -249,6 +259,10 @@ object Stats {
 
     val values = vBuilder.result()
 
+    if (values.isEmpty) {
+      return empty
+    }
+
     val sorted =
       if (alreadySorted)
         values
@@ -273,6 +287,7 @@ object Stats {
     }
 
     val medianDeviations = medianDeviationsBuilder.result().sortBy(_._1)
+
     val mad =
       getRunPercentiles(
         medianDeviations,

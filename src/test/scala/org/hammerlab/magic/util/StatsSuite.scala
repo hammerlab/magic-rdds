@@ -372,9 +372,15 @@ class StatsHistSuite extends FunSuite with Matchers {
     Stats.fromHist(input, numToSample).toString should be(lines.mkString("\n"))
   }
 
-  def
-  check[V: Integral](input: Seq[(Int, V)], numToSample: Int, onlySampleSorted: Boolean, lines: String*): Unit = {
+  def check[V: Integral](input: Seq[(Int, V)], numToSample: Int, onlySampleSorted: Boolean, lines: String*): Unit = {
     Stats.fromHist(input, numToSample, onlySampleSorted).toString should be(lines.mkString("\n"))
+  }
+
+  test("empty") {
+    check(
+      List[(Int, Int)](),
+      "(empty)"
+    )
   }
 
   test("0(5) 1(5)") {
