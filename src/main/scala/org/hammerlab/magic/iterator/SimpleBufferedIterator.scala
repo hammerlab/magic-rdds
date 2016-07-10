@@ -1,6 +1,6 @@
 package org.hammerlab.magic.iterator
 
-trait OptionIterator[+T] extends BufferedIterator[T] {
+trait SimpleBufferedIterator[+T] extends BufferedIterator[T] {
 
   private[this] var _next: Option[T] = None
 
