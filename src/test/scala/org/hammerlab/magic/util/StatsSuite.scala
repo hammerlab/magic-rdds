@@ -7,10 +7,6 @@ import spire.math.{Numeric, Integral}
 
 import scala.util.Random
 
-trait StatsSuiteBase extends FunSuite with Matchers {
-
-}
-
 class StatsSuite extends FunSuite with Matchers {
 
   Random.setSeed(123L)
@@ -380,6 +376,63 @@ class StatsHistSuite extends FunSuite with Matchers {
     check(
       List[(Int, Int)](),
       "(empty)"
+    )
+  }
+
+  test("single") {
+    check(
+      List(0 -> 1),
+      "num:	1,	mean:	0,	stddev:	0,	mad:	0",
+      "elems:	0",
+      "50:	0"
+    )
+  }
+
+  test("double") {
+    check(
+      List(0 -> 2),
+      "num:	2,	mean:	0,	stddev:	0,	mad:	0",
+      "elems:	0×2",
+      "50:	0"
+    )
+  }
+
+  test("two singles") {
+    check(
+      List(0 -> 1, 1 -> 1),
+      "num:	2,	mean:	0.5,	stddev:	0.5,	mad:	0.5",
+      "elems:	0, 1",
+      "50:	0.5"
+    )
+  }
+
+  test("three singles") {
+    check(
+      List(0 -> 1, 5 -> 1, 1 -> 1),
+      "num:	3,	mean:	2,	stddev:	2.2,	mad:	1",
+      "elems:	0, 5, 1",
+      "sorted:	0, 1, 5",
+      "50:	1"
+    )
+  }
+
+  test("single double") {
+    check(
+      List(0 -> 1, 1 -> 2),
+      "num:	3,	mean:	0.7,	stddev:	0.5,	mad:	0",
+      "elems:	0, 1×2",
+      "50:	1"
+    )
+  }
+
+  test("1×5 2×4") {
+    check(
+      List(1 -> 5, 2 -> 4),
+      "num:	9,	mean:	1.4,	stddev:	0.5,	mad:	0",
+      "elems:	1×5, 2×4",
+      "25:	1",
+      "50:	1",
+      "75:	2"
     )
   }
 

@@ -138,7 +138,7 @@ object Stats {
 
       override def next(): (Double, Double) = {
         val (percentile, idx) = ps.next()
-        while(elemsPast < idx) {
+        while(elemsPast <= idx) {
           val (k, v) = values.next()
           curK = Some(k)
           elemsPast += v
@@ -162,23 +162,25 @@ object Stats {
 
     val nd = n.toDouble
     val percentileIdxs =
-      denominators.takeWhile(_ <= n).flatMap(d => {
-        val loPercentile = 100.0 / d
-        val hiPercentile = 100.0 - loPercentile
+      denominators
+        .takeWhile(d => d <= n || d == 2)  // Always take the median (denominator 2 aka 50th percentile).
+        .flatMap(d => {
+          val loPercentile = 100.0 / d
+          val hiPercentile = 100.0 - loPercentile
 
-        val loIdx = nd / d
-        val hiIdx = nd - loIdx
+          val loIdx = nd / d
+          val hiIdx = nd - loIdx
 
-        if (d == 2)
+          if (d == 2)
           // Median (50th percentile, denominator 2) only emits one tuple.
-          Iterator(loPercentile -> loIdx)
-        else
+            Iterator(loPercentile -> loIdx)
+          else
           // In general, we emit two tuples per "denominator", one on the high side and one on the low. For example, for
           // denominator 4, we emit the 25th and 75th percentiles.
-          Iterator(loPercentile -> loIdx, hiPercentile -> hiIdx)
-      })
-      .toArray
-      .sortBy(_._1)
+            Iterator(loPercentile -> loIdx, hiPercentile -> hiIdx)
+        })
+        .toArray
+        .sortBy(_._1)
 
     getRunPercentiles(values, percentileIdxs)
   }
