@@ -7,7 +7,6 @@ import org.hammerlab.magic.rdd.KeyPartitioner
 import scala.reflect.ClassTag
 
 object RDDUtil {
-  //def apply[T: ClassTag](partitions: Iterable[T]*)(implicit sc: SparkContext): RDD[T] = make(partitions)
   def apply[T: ClassTag](partitions: Seq[Iterable[T]])(implicit sc: SparkContext): RDD[T] = {
     sc
       .parallelize(
