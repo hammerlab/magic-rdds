@@ -4,11 +4,21 @@ import org.apache.commons.math3.util.FastMath
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * Implementation of a hypergeometric distribution, modeled after
+ * [[org.apache.commons.math3.distribution.HypergeometricDistribution]], but supporting [[Long]] parameters.
+ * @param N Population size.
+ * @param K Number of successes.
+ * @param n Number to sample.
+ */
 case class HyperGeometricDistribution(N: Long, K: Long, n: Int) {
+
+  // These will be filled with n+1 elements corresponding to the PDF and CDF values for k ∈ [0, n].
   val pdf = ArrayBuffer[Double]()
   val cdf = ArrayBuffer[Double]()
 
-  // This will be set to the log of "N choose n"
+  // This will be set to the log of the binomial coefficient C(N, n), which is used multiple times in subsequent
+  // calculations.
   var d = 0.0
 
   // logs of k!, for k in [0, n].

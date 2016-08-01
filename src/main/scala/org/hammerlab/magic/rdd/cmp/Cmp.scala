@@ -1,36 +1,14 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.cmp
 
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class SameElementsRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
-  def compareByKey(o: RDD[(K, V)]): Cmp[K, V] = Cmp(rdd.fullOuterJoin(o))
-  def sameElements(o: RDD[(K, V)]): Boolean = {
-    compareByKey(o).isEqual
-  }
-}
-
-object SameElementsRDD {
-  implicit def rddToSameElementsRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]): SameElementsRDD[K, V] = new SameElementsRDD(rdd)
-}
-
-case class CmpStats(equal: Long = 0, notEqual: Long = 0, onlyA: Long = 0, onlyB: Long = 0) {
-  def +(o: CmpStats): CmpStats =
-    CmpStats(
-      equal + o.equal,
-      notEqual + o.notEqual,
-      onlyA + o.onlyA,
-      onlyB + o.onlyB
-    )
-
-  def isEqual: Boolean =
-    notEqual == 0 &&
-      onlyA == 0 &&
-      onlyB == 0
-}
-
-case class Cmp[K: ClassTag, V: ClassTag](joined: RDD[(K, (Option[V], Option[V]))]) {
+/**
+ * Given an outer-join of two [[RDD]]s, expose statistics about how many identical elements at identical positions they
+ * have.
+ */
+class Cmp[K: ClassTag, V: ClassTag] private(joined: RDD[(K, (Option[V], Option[V]))]) {
 
   lazy val stats =
     (for {
@@ -86,5 +64,9 @@ case class Cmp[K: ClassTag, V: ClassTag](joined: RDD[(K, (Option[V], Option[V]))
 
   lazy val diffs = diffsRDD.collect()
   def diffs(num: Int = 10000) = diffsRDD.take(num)
+}
 
+object Cmp {
+  def apply[K: ClassTag, V: ClassTag](rdd1: RDD[(K, V)], rdd2: RDD[(K, V)]): Cmp[K, V] =
+    new Cmp(rdd1.fullOuterJoin(rdd2))
 }

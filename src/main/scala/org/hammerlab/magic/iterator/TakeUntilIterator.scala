@@ -2,6 +2,12 @@ package org.hammerlab.magic.iterator
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * For each element in an input [[Iterator]], emit the sequence of elements from the current one to the next `sentinel`
+ * value (or the end of the iterator, if no more sentinels follow the current element).
+ *
+ * See TakeUntilIteratorTest for examples.
+ */
 class TakeUntilIterator[T](it: Iterator[T], sentinel: T) extends Iterator[Seq[T]] {
   val buf: ArrayBuffer[T] = ArrayBuffer()
   var idx = 0

@@ -1,9 +1,17 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.groupby
 
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
+/**
+ * Wrap an [[RDD]] and expose a `cappedGroupByKey` method, which behaves like
+ * [[org.apache.spark.rdd.PairRDDFunctions.groupByKey]] but with a cap on the number of values that will be accumulated
+ * for each key.
+ *
+ * Takes the first values for each key, discarding the rest; to obtain a random sampling of the elements for each key,
+ * see [[SampleByKeyRDD]].
+ */
 class CappedGroupByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
   def cappedGroupByKey(maxPerKey: Int): RDD[(K, Vector[V])] = {
     rdd.combineByKey[Vector[V]](

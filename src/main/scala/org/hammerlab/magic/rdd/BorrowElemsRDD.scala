@@ -6,12 +6,28 @@ import scala.reflect.ClassTag
 
 import org.apache.spark.zip.ZipPartitionsWithIndexRDD._
 
+/**
+ * Wrap an [[RDD]] provide various functions for shuffling elements to adjacent partitions.
+ */
 class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
 
-  def shiftLeft(n: Int, fill: T): RDD[T] = shiftLeft(n, Some(fill))
-  def shiftLeft(n: Int, partitionOverrides: Map[Int, Int], allowIncompletePartitions: Boolean): RDD[T] = shiftLeft(n, None, partitionOverrides, allowIncompletePartitions)
-  def shiftLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = shiftLeft(n, Some(fill), partitionOverrides)
-  def shiftLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map(), allowIncompletePartitions: Boolean = false): RDD[T] = {
+  def shiftLeft(n: Int,
+                fill: T): RDD[T] = shiftLeft(n, Some(fill))
+
+  def shiftLeft(n: Int,
+                partitionOverrides: Map[Int, Int],
+                allowIncompletePartitions: Boolean): RDD[T] =
+    shiftLeft(n, None, partitionOverrides, allowIncompletePartitions)
+
+  def shiftLeft(n: Int,
+                fill: T,
+                partitionOverrides: Map[Int, Int]): RDD[T] =
+    shiftLeft(n, Some(fill), partitionOverrides)
+
+  def shiftLeft(n: Int,
+                fillOpt: Option[T] = None,
+                partitionOverrides: Map[Int, Int] = Map(),
+                allowIncompletePartitions: Boolean = false): RDD[T] = {
     copyN(
       n,
       (partitionIdx: Int, it: Iterator[T], tail: Iterator[T]) =>
@@ -28,7 +44,10 @@ class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
   }
 
   def copyLeft(n: Int, fill: T): RDD[T] = copyLeft(n, Some(fill))
-  def copyLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] = copyLeft(n, Some(fill), partitionOverrides)
+
+  def copyLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] =
+    copyLeft(n, Some(fill), partitionOverrides)
+
   def copyLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] = {
     copyN(
       n,

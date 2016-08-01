@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.groupby
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD

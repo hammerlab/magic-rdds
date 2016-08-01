@@ -6,6 +6,9 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 
+/**
+ * Convenience APIs for classes that can persist themselves to disk.
+ */
 trait Saveable {
   def save(os: OutputStream): Unit
 

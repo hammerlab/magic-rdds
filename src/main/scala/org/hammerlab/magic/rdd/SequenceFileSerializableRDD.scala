@@ -11,6 +11,9 @@ import org.hammerlab.magic.hadoop.UnsplittableSequenceFileInputFormat
 
 import scala.reflect.ClassTag
 
+/**
+ * Helpers for saving [[RDD]]s as Hadoop sequence-files, optionally compressing them.
+ */
 class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
   def saveCompressed(path: String): RDD[T] = saveSequenceFile(path, Some(classOf[BZip2Codec]))
   def saveCompressed(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))

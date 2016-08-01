@@ -5,6 +5,9 @@ import org.apache.spark.rdd.RDD
 import scala.collection.immutable.SortedMap
 import scala.reflect.ClassTag
 
+/**
+ * Helpers for fetching the first element from each partition of an [[RDD]].
+ */
 class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val firstElems: SortedMap[Int, T] = {
     SortedMap(
