@@ -41,7 +41,7 @@ Provides methods for "diff"ing two RDDs:
 Example:
 
 ```scala
-import org.hammerlab.magic.rdd.EqualsRDD._
+import org.hammerlab.magic.rdd.cmp.EqualsRDD._
 import org.hammerlab.magic.rdd.ElemCmpStats
 
 val a = sc.parallelize(1 to 10)

@@ -4,6 +4,10 @@ import spire.math.Numeric
 
 import scala.collection.mutable
 
+/**
+ * [[mutable.HashMap]] with an overriden, elided [[toString]] method. Useful for [[HistogramParam]] to avoid the Spark
+ * UI printing a bunch of huge HashMap toStrings of intermediate, per-task values.
+ */
 case class HashMap[T, N: Numeric](map: mutable.HashMap[T, N]) {
   override def toString: String = "…"
 }

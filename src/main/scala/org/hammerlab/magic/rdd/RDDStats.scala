@@ -2,20 +2,30 @@ package org.hammerlab.magic.rdd
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.{RDD, UnionRDD}
-import org.hammerlab.magic.util.Stats
+import org.hammerlab.magic.stats.Stats
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private case class PartitionStats[T: ClassTag](boundsOpt: Option[(T, T)], count: Long, isSorted: Boolean)
-
+/**
+ * This class stores some stats about an [[RDD]]'s partitions and sortedness.
+ * @param partitionBounds For each partition, an option that is empty iff the partition is empty, and contains the first
+ *                        and last elements otherwise.
+ * @param partitionSizes For each partition, holds the size of the partition.
+ * @param isSorted True iff the [[RDD]] is sorted according to an [[Ordering]] that is present during construction in
+ *                 the companion object.
+ */
 case class RDDStats[T: ClassTag] private(partitionBounds: ArrayBuffer[Option[(T, T)]],
                                          partitionSizes: ArrayBuffer[Long],
-                                         isSorted: Boolean) extends Serializable {
+                                         isSorted: Boolean)
+  extends Serializable {
+
   lazy val countStats = Stats(partitionSizes)
   lazy val nonEmptyCountStats = Stats(partitionSizes.filter(_ > 0))
 }
+
+private case class PartitionStats[T: ClassTag](boundsOpt: Option[(T, T)], count: Long, isSorted: Boolean)
 
 object RDDStats {
 

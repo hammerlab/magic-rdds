@@ -3,6 +3,10 @@ package org.hammerlab.magic.rdd
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
+/**
+ * Spark [[Partitioner]] that maps elements to a partition indicated by an [[Int]] that either is the key, or is the
+ * first element of a tuple.
+ */
 case class KeyPartitioner(numPartitions: Int) extends Partitioner {
   override def getPartition(key: Any): Int =
     key match {

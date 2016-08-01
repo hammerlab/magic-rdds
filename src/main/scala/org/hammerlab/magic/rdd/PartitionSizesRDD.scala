@@ -4,6 +4,9 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
+/**
+ * Helper for determining the size of each partition of an [[RDD]].
+ */
 class PartitionSizesRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val partitionSizes =
     rdd.mapPartitionsWithIndex((idx, it) => {

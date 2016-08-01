@@ -8,11 +8,13 @@ import org.hammerlab.magic.rdd.BorrowElemsRDD._
 import scala.collection.SortedSet
 import scala.reflect.ClassTag
 
+/**
+ * Helper for run-length encoding an [[RDD]].
+ */
 class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
-  lazy val runLengthEncode = {
+  lazy val runLengthEncode: RDD[(T, Long)] = {
     val runLengthPartitions =
-      rdd
-        .mapPartitions(it => RunLengthIterator(it))
+      rdd.mapPartitions(it => RunLengthIterator(it))
 
     val oneOrFewerElementPartitions =
       SortedSet(
@@ -41,8 +43,7 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
 
     runLengthPartitions
       .shiftLeft(1, partitionOverrides, allowIncompletePartitions = true)
-      .mapPartitions(it => RunLengthIterator.reencode(it.buffered))
-
+      .mapPartitions(it => RunLengthIterator.reencode(it.map(t => t._1 -> t._2.toLong).buffered))
   }
 }
 
