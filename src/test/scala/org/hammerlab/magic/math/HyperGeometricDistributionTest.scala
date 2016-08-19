@@ -7,7 +7,9 @@ import org.apache.commons.math3.distribution.{HypergeometricDistribution => Apac
 
 import scala.collection.mutable.ArrayBuffer
 
-class HyperGeometricDistributionTest extends FunSuite with Matchers {
+class HyperGeometricDistributionTest
+  extends FunSuite
+    with Matchers {
 
   var epsilon = 0.00001
 
@@ -24,7 +26,7 @@ class HyperGeometricDistributionTest extends FunSuite with Matchers {
     new Equality[ArrayBuffer[Double]] {
       override def areEqual(a: ArrayBuffer[Double], b: Any): Boolean =
         b match {
-          case s: ArrayBuffer[Double] => a.size == s.size && a.zip(s).forall(t => t._1 === t._2)
+          case s: ArrayBuffer[_] => a.size == s.size && a.zip(s).forall(t => t._1 === t._2)
           case _ => false
         }
     }
@@ -32,7 +34,7 @@ class HyperGeometricDistributionTest extends FunSuite with Matchers {
   def compareToApache(hgd: HyperGeometricDistribution): Unit = {
     val N = hgd.N.toInt
     val K = hgd.K.toInt
-    val n = hgd.n.toInt
+    val n = hgd.n
 
     val apache = new ApacheHyperGeometricDistribution(N, K, n)
 
