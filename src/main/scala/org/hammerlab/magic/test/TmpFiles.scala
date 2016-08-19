@@ -17,16 +17,20 @@ trait TmpFiles extends BeforeAndAfterAll {
   val files = ArrayBuffer[String]()
   val dirs = ArrayBuffer[String]()
 
-  def tmpFile(prefix: String = "", suffix: String = ""): String = {
+  def tmpFile(prefix: String = this.getClass.getSimpleName, suffix: String = ""): String = {
     val f = File.createTempFile(prefix, suffix).toString
     files += f
     f
   }
 
-  def tmpDir(prefix: String = ""): String = {
+  def tmpDir(prefix: String = this.getClass.getSimpleName): String = {
     val f = Files.createTempDirectory(prefix).toString
     dirs += f
     f
+  }
+
+  def tmpPath(prefix: String = this.getClass.getSimpleName, suffix: String = ""): String = {
+    Paths.get(tmpDir(), prefix + suffix).toString
   }
 
   override def afterAll(): Unit = {
