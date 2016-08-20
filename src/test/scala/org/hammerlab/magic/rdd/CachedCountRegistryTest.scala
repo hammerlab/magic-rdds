@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.CachedCountRegistry._
 import org.hammerlab.magic.test.listener.TestListenerSuite
-import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers, TestData}
+import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 
 class CachedCountRegistryTest
   extends FunSuite
@@ -13,8 +13,8 @@ class CachedCountRegistryTest
 
   var countCache: CachedCountRegistry = _
 
-  override def beforeEach(data: TestData) {
-    super.beforeEach(data)
+  override def beforeEach() {
+    super.beforeEach()
     countCache = CachedCountRegistry()
   }
 
