@@ -158,7 +158,12 @@ object TestSparkListener {
 
   var instance: TestSparkListener = _
 
-  def apply(): TestSparkListener = instance
+  def apply(): TestSparkListener = {
+    if (instance == null) {
+      instance = new TestSparkListener()
+    }
+    instance
+  }
 
   type AppId = String
   type App = TestSparkListener
