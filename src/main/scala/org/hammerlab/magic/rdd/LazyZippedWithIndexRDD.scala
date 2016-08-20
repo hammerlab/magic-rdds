@@ -5,7 +5,7 @@ import scala.reflect.ClassTag
 import org.apache.spark.{Partition, TaskContext}
 import org.apache.spark.rdd.RDD
 
-/** Copy of [[ZippedWithIndexRDDPartition]] that cannot be accessed outside spark package */
+/** Copy of [[ZippedWithIndexRDDPartition]], which cannot be accessed outside spark package. */
 class LazyZippedWithIndexRDDPartition(val prev: Partition, val startIndex: Long)
   extends Partition with Serializable {
 
@@ -64,7 +64,7 @@ class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(
 
 object LazyZippedWithIndexRDD {
   implicit class ImplicitZipWithIndex[T: ClassTag](rdd: RDD[T]) {
-    def lazyZipWithIndex(): LazyZippedWithIndexRDD[T] = {
+    def lazyZipWithIndex: LazyZippedWithIndexRDD[T] = {
       new LazyZippedWithIndexRDD(rdd)
     }
   }

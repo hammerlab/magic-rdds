@@ -17,16 +17,11 @@ class TestSparkListener
   var id: AppId = _
   var name: AppName = _
 
-  def clear(): Unit = {
-    jobs.clear()
-    stages.clear()
-    rdds.clear()
-    metrics = Metrics()
-  }
-
   val jobs = mutable.HashMap[JobId, Job]()
   val stages = mutable.HashMap[StageId, Stage]()
   val rdds = mutable.HashMap[RddId, RDD]()
+
+  TestSparkListener.instance = this
 
   override def onApplicationStart(applicationStart: SparkListenerApplicationStart): Unit = {
     id = applicationStart.appId.getOrElse("???")
@@ -53,10 +48,11 @@ class TestSparkListener
   override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = {
     val job = jobs(jobEnd.jobId)
     job.end = jobEnd.time
-    job.status = jobEnd.jobResult match {
-      case JobSucceeded => Succeeded
-      case status => Failed(status.toString)
-    }
+    job.status =
+      jobEnd.jobResult match {
+        case JobSucceeded => Succeeded
+        case other => Failed(other.toString)
+      }
   }
 
   def getStageAttemptFromInfo(stageAttemptInfo: StageInfo): StageAttempt = {
@@ -84,7 +80,8 @@ class TestSparkListener
         stageAttempt.start = submissionTime
         stageAttempt.status = Running
       case None =>
-        // TODO(ryan): throw or warn?
+        // NOTE: Spark regularly sends StageSubmitted events that haven't had the submission-time set yet. Seems like a
+        // bug, we just try to work around it here.
     }
   }
 
