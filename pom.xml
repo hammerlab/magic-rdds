@@ -286,7 +286,6 @@
       <groupId>com.holdenkarau</groupId>
       <artifactId>spark-testing-base_2.10</artifactId>
       <version>${spark.version}_0.3.3</version>
-      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
