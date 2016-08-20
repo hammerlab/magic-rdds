@@ -11,10 +11,15 @@ class CachedCountRegistryTest
   extends SparkSuite
     with BeforeAndAfter {
 
-  conf.set("spark.extraListeners", "org.hammerlab.magic.test.listener.TestSparkListener")
-
   def listener = TestSparkListener()
   def numStages = listener.stages.size
+
+  // Spark listener should be added to Spark Context only once per test suite
+  // Note that there is way of checking what listeners are registered currently
+  override def beforeAll() {
+    super.beforeAll()
+    sc.addSparkListener(listener)
+  }
 
   before {
     CachedCountRegistry.resetCache()
