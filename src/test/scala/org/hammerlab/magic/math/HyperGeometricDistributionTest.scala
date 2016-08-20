@@ -24,7 +24,7 @@ class HyperGeometricDistributionTest extends FunSuite with Matchers {
     new Equality[ArrayBuffer[Double]] {
       override def areEqual(a: ArrayBuffer[Double], b: Any): Boolean =
         b match {
-          case s: ArrayBuffer[Double] => a.size == s.size && a.zip(s).forall(t => t._1 === t._2)
+          case s: ArrayBuffer[_] => a.size == s.size && a.zip(s).forall(t => t._1 === t._2)
           case _ => false
         }
     }
