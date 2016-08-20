@@ -19,14 +19,7 @@ class LazyZippedWithIndexRDDPartition(val prev: Partition, val startIndex: Long)
 class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(T, Long)](rdd) {
   private var startIndices: Array[Long] = null
 
-  val iteratorSize: Iterator[_] => Long = iter => {
-    var count = 0L
-    while (iter.hasNext) {
-      count += 1L
-      iter.next()
-    }
-    count
-  }
+  val iteratorSize: Iterator[_] => Long = iter => iter.size
 
   /** The start index of each partition. */
   def getStartIndices(rdd: RDD[_]): Array[Long] = {
