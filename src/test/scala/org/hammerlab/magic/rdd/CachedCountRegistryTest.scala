@@ -1,61 +1,54 @@
 package org.hammerlab.magic.rdd
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.CachedCountRegistry
-import org.apache.spark.CachedCountRegistry._
-import org.hammerlab.magic.test.listener.TestSparkListener
-import org.hammerlab.magic.util.SparkSuite
-import org.scalatest.BeforeAndAfter
+import org.hammerlab.magic.rdd.CachedCountRegistry._
+import org.hammerlab.magic.test.listener.TestListenerSuite
+import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers, TestData}
 
 class CachedCountRegistryTest
-  extends SparkSuite
-    with BeforeAndAfter {
+  extends FunSuite
+    with Matchers
+    with TestListenerSuite
+    with BeforeAndAfterEach {
 
-  def listener = TestSparkListener()
-  def numStages = listener.stages.size
+  var countCache: CachedCountRegistry = _
 
-  // Spark listener should be added to Spark Context only once per test suite
-  // Note that there is way of checking what listeners are registered currently
-  override def beforeAll() {
-    super.beforeAll()
-    sc.addSparkListener(listener)
+  override def beforeEach(data: TestData) {
+    super.beforeEach(data)
+    countCache = CachedCountRegistry()
   }
 
-  before {
-    CachedCountRegistry.resetCache()
-    listener.clear()
-  }
-
-  test("empty multi rdd count") {
-    val rdds: List[RDD[Int]] = List.empty[RDD[Int]]
-    rdds.size() should be (0)
-    CachedCountRegistry.getCache().isEmpty should be (true)
-    numStages should be(0)
+  override def afterEach(): Unit = {
+    super.afterEach()
+    countCache = null
   }
 
   test("single rdd count") {
     val rdd = sc.parallelize(0 until 4)
-    val count = rdd.size()
+    val count = rdd.size
     count should be (4)
-    CachedCountRegistry.getCache should be (Map(rdd.id -> 4))
+    countCache.getCache should be (Map(rdd.id -> 4))
     numStages should be(1)
   }
 
-  test("multi rdd count") {
+  test("multiple heterogenous rdds") {
     val rdd1 = sc.parallelize(0 until 4)
     val rdd2 = sc.parallelize("a" :: "b" :: Nil)
     val rdd3 = sc.parallelize(Array(true))
 
-    rdd1.size()
+    rdd1.size
 
-    CachedCountRegistry.getCache should be (Map(rdd1.id -> 4))
+    countCache.getCache should be (Map(rdd1.id -> 4))
 
     numStages should be(1)
 
     // should apply intermediate cache for 'rdd1'
-    val count = (rdd1 :: rdd2 :: rdd3 :: Nil).size()
-    count should be (7)
-    CachedCountRegistry.getCache should be (
+    val rdds = rdd1 :: rdd2 :: rdd3 :: Nil
+
+    rdds.sizes should be(List(4, 2, 1))
+    rdds.total should be(7)
+
+    countCache.getCache should be (
       Map(
         rdd1.id -> 4,
         rdd2.id -> 2,
@@ -65,7 +58,67 @@ class CachedCountRegistryTest
     numStages should be(2)
   }
 
-  test("union rdds count") {
+  test("reuse list/union RDDs") {
+    val rdd0 = sc.parallelize(0 until 8)
+    val rdd1 = sc.parallelize(0 until 4)
+    val rdd2 = sc.parallelize(0 until 2)
+    val rdd3 = sc.parallelize(0 until 1)
+
+    val rddList = List(rdd0, rdd1, rdd2, rdd3)
+
+    rddList.sizes should be(List(8, 4, 2, 1))
+    countCache.getCache should be (
+      Map(
+        rdd0.id -> 8,
+        rdd1.id -> 4,
+        rdd2.id -> 2,
+        rdd3.id -> 1
+      )
+    )
+    numStages should be(1)
+
+    val rddList2 = List(rdd0, rdd1, rdd2, rdd3)
+
+    rddList2.sizes should be(List(8, 4, 2, 1))
+    countCache.getCache should be (
+      Map(
+        rdd0.id -> 8,
+        rdd1.id -> 4,
+        rdd2.id -> 2,
+        rdd3.id -> 1
+      )
+    )
+    numStages should be(1)
+
+    val unionedRDDs = sc.union(rddList)
+    unionedRDDs.size should be(15)
+    countCache.getCache should be (
+      Map(
+        rdd0.id -> 8,
+        rdd1.id -> 4,
+        rdd2.id -> 2,
+        rdd3.id -> 1,
+        unionedRDDs.id -> 15
+      )
+    )
+    numStages should be(1)
+
+    val rddList3 = List(rdd0, rdd1, rdd2, rdd3)
+
+    rddList3.sizes should be(List(8, 4, 2, 1))
+    countCache.getCache should be (
+      Map(
+        rdd0.id -> 8,
+        rdd1.id -> 4,
+        rdd2.id -> 2,
+        rdd3.id -> 1,
+        unionedRDDs.id -> 15
+      )
+    )
+    numStages should be(1)
+  }
+
+  test("nested union rdds sizes") {
     val rdd0 = sc.parallelize(0 until 8)
     val rdd1 = sc.parallelize(0 until 4)
     val rdd2 = sc.parallelize(0 until 2)
@@ -76,8 +129,8 @@ class CachedCountRegistryTest
 
     val rdd01_23 = rdd01 ++ rdd23
 
-    rdd01_23.size() should be(15)
-    CachedCountRegistry.getCache should be(
+    rdd01_23.size should be(15)
+    countCache.getCache should be(
       Map(
         rdd0.id -> 8,
         rdd1.id -> 4,
@@ -96,8 +149,8 @@ class CachedCountRegistryTest
 
     val rdd02_13 = rdd02 ++ rdd13
 
-    rdd02_13.size() should be(15)
-    CachedCountRegistry.getCache should be(
+    rdd02_13.size should be(15)
+    countCache.getCache should be(
       Map(
         rdd0.id -> 8,
         rdd1.id -> 4,
@@ -113,5 +166,12 @@ class CachedCountRegistryTest
     )
 
     numStages should be(1)
+  }
+
+  test("empty multi rdd sizes") {
+    val rdds: List[RDD[Int]] = List.empty[RDD[Int]]
+    rdds.sizes should be(Nil)
+    countCache.getCache.isEmpty should be (true)
+    numStages should be(0)
   }
 }
