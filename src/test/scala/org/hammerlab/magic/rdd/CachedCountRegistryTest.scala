@@ -21,6 +21,13 @@ class CachedCountRegistryTest
     listener.clear()
   }
 
+  test("empty multi rdd count") {
+    val rdds: List[RDD[Int]] = List.empty[RDD[Int]]
+    rdds.size() should be (0)
+    CachedCountRegistry.getCache().isEmpty should be (true)
+    numStages should be(0)
+  }
+
   test("single rdd count") {
     val rdd = sc.parallelize(0 until 4)
     val count = rdd.size()
@@ -101,12 +108,5 @@ class CachedCountRegistryTest
     )
 
     numStages should be(1)
-  }
-
-  test("empty multi rdd count") {
-    val rdds: List[RDD[Int]] = List.empty[RDD[Int]]
-    rdds.size() should be (0)
-    CachedCountRegistry.getCache().isEmpty should be (true)
-    numStages should be(0)
   }
 }
