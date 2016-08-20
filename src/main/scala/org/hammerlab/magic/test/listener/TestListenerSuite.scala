@@ -2,6 +2,9 @@ package org.hammerlab.magic.test.listener
 
 import org.hammerlab.magic.test.spark.PerCaseSparkContexts
 import org.scalatest.{Suite, TestData}
+import org.apache.spark.SparkConf
+import org.hammerlab.magic.test.spark.PerCaseSparkContexts
+import org.scalatest.Suite
 
 trait TestListenerSuite extends PerCaseSparkContexts {
   self: Suite =>
@@ -10,10 +13,12 @@ trait TestListenerSuite extends PerCaseSparkContexts {
 
   def numStages = listener.stages.size
 
-  conf.set("spark.extraListeners", "org.hammerlab.magic.test.listener.TestSparkListener")
+  override protected def setConfigs(conf: SparkConf): Unit = {
+    conf.set("spark.extraListeners", "org.hammerlab.magic.test.listener.TestSparkListener")
+  }
 
-  override def beforeEach(data: TestData) {
-    super.beforeEach(data)
+  override def beforeEach() {
+    super.beforeEach()
 
     listener = TestSparkListener()
     assert(listener != null)

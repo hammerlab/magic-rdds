@@ -3,7 +3,7 @@ package org.hammerlab.magic.test.spark
 import java.util.Date
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterEach, Suite, TestData}
+import org.scalatest.{BeforeAndAfterEach, Suite}
 
 trait PerCaseSparkContexts
   extends BeforeAndAfterEach {
@@ -15,17 +15,24 @@ trait PerCaseSparkContexts
 
   val appID = s"${this.getClass.getSimpleName}-$uuid"
 
-  val conf =
-    new SparkConf()
-      //.set("spark.extraListeners", "org.hammerlab.magic.test.listener.TestSparkListener")
-      .set("spark.default.parallelism", "4")
-      .setMaster("local[*]")
-      .setAppName(this.getClass.getSimpleName)
-      .set("spark.ui.enabled", "false")
-      .set("spark.app.id", appID)
+  private var conf: SparkConf = _
 
-  override def beforeEach(data: TestData) {
-    super.beforeEach(data)
+  protected def setConfigs(conf: SparkConf): Unit = {}
+
+  override def beforeEach() {
+    super.beforeEach()
+
+    conf =
+      new SparkConf()
+        .set("spark.default.parallelism", "4")
+        .setMaster("local[*]")
+        .setAppName(this.getClass.getSimpleName)
+        .set("spark.ui.enabled", "false")
+        .set("spark.app.id", appID)
+
+    // Opportunity for subclasses to set/override configs.
+    setConfigs(conf)
+
     sc = new SparkContext(conf)
   }
 

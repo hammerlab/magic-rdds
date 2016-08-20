@@ -1,7 +1,8 @@
 package org.hammerlab.magic.rdd
 
-import org.hammerlab.magic.util.{RDDUtil, SparkSuite}
+import org.hammerlab.magic.util.RDDUtil
 import RunLengthRDD._
+import org.hammerlab.magic.test.spark.SparkSuite
 
 class RunLengthRDDTest extends SparkSuite {
 
