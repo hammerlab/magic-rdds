@@ -33,8 +33,6 @@ class TestSparkListener
     name = applicationStart.appName
     start = applicationStart.time
     status = Running
-
-    TestSparkListener.instance = this
   }
 
   override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd): Unit = {

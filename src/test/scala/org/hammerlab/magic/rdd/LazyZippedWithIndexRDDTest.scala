@@ -7,10 +7,13 @@ import org.scalatest.BeforeAndAfter
 
 class LazyZippedWithIndexRDDTest extends SparkSuite with BeforeAndAfter {
 
-  conf.set("spark.extraListeners", "org.hammerlab.magic.test.listener.TestSparkListener")
-
   def listener = TestSparkListener()
   def numStages = listener.stages.size
+
+  override def beforeAll() {
+    super.beforeAll()
+    sc.addSparkListener(listener)
+  }
 
   before {
     listener.clear()
