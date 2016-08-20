@@ -1,7 +1,8 @@
 package org.apache.spark
 
-import scala.collection.mutable.HashMap
-import org.apache.spark.rdd.{RDD, UnionRDD, UnionPartition}
+import org.apache.spark.rdd.{RDD, UnionPartition, UnionRDD}
+
+import scala.collection.mutable
 
 /**
  * [[CachedCountRegistry]] provides functionality to run count and cache result for single RDD, and
@@ -20,33 +21,52 @@ import org.apache.spark.rdd.{RDD, UnionRDD, UnionPartition}
  * }}}
  */
 object CachedCountRegistry {
-  private val cache: HashMap[Int, Long] = new HashMap()
+  private val cache = mutable.HashMap[Int, Long]()
 
   /** Count RDD and cache result for RDD id */
-  def cachedCount(rdd: RDD[_]): Long = {
-    cache.getOrElseUpdate(rdd.id, rdd.count)
-  }
+  def cachedCount(rdd: RDD[_]): Long = multiCachedCount(List(rdd))
 
   /**
    * Count multi RDDs as single job and cache count separately, return total count. This method
    * will construct UnionRDD from only non-cached RDDs
    */
   def multiCachedCount(rdds: Seq[RDD[_]]): Long = {
+
+    val (cachedRDDs, nonCachedRDDs) = rdds.partition(rdd => cache.contains(rdd.id))
+
     // pull whatever cached counts we have
-    val cachedCount = rdds.map(rdd => cache.getOrElse(rdd.id, 0L)).sum
-    // if there are any non-cached RDDs, count/cache them and return total result with cached
-    val nonCachedRDDs = rdds.filter(rdd => !cache.contains(rdd.id))
-    val count = if (nonCachedRDDs.nonEmpty) {
-      val (union, partitionsMap) = makeUnionRDD(nonCachedRDDs)
-      internalMultiCachedCount(union, partitionsMap)
-    } else {
-      0L
-    }
-    count + cachedCount
+    val cachedCount = cachedRDDs.map(rdd => cache(rdd.id)).sum
+
+    val unionRDDChildrenMap = mutable.HashMap[Int, Seq[Int]]()
+    val expandedRDDs =
+      nonCachedRDDs.flatMap {
+        case unionRDD: UnionRDD[_] =>
+          val children = unionRDD.rdds: Seq[RDD[_]]
+          unionRDDChildrenMap(unionRDD.id) = children.map(_.id)
+          children
+        case rdd: RDD[_] => List(rdd)
+      }
+
+    cachedCount +
+      (if (expandedRDDs.length > nonCachedRDDs.length) {
+        val count = multiCachedCount(expandedRDDs)
+        for {
+          (unionRDDId, childrenIDs) <- unionRDDChildrenMap
+        } {
+          cache(unionRDDId) = childrenIDs.map(cache(_)).sum
+        }
+        count
+      } else
+        if (nonCachedRDDs.nonEmpty) {
+          val (union, partitionsMap) = makeUnionRDD(nonCachedRDDs)
+          internalMultiCachedCount(union, partitionsMap)
+        } else
+          0L
+      )
   }
 
   /** Get current cache state */
-  def getCache(): HashMap[Int, Long] = cache.clone()
+  def getCache(): mutable.HashMap[Int, Long] = cache.clone()
 
   def resetCache(): Unit = cache.clear()
 
@@ -62,22 +82,23 @@ object CachedCountRegistry {
   /** Internal multi count cache for UnionRDD */
   private def internalMultiCachedCount(rdd: UnionRDD[_], partitionsMap: Map[Int, Array[Int]]): Long = {
     // each partition has unique index, so we do not expect collisions there
-    val counts = rdd.mapPartitionsWithIndex((index, iterator) => {
-      var count = 0L
-      while (iterator.hasNext) {
-        count += 1L
-        iterator.next()
-      }
-      Iterator((index, count))
-    }, preservesPartitioning = true).collectAsMap
+    val counts =
+      rdd.mapPartitionsWithIndex(
+        (index, iterator) => Iterator(index -> iterator.size),
+        preservesPartitioning = true
+      ).collectAsMap
 
     var totalCount = 0L
     partitionsMap.foreach { case (rddId, partitions) =>
       var rddCount = 0L
       partitions.foreach { index =>
-        rddCount += counts.getOrElse(index,
-          sys.error(s"Partition index $index for parent $rddId is not found in UnionRDD"))
+        rddCount +=
+          counts.getOrElse(
+            index,
+            sys.error(s"Partition index $index for parent $rddId is not found in UnionRDD")
+          )
       }
+
       // cache count and update total
       totalCount += cache.getOrElseUpdate(rddId, rddCount)
     }
