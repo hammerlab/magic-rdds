@@ -1,11 +1,15 @@
 package org.hammerlab.magic.test.listener
 
-import org.hammerlab.magic.test.spark.PerCaseSparkContexts
-import org.scalatest.{Suite, TestData}
 import org.apache.spark.SparkConf
 import org.hammerlab.magic.test.spark.PerCaseSparkContexts
 import org.scalatest.Suite
+import org.apache.spark.SparkContext
 
+/**
+ * Test mix-in that enforces per-case [[SparkContext]]s with [[TestSparkListener]]s attached.
+ *
+ * NOTE: not threadsafe! Use with extreme caution, cf. https://github.com/hammerlab/magic-rdds/issues/18.
+ */
 trait TestListenerSuite extends PerCaseSparkContexts {
   self: Suite =>
 
