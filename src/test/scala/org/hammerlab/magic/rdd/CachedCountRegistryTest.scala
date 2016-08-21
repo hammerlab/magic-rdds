@@ -1,14 +1,14 @@
 package org.hammerlab.magic.rdd
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.scheduler.test.ContextUtil
 import org.hammerlab.magic.rdd.CachedCountRegistry._
-import org.hammerlab.magic.test.listener.TestListenerSuite
-import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
+import org.hammerlab.magic.test.spark.SparkCasesSuite
+import org.scalatest.BeforeAndAfterEach
 
 class CachedCountRegistryTest
-  extends FunSuite
-    with Matchers
-    with TestListenerSuite
+  extends SparkCasesSuite
+    with ContextUtil
     with BeforeAndAfterEach {
 
   var countCache: CachedCountRegistry = _
@@ -28,7 +28,7 @@ class CachedCountRegistryTest
     val count = rdd.size
     count should be (4)
     countCache.getCache should be (Map(rdd.id -> 4))
-    numStages should be(1)
+    numJobs should be(1)
   }
 
   test("multiple heterogenous rdds") {
@@ -40,7 +40,7 @@ class CachedCountRegistryTest
 
     countCache.getCache should be (Map(rdd1.id -> 4))
 
-    numStages should be(1)
+    numJobs should be(1)
 
     // should apply intermediate cache for 'rdd1'
     val rdds = rdd1 :: rdd2 :: rdd3 :: Nil
@@ -55,7 +55,7 @@ class CachedCountRegistryTest
         rdd3.id -> 1
       )
     )
-    numStages should be(2)
+    numJobs should be(2)
   }
 
   test("reuse list/union RDDs") {
@@ -75,7 +75,7 @@ class CachedCountRegistryTest
         rdd3.id -> 1
       )
     )
-    numStages should be(1)
+    numJobs should be(1)
 
     val rddList2 = List(rdd0, rdd1, rdd2, rdd3)
 
@@ -88,7 +88,7 @@ class CachedCountRegistryTest
         rdd3.id -> 1
       )
     )
-    numStages should be(1)
+    numJobs should be(1)
 
     val unionedRDDs = sc.union(rddList)
     unionedRDDs.size should be(15)
@@ -101,7 +101,7 @@ class CachedCountRegistryTest
         unionedRDDs.id -> 15
       )
     )
-    numStages should be(1)
+    numJobs should be(1)
 
     val rddList3 = List(rdd0, rdd1, rdd2, rdd3)
 
@@ -115,7 +115,7 @@ class CachedCountRegistryTest
         unionedRDDs.id -> 15
       )
     )
-    numStages should be(1)
+    numJobs should be(1)
   }
 
   test("nested union rdds sizes") {
@@ -142,7 +142,7 @@ class CachedCountRegistryTest
       )
     )
 
-    numStages should be(1)
+    numJobs should be(1)
 
     val rdd02 = rdd0 ++ rdd2
     val rdd13 = rdd1 ++ rdd3
@@ -165,13 +165,13 @@ class CachedCountRegistryTest
       )
     )
 
-    numStages should be(1)
+    numJobs should be(1)
   }
 
   test("empty multi rdd sizes") {
     val rdds: List[RDD[Int]] = List.empty[RDD[Int]]
     rdds.sizes should be(Nil)
     countCache.getCache.isEmpty should be (true)
-    numStages should be(0)
+    numJobs should be(0)
   }
 }

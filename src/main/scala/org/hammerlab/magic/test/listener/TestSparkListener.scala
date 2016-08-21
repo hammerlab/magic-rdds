@@ -8,6 +8,11 @@ import org.hammerlab.magic.test.listener.metrics.Metrics
 
 import scala.collection.mutable
 
+/**
+ * [[SparkListener]] that accumulates various statistics for verification by tests.
+ *
+ * NOTE: not threadsafe! Use with extreme caution, cf. https://github.com/hammerlab/magic-rdds/issues/18.
+ */
 class TestSparkListener
   extends HasStatus(Pending)
     with SparkListener
