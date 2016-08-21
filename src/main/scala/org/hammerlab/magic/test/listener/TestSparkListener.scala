@@ -28,8 +28,6 @@ class TestSparkListener
     name = applicationStart.appName
     start = applicationStart.time
     status = Running
-
-    TestSparkListener.instance = this
   }
 
   override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd): Unit = {
@@ -155,7 +153,12 @@ object TestSparkListener {
 
   var instance: TestSparkListener = _
 
-  def apply(): TestSparkListener = instance
+  def apply(): TestSparkListener = {
+    if (instance == null) {
+      instance = new TestSparkListener()
+    }
+    instance
+  }
 
   type AppId = String
   type App = TestSparkListener
