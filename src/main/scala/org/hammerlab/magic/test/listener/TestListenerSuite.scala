@@ -1,5 +1,7 @@
 package org.hammerlab.magic.test.listener
 
+import org.hammerlab.magic.test.spark.PerCaseSparkContexts
+import org.scalatest.{Suite, TestData}
 import org.apache.spark.SparkConf
 import org.hammerlab.magic.test.spark.PerCaseSparkContexts
 import org.scalatest.Suite
