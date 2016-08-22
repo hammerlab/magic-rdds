@@ -4,7 +4,7 @@
 
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
 
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -38,7 +38,7 @@
     <connection>scm:git:git@github.com:hammerlab/magic-rdds.git</connection>
     <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
     <url>scm:git:git@github.com:hammerlab/magic-rdds.git</url>
-    <tag>1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
