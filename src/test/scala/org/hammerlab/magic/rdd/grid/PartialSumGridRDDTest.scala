@@ -49,8 +49,6 @@ abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
 
     val (gridRDD, partialSumsRDD, maxR, maxC) = PartialSumGridRDD(rdd, rHeight, cWidth)
 
-    //val gridRDD = PartialSumGridRDD.rddToGridCDFRDD(rdd, rHeight, cWidth)
-    //val partitioner = gridRDD.partitioner
     val partitioner = gridRDD.partitioner.get.asInstanceOf[GridPartitioner]
 
     val pRows = ceil(n * 1.0 / rHeight).toInt
@@ -60,19 +58,9 @@ abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
     partitioner.numPartitionCols should be(pCols)
     partitioner.numPartitions should be(pRows * pCols)
 
-    gridRDD.count should be(n * n)
-    //gridRDD.rdd.count should be(n * n)
-
-    //val cdf = gridRDD.partialSums2D(_ + _, 0).sortByKey().collect
+    gridRDD.count should be (input.length)
 
     val partialSums = partialSumsRDD.sortByKey().collect
-//      val expected =
-//        (for {
-//          (row, r) ← rawExpected.map(_.zipWithIndex).zipWithIndex
-//          (t, c) ← row
-//        } yield {
-//          (n - 1 - r, c) → t
-//        }).sortBy(_._1)
 
     val actual = partialSums.grouped(n).toArray.map(_.map(_._2))
 
@@ -177,4 +165,37 @@ class GridCDFRDDTest10x10 extends PartialSumGridRDDTest(10) {
 
   test("2-8") { testFn(2, 8) }
   test("8-2") { testFn(8, 2) }
+}
+
+class SparseGridTest extends PartialSumGridRDDTest(4) {
+
+  /*
+      Input:
+
+        - 4 - -
+        1 - - -
+        - - 2 -
+        - - - 3
+   */
+
+  override val input =
+    Vector(
+      3 -> 1 -> 4,
+      2 -> 0 -> 1,
+      1 -> 2 -> 2,
+      0 -> 3 -> 3
+    )
+
+  override def expectedStr: String =
+    """
+      |  4 4 0 0
+      |  5 4 0 0
+      |  7 6 2 0
+      | 10 9 5 3
+    """
+
+  test("1-1") { testFn(1, 1) }
+  test("1-2") { testFn(1, 2) }
+  test("2-1") { testFn(2, 1) }
+  test("2-2") { testFn(2, 2) }
 }
