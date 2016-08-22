@@ -158,7 +158,7 @@ class StatsHistSuite extends FunSuite with Matchers {
   test("large hist") {
     check(
       List[(Int, Long)](
-        1 -> 10000000000L,
+        1 ->  10000000000L,
         2 ->   1000000000,
         1 ->          100,
         2 ->   1000000000
