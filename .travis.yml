@@ -1,6 +1,12 @@
 language: java
 sudo: false
+
+script: mvn scoverage:report
+
 cache:
   directories:
   - .autoconf
   - $HOME/.m2
+  - $HOME/.zinc
+
+after_success: mvn coveralls:report

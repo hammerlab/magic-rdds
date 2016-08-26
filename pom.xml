@@ -17,13 +17,12 @@
   <name>Magic RDDs: Extra Functionality for Spark RDDs</name>
 
   <properties>
-
     <java.version>1.7</java.version>
     <scala.version>2.10.5</scala.version>
     <scala.version.prefix>2.10</scala.version.prefix>
     <maven.release.plugin.version>2.5</maven.release.plugin.version>
-
     <spark.version>1.6.1</spark.version>
+    <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
   </properties>
 
   <licenses>
@@ -216,6 +215,44 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+    </profile>
+
+    <!-- Only build coverage in when we want to run coverage -->
+    <profile>
+      <id>coverage</id>
+
+      <!-- Activate when being built by travis CI. -->
+      <activation>
+        <property>
+          <name>env.TRAVIS</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.scoverage</groupId>
+            <artifactId>scoverage-maven-plugin</artifactId>
+            <version>${scoverage.plugin.version}</version>
+            <configuration>
+              <scalaVersion>${scala.version}</scalaVersion>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.eluder.coveralls</groupId>
+            <artifactId>coveralls-maven-plugin</artifactId>
+            <version>4.2.0</version>
+            <configuration>
+              <sourceDirectories>
+                <sourceDirectory>src/main/scala</sourceDirectory>
+              </sourceDirectories>
+              <coberturaReports>
+                <coberturaReport>${basedir}/target/cobertura.xml</coberturaReport>
+              </coberturaReports>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>release</id>
