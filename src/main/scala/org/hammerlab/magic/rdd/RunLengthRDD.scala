@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.{RangeAccruingIterator, RunLengthIterator}
-import org.hammerlab.magic.rdd.BorrowElemsRDD._
+import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.collection.SortedSet
 import scala.reflect.ClassTag
@@ -49,7 +49,7 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
 
 object RunLengthRDD {
 
-  def registerKryo(kryo: Kryo): Unit = {
+  def register(kryo: Kryo): Unit = {
     kryo.register(classOf[Array[Int]])
   }
 

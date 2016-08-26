@@ -170,9 +170,6 @@ class PartialSumGridRDD[V: ClassTag] private(@transient val rdd: RDD[((Row, Col)
               }
           }
 
-          val pRow = arr.head._1._1 / partitioner.rHeight
-          val pCol = arr.head._1._2 / partitioner.cWidth
-
           for {
             ((r, c), t) ← arr.toIterator
             rowSum = rowSums.getOrElse(r, zero)
