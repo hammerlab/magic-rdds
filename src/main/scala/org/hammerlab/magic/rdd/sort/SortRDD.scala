@@ -1,5 +1,6 @@
-package org.apache.spark.sort
+package org.hammerlab.magic.rdd.sort
 
+import org.apache.spark.RangePartitioner
 import org.apache.spark.rdd.{RDD, ShuffledRDD}
 
 import scala.reflect.ClassTag

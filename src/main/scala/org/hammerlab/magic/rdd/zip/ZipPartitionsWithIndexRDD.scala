@@ -1,8 +1,10 @@
-package org.apache.spark.zip
+package org.hammerlab.magic.rdd.zip
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.context.Util.Cleanable
 
 import scala.reflect.ClassTag
+
 
 class ZipPartitionsWithIndexRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
 

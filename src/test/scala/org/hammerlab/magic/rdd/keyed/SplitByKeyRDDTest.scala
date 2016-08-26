@@ -1,6 +1,6 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.keyed
 
-import SplitByKeyRDD._
+import org.hammerlab.magic.rdd.keyed.SplitByKeyRDD._
 import org.hammerlab.magic.test.spark.SparkSuite
 
 import scala.reflect.ClassTag

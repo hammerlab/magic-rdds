@@ -1,12 +1,12 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.zip
 
-import org.apache.spark.scheduler.test.ContextUtil
-import org.hammerlab.magic.rdd.LazyZippedWithIndexRDD._
+import org.apache.spark.scheduler.test.NumJobsUtil
+import org.hammerlab.magic.rdd.zip.LazyZippedWithIndexRDD._
 import org.hammerlab.magic.test.spark.SparkCasesSuite
 
 class LazyZippedWithIndexRDDTest
   extends SparkCasesSuite
-    with ContextUtil {
+    with NumJobsUtil {
 
   test("match with zipWithIndex") {
     val rdd = sc.parallelize(0 until 10).filter(_ % 2 == 0)

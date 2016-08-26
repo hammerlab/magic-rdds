@@ -1,6 +1,6 @@
-package org.hammerlab.magic.rdd.groupby
+package org.hammerlab.magic.rdd.keyed
 
-import org.hammerlab.magic.rdd.groupby.CappedGroupByKeyRDD._
+import org.hammerlab.magic.rdd.keyed.CappedGroupByKeyRDD._
 import org.hammerlab.magic.test.spark.SparkSuite
 import org.hammerlab.magic.util.RDDUtil
 

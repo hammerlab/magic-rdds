@@ -1,10 +1,10 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.sliding
 
 import org.apache.spark.rdd.RDD
+import org.hammerlab.magic.rdd.zip.ZipPartitionsWithIndexRDD._
+import org.hammerlab.magic.rdd.KeyPartitioner
 
 import scala.reflect.ClassTag
-
-import org.apache.spark.zip.ZipPartitionsWithIndexRDD._
 
 /**
  * Wrap an [[RDD]] provide various functions for shuffling elements to adjacent partitions.
@@ -165,16 +165,18 @@ class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
 
   def shiftPartitions[U: ClassTag]: RDD[T] =
     rdd
-      .mapPartitionsWithIndex((partitionIdx, it) => {
-        if (partitionIdx > 0) {
-          for {
-            (elem, idx) <- it.zipWithIndex
-          } yield
-            (partitionIdx - 1, idx) -> elem
-        } else
-          Iterator()
-      })
-      .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
+      .mapPartitionsWithIndex(
+        (partitionIdx, it) => {
+          if (partitionIdx > 0) {
+            for {
+              (elem, idx) <- it.zipWithIndex
+            } yield
+              (partitionIdx - 1, idx) -> elem
+          } else
+            Iterator()
+        }
+      )
+    .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
       .values
 }
 

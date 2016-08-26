@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd.groupby
+package org.hammerlab.magic.rdd.keyed
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
@@ -84,7 +84,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
 }
 
 object KeySamples {
-  def registerKryo(kryo: Kryo): Unit = {
+  def register(kryo: Kryo): Unit = {
     kryo.register(classOf[KeySamples[_]])
   }
 }

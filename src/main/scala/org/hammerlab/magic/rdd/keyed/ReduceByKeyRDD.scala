@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.keyed
 
 import org.apache.spark.rdd.RDD
 

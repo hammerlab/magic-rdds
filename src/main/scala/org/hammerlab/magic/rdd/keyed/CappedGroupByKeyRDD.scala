@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd.groupby
+package org.hammerlab.magic.rdd.keyed
 
 import org.apache.spark.rdd.RDD
 

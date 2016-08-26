@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.partitions
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.{RDD, UnionRDD}
@@ -29,7 +29,7 @@ private case class PartitionStats[T: ClassTag](boundsOpt: Option[(T, T)], count:
 
 object RDDStats {
 
-  def registerKryo(kryo: Kryo): Unit = {
+  def register(kryo: Kryo): Unit = {
     kryo.register(classOf[Array[PartitionStats[_]]])
     kryo.register(classOf[PartitionStats[_]])
   }

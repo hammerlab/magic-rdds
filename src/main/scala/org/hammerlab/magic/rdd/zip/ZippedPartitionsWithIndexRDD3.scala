@@ -1,7 +1,8 @@
-package org.apache.spark.zip
+package org.hammerlab.magic.rdd.zip
 
+import org.apache.spark.rdd.RDD
+import org.apache.spark.zip.{ZippedPartitionsBaseRDD, ZippedPartitionsPartition}
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import org.apache.spark.rdd.{RDD, ZippedPartitionsBaseRDD, ZippedPartitionsPartition}
 
 import scala.reflect.ClassTag
 

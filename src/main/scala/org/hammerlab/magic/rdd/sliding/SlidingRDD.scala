@@ -1,8 +1,8 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.sliding
 
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.TakeUntilIterator
-import org.hammerlab.magic.rdd.BorrowElemsRDD._
+import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.reflect.ClassTag
 

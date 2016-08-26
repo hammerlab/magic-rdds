@@ -1,6 +1,7 @@
-package org.hammerlab.magic.rdd
+package org.hammerlab.magic.rdd.partitions
 
 import org.apache.spark.rdd.RDD
+import org.hammerlab.magic.rdd.KeyPartitioner
 
 import scala.collection.immutable.SortedMap
 import scala.reflect.ClassTag
