@@ -15,14 +15,48 @@ import scala.reflect.ClassTag
  * Helpers for saving [[RDD]]s as Hadoop sequence-files, optionally compressing them.
  */
 class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
-  def saveCompressed(path: String): RDD[T] = saveSequenceFile(path, Some(classOf[BZip2Codec]))
-  def saveCompressed(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))
+  def saveCompressed(path: String): RDD[T] =
+    saveSequenceFile(
+      path,
+      Some(classOf[BZip2Codec])
+    )
 
-  def saveCompressed(path: Path): RDD[T] = saveSequenceFile(path.toString, Some(classOf[BZip2Codec]))
-  def saveCompressed(path: Path, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path.toString, Some(codec))
+  def saveCompressed(path: String,
+                     codec: Class[_ <: CompressionCodec]): RDD[T] =
+    saveSequenceFile(
+      path,
+      Some(codec)
+    )
 
-  def saveSequenceFile(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] = saveSequenceFile(path, Some(codec))
-  def saveSequenceFile(path: String, codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
+  def saveCompressed(path: Path): RDD[T] =
+    saveSequenceFile(
+      path.toString,
+      Some(classOf[BZip2Codec])
+    )
+
+  def saveCompressed(path: Path, codec: Class[_ <: CompressionCodec]): RDD[T] =
+    saveSequenceFile(
+      path.toString,
+      Some(codec)
+    )
+
+  def saveSequenceFile(path: String, codec: Class[_ <: CompressionCodec]): RDD[T] =
+    saveSequenceFile(
+      path,
+      Some(codec)
+    )
+
+  def saveSequenceFile(path: String, compress: Boolean): RDD[T] =
+    saveSequenceFile(
+      path,
+      if (compress)
+        Some(classOf[BZip2Codec])
+      else
+        None
+    )
+
+  def saveSequenceFile(path: String,
+                       codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
       .mapPartitions(iter => {
         val serializer = SparkEnv.get.serializer.newInstance()
