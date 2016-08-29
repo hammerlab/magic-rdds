@@ -21,5 +21,5 @@ trait SequenceFileRDDTest
     rdd.saveSequenceFile(path, codecOpt)
 
   def deserializeRDD[T: ClassTag](path: String): RDD[T] =
-    sc.fromSequenceFile[T](path)
+    sc.fromSequenceFile[T](path, splittable = false)
 }
