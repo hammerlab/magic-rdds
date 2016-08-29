@@ -1,5 +1,6 @@
 package org.hammerlab.magic.rdd.sliding
 
+import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.iterator.TakeUntilIterator
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
@@ -52,4 +53,10 @@ class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
 
 object SlidingRDD {
   implicit def toSlidingRDD[T: ClassTag](rdd: RDD[T]): SlidingRDD[T] = new SlidingRDD[T](rdd)
+
+  def register(kryo: Kryo): Unit = {
+    // Used in BorrowElemsRDD's partitionOverridesBroadcast.
+    kryo.register(classOf[Map[Int, Int]])
+    kryo.register(Class.forName("scala.collection.immutable.Map$EmptyMap$"))
+  }
 }

@@ -1,13 +1,13 @@
 package org.hammerlab.magic.rdd
 
-import org.hammerlab.magic.util.RDDUtil
 import RunLengthRDD._
+import org.hammerlab.magic.test.rdd.Util.makeRDD
 import org.hammerlab.magic.test.spark.SparkSuite
 
 class RunLengthRDDTest extends SparkSuite {
 
   def check(partitionStrs: Iterable[Char]*)(expected: String) = {
-    val rle = RDDUtil(partitionStrs).runLengthEncode.collect
+    val rle = makeRDD(partitionStrs).runLengthEncode.collect
 
     val str =
       (for {

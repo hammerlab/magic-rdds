@@ -2,10 +2,10 @@ package org.hammerlab.magic.rdd.zip
 
 import org.apache.spark.scheduler.test.NumJobsUtil
 import org.hammerlab.magic.rdd.zip.LazyZippedWithIndexRDD._
-import org.hammerlab.magic.test.spark.SparkCasesSuite
+import org.hammerlab.magic.test.spark.PerCaseSuite
 
 class LazyZippedWithIndexRDDTest
-  extends SparkCasesSuite
+  extends PerCaseSuite
     with NumJobsUtil {
 
   test("match with zipWithIndex") {

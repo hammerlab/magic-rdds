@@ -3,11 +3,11 @@ package org.hammerlab.magic.rdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.test.NumJobsUtil
 import org.hammerlab.magic.rdd.CachedCountRegistry._
-import org.hammerlab.magic.test.spark.SparkCasesSuite
+import org.hammerlab.magic.test.spark.PerCaseSuite
 import org.scalatest.BeforeAndAfterEach
 
 class CachedCountRegistryTest
-  extends SparkCasesSuite
+  extends PerCaseSuite
     with NumJobsUtil
     with BeforeAndAfterEach {
 

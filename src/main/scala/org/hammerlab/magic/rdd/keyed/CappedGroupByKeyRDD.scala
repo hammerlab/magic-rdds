@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
  * see [[SampleByKeyRDD]].
  */
 class CappedGroupByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
-  def cappedGroupByKey(maxPerKey: Int): RDD[(K, Vector[V])] = {
+  def cappedGroupByKey(maxPerKey: Int): RDD[(K, Vector[V])] =
     rdd.combineByKey[Vector[V]](
       (e: V) => Vector(e),
       (v: Vector[V], e: V) => {
@@ -32,7 +32,6 @@ class CappedGroupByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
       },
       rdd.getNumPartitions
     )
-  }
 }
 
 object CappedGroupByKeyRDD {

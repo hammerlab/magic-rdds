@@ -2,7 +2,7 @@ package org.hammerlab.magic.test.spark
 
 import org.scalatest.{FunSuite, Matchers}
 
-trait SparkCasesSuite
+trait PerCaseSuite
   extends FunSuite
     with Matchers
-    with PerCaseSparkContexts
+    with PerCaseSparkContext
