@@ -1,7 +1,10 @@
 language: java
 sudo: false
 
-script: mvn scoverage:report
+jdk:
+  - oraclejdk8
+
+script: mvn scoverage:report -B
 
 cache:
   directories:
