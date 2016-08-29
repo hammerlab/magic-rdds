@@ -1,7 +1,7 @@
 package org.hammerlab.magic.test.listener
 
 import org.apache.spark.SparkConf
-import org.hammerlab.magic.test.spark.PerCaseSparkContexts
+import org.hammerlab.magic.test.spark.PerCaseSparkContext
 import org.scalatest.Suite
 import org.apache.spark.SparkContext
 
@@ -10,7 +10,7 @@ import org.apache.spark.SparkContext
  *
  * NOTE: not threadsafe! Use with extreme caution, cf. https://github.com/hammerlab/magic-rdds/issues/18.
  */
-trait TestListenerSuite extends PerCaseSparkContexts {
+trait TestListenerSuite extends PerCaseSparkContext {
   self: Suite =>
 
   var listener: TestSparkListener = _

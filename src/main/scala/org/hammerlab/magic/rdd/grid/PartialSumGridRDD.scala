@@ -1,5 +1,6 @@
 package org.hammerlab.magic.rdd.grid
 
+import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.grid.PartialSumGridRDD.{Col, Row}
 import spire.algebra.Monoid
@@ -243,4 +244,10 @@ object PartialSumGridRDD {
     implicit m: Monoid[V]
   ): (RDD[((Row, Col), V)], RDD[((Row, Col), V)], Int, Int) =
     apply(rdd, Some((rHeight, cWidth)))
+
+  def register(kryo: Kryo): Unit = {
+    kryo.register(classOf[BottomLeftElem[_]])
+    kryo.register(classOf[BottomRow[_]])
+    kryo.register(classOf[LeftCol[_]])
+  }
 }

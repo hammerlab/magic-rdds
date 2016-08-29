@@ -5,7 +5,7 @@ import java.util.Date
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterEach, Suite}
 
-trait PerCaseSparkContexts
+trait PerCaseSparkContext
   extends BeforeAndAfterEach {
   self: Suite =>
 
@@ -24,8 +24,7 @@ trait PerCaseSparkContexts
 
     conf =
       new SparkConf()
-        .set("spark.default.parallelism", "4")
-        .setMaster("local[*]")
+        .setMaster("local[4]")
         .setAppName(this.getClass.getSimpleName)
         .set("spark.ui.enabled", "false")
         .set("spark.app.id", appID)
