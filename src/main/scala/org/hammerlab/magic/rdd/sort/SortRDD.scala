@@ -5,7 +5,7 @@ import org.apache.spark.rdd.{RDD, ShuffledRDD}
 
 import scala.reflect.ClassTag
 
-class SortRDD[T : Ordering : ClassTag](@transient rdd: RDD[T]) extends Serializable {
+class SortRDD[T : Ordering : ClassTag](rdd: RDD[T]) extends Serializable {
 
   val ordering = implicitly[Ordering[T]]
 

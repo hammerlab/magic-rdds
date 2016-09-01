@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
  * Helpers for mimicking Scala collections' "sliding" API on [[RDD]]s; iterates over successive N-element subsequences
  * of the [[RDD]].
  */
-class SlidingRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
+class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def sliding2(fill: T): RDD[(T, T)] = sliding2(Some(fill))
   def sliding2(fillOpt: Option[T] = None): RDD[(T, T)] =
     rdd

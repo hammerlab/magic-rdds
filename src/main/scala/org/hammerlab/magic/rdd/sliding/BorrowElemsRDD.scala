@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 /**
  * Wrap an [[RDD]] provide various functions for shuffling elements to adjacent partitions.
  */
-class BorrowElemsRDD[T: ClassTag](@transient rdd: RDD[T]) extends Serializable {
+class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
 
   def shiftLeft(n: Int,
                 fill: T): RDD[T] = shiftLeft(n, Some(fill))

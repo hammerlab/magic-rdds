@@ -43,6 +43,6 @@ object RoundNumbers {
     new RoundNumbers(steps, base, Some(limit))
 
   def apply(steps: Seq[Int],
-            base: Int = 10): Iterator[Long] =
+            base: Int): Iterator[Long] =
     new RoundNumbers[Long](steps, base, None)
 }
