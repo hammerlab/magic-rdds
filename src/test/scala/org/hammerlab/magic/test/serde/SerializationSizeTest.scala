@@ -1,5 +1,6 @@
 package org.hammerlab.magic.test.serde
 
+import org.hammerlab.magic.test.version.Util
 import org.hammerlab.magic.test.serde.JavaSerialization._
 import org.hammerlab.magic.test.serde.util.{Foo, FooRegistrarTest}
 import org.hammerlab.magic.test.spark.HasKryoSuite
@@ -17,7 +18,14 @@ class SerializationSizeTest
   }
 
   test("java list") {
-    checkJavaRoundTrip(l, 263)
+    checkJavaRoundTrip(
+      l,
+      // This List[String] gets compressed differently in Scala 2.10 vs. 2.11!
+      if (Util.is2_10)
+        263
+      else
+        166
+    )
   }
 
   test("kryo list") {

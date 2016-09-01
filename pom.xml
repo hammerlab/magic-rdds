@@ -18,8 +18,8 @@
 
   <properties>
     <java.version>1.7</java.version>
-    <scala.version>2.10.5</scala.version>
-    <scala.version.prefix>2.10</scala.version.prefix>
+    <scala.version.prefix>2.11</scala.version.prefix>
+    <scala.version>${scala.version.prefix}.8</scala.version>
     <maven.release.plugin.version>2.5</maven.release.plugin.version>
     <spark.version>1.6.1</spark.version>
     <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
@@ -66,7 +66,7 @@
         <artifactId>scalatest-maven-plugin</artifactId>
         <version>1.0</version>
         <configuration>
-          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+          <reportsDirectory>${project.build.directory}/scalatest-reports</reportsDirectory>
           <junitxml>.</junitxml>
           <filereports>MagicRDDTestSuite.txt</filereports>
           <!--
@@ -301,6 +301,14 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <!-- Profile for using Scala 2.10.6 -->
+      <id>2.10</id>
+      <properties>
+        <scala.version.prefix>2.10</scala.version.prefix>
+        <scala.version>2.10.6</scala.version>
+      </properties>
     </profile>
   </profiles>
 

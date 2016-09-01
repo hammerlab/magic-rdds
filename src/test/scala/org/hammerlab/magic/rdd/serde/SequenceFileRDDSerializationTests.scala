@@ -1,6 +1,7 @@
 package org.hammerlab.magic.rdd.serde
 
 import org.hammerlab.magic.test.rdd.{BZippedSequenceFileRDDTest, SequenceFileRDDTest}
+import org.hammerlab.magic.test.version.Util
 import org.hammerlab.magic.test.serde.util.FooRegistrarTest
 import org.hammerlab.magic.test.spark.{JavaSerializerSuite, KryoSerializerSuite}
 
@@ -30,10 +31,17 @@ class JavaBZippedSequenceFileRDDTest
   testMediumInts(652, 655, 668, 646)
   testLongs(662, 676, 664, 675)
 
-  testSomeFoos(   1,  404,  407,  409,  398)
-  testSomeFoos(  10,  531,  539,  528,  532)
-  testSomeFoos( 100,  864,  854,  875,  835)
-  testSomeFoos(1000, 2122, 2113, 2133, 2147)
+  if (Util.is2_10) {
+    testSomeFoos(   1,  404,  407,  409,  398)
+    testSomeFoos(  10,  531,  539,  528,  532)
+    testSomeFoos( 100,  864,  854,  875,  835)
+    testSomeFoos(1000, 2122, 2113, 2133, 2147)
+  } else {
+    testSomeFoos(   1,  406,  403,  403,  397)
+    testSomeFoos(  10,  536,  538,  528,  529)
+    testSomeFoos( 100,  874,  856,  867,  847)
+    testSomeFoos(1000, 2089, 2134, 2076, 2150)
+  }
 }
 
 // Kryo serde, Foos not registered, not compressed.
