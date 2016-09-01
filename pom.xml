@@ -318,7 +318,7 @@
     </dependency>
     <dependency>
       <groupId>org.spire-math</groupId>
-      <artifactId>spire_2.10</artifactId>
+      <artifactId>spire_${scala.version.prefix}</artifactId>
       <version>0.11.0</version>
     </dependency>
     <dependency>
@@ -330,7 +330,7 @@
     <!-- Used mostly in test scope, but the `test` package also uses these. -->
     <dependency>
       <groupId>com.holdenkarau</groupId>
-      <artifactId>spark-testing-base_2.10</artifactId>
+      <artifactId>spark-testing-base_${scala.version.prefix}</artifactId>
       <version>${spark.version}_0.4.4</version>
       <exclusions>
         <exclusion>
@@ -341,7 +341,7 @@
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.10</artifactId>
+      <artifactId>scalatest_${scala.version.prefix}</artifactId>
       <version>2.2.2</version>
     </dependency>
   </dependencies>
