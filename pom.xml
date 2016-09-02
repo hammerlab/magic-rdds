@@ -17,7 +17,6 @@
   <name>Magic RDDs: Extra Functionality for Spark RDDs</name>
 
   <properties>
-    <java.version>1.7</java.version>
     <scala.version.prefix>2.11</scala.version.prefix>
     <scala.version>${scala.version.prefix}.8</scala.version>
     <maven.release.plugin.version>2.5</maven.release.plugin.version>
@@ -132,12 +131,6 @@
             <jvmArg>-Xms1024m</jvmArg>
             <jvmArg>-Xmx1024m</jvmArg>
           </jvmArgs>
-          <javacArgs>
-            <javacArg>-source</javacArg>
-            <javacArg>${java.version}</javacArg>
-            <javacArg>-target</javacArg>
-            <javacArg>${java.version}</javacArg>
-          </javacArgs>
         </configuration>
       </plugin>
       <plugin>
