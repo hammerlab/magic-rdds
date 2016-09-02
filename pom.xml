@@ -19,6 +19,28 @@
     <spark.version>1.6.1</spark.version>
   </properties>
 
+  <scm>
+    <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
+  </scm>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <pushChanges>false</pushChanges>
+              <remoteTagging>false</remoteTagging>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
