@@ -10,7 +10,7 @@
   <parent>
     <groupId>org.hammerlab</groupId>
     <artifactId>scala-parent-pom</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <relativePath />
   </parent>
 
@@ -23,26 +23,6 @@
     <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
-  <profiles>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-release-plugin</artifactId>
-            <configuration>
-              <branchName>b@{project.version}_${scala.version.prefix}</branchName>
-              <tagNameFormat>@{project.version}_${scala.version.prefix}</tagNameFormat>
-              <pushChanges>false</pushChanges>
-              <remoteTagging>false</remoteTagging>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <dependencies>
     <dependency>
