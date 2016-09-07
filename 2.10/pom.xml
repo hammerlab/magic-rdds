@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>magic-rdds_2.10</artifactId>
+  <version>1.2.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Magic RDDs: Extra Functionality for Spark RDDs (Scala 2.10)</name>
+
+  <parent>
+    <groupId>org.hammerlab</groupId>
+    <artifactId>magic-rdds</artifactId>
+    <version>1.2.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <properties>
+    <repo.root>..</repo.root>
+    <scala.version.prefix>2.10</scala.version.prefix>
+    <scala.version>2.10.6</scala.version>
+    <target.dir>${basedir}/target</target.dir>
+  </properties>
+</project>
