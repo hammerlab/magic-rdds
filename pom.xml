@@ -10,7 +10,7 @@
   <parent>
     <groupId>org.hammerlab</groupId>
     <artifactId>scala-parent-pom</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <relativePath />
   </parent>
 
