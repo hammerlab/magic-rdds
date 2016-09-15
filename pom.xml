@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>magic-rdds</artifactId>
-  <version>1.2.2-SNAPSHOT</version>
+  <version>1.2.2</version>
   <packaging>pom</packaging>
   <name>Magic RDDs: Extra Functionality for Spark RDDs</name>
 
