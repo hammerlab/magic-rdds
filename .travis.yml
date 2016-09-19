@@ -11,5 +11,7 @@ cache:
   - .autoconf
   - $HOME/.m2
   - $HOME/.zinc
+  - 2.11/target/scala-2.11.8
+  - 2.11/target/analysis
 
 after_success: mvn coveralls:report
