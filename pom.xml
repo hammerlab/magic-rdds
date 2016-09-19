@@ -41,6 +41,13 @@
         <module>2.10</module>
       </modules>
     </profile>
+    <profile>
+      <id>all</id>
+      <modules>
+        <module>2.10</module>
+        <module>2.11</module>
+      </modules>
+    </profile>
   </profiles>
 
   <dependencies>
