@@ -224,3 +224,33 @@ Helpers for:
 
 ### And more!
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
+
+## Building
+Typical Maven commands will build/test/package the project for Scala 2.11.8:
+
+```bash
+mvn test
+mvn package -DskipTests
+```
+
+To build for Scala 2.10.6, use the `2.10` profile:
+
+```bash
+mvn test -P2.10
+mvn -DskipTests package -P2.10
+```
+
+This is enabled by inheriting [hammerlab/scala-parent-pom](https://github.com/hammerlab/scala-parent-pom).
+
+## Releasing
+To release the current (presumably `-SNAPSHOT`) version:
+
+```bash
+mvn deploy -Prelease,all -DskipTests
+```
+
+To set the version, (i.e. while preparing or cleaning up from a non-snapshot release):
+
+```bash
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion=…
+```
