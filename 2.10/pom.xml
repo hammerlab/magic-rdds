@@ -3,7 +3,6 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>magic-rdds_2.10</artifactId>
-  <version>1.2.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Magic RDDs: Extra Functionality for Spark RDDs (Scala 2.10)</name>
 
@@ -15,8 +14,5 @@
 
   <properties>
     <repo.root>..</repo.root>
-    <scala.version.prefix>2.10</scala.version.prefix>
-    <scala.version>2.10.6</scala.version>
-    <target.dir>${basedir}/target</target.dir>
   </properties>
 </project>

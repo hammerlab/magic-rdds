@@ -17,12 +17,31 @@
   <properties>
     <github.repo>hammerlab/magic-rdds</github.repo>
     <spark.version>1.6.1</spark.version>
+    <target.dir>${repo.root}/${scala.version.prefix}/target</target.dir>
   </properties>
 
   <scm>
     <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
+
+  <profiles>
+    <profile>
+      <id>2.11</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>2.11</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>2.10</id>
+      <modules>
+        <module>2.10</module>
+      </modules>
+    </profile>
+  </profiles>
 
   <dependencies>
     <dependency>
@@ -59,6 +78,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <!--
+      This is already included, in test-scope, by the parent POM, but we want it in compile-scope because the
+      src/main/scala/org/hammerlab/magic/test library uses it.
+    -->
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.version.prefix}</artifactId>
