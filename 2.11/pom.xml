@@ -14,5 +14,7 @@
 
   <properties>
     <repo.root>..</repo.root>
+    <scala.version>2.11.8</scala.version>
+    <scala.version.prefix>2.11</scala.version.prefix>
   </properties>
 </project>
