@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.hammerlab</groupId>
     <artifactId>magic-rdds</artifactId>
-    <version>1.2.5-SNAPSHOT</version>
+    <version>1.2.5</version>
   </parent>
 
   <properties>
