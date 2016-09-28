@@ -9,10 +9,12 @@
   <parent>
     <groupId>org.hammerlab</groupId>
     <artifactId>magic-rdds</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.6-SNAPSHOT</version>
   </parent>
 
   <properties>
     <repo.root>..</repo.root>
+    <scala.version>2.11.8</scala.version>
+    <scala.version.prefix>2.11</scala.version.prefix>
   </properties>
 </project>
