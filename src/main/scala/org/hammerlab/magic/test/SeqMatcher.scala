@@ -13,50 +13,84 @@ import scala.collection.mutable.ArrayBuffer
  *   - keys that are present in both but with differing values.
  *   - pairs that are present in both but in different orders.
  */
-case class SeqMatcher[K: Ordering, V](expected: Seq[(K, V)]) extends Matcher[Seq[(K, V)]] {
+case class SeqMatcher[K: Ordering, V: Ordering](expected: Seq[(K, V)]) extends Matcher[Seq[(K, V)]] {
   override def apply(actual: Seq[(K, V)]): MatchResult = {
-    val expectedMap = SortedMap(expected: _*)
-    val actualMap = SortedMap(actual: _*)
 
-    val extraElems = actualMap.filterKeys(!expectedMap.contains(_))
-    val missingElems = expectedMap.filterKeys(!actualMap.contains(_))
+    val expectedMap: Map[K, Set[V]] =
+      expected
+        .groupBy(_._1)
+        .mapValues(_.map(_._2).toSet)
 
-    val diffElems =
-      for {
-        (k, ev) <- expectedMap
-        av <- actualMap.get(k)
-        if ev != av
-      } yield
-        k -> (av, ev)
+    val actualMap: Map[K, Set[V]] =
+      actual
+        .groupBy(_._1)
+        .mapValues(_.map(_._2).toSet)
+
+    val keys = expectedMap.keySet ++ actualMap.keySet
 
     val errors = ArrayBuffer[String]()
-
     errors += "Sequences didn't match!"
     errors += ""
 
-    if (extraElems.nonEmpty) {
-      errors += s"Extra elems:"
-      errors += extraElems.mkString("\t", "\n\t", "")
-      errors += ""
+    val differingElemsBuilder = SortedMap.newBuilder[K, (String, String)]
+    val extraElemsBuilder = SortedMap.newBuilder[K, String]
+    val missingElemsBuilder = SortedMap.newBuilder[K, String]
+    for {
+      key <- keys
+      expectedValues = expectedMap.getOrElse(key, Set())
+      actualValues = actualMap.getOrElse(key, Set())
+      if expectedValues != actualValues
+
+      missingValues = expectedValues.diff(actualValues).toSeq.sorted
+      extraValues = actualValues.diff(expectedValues).toSeq.sorted
+
+      extrasStr = extraValues.mkString(",")
+      missingsStr = missingValues.mkString(",")
+    } {
+      (extraValues.nonEmpty, missingValues.nonEmpty) match {
+        case (true, true) =>
+          differingElemsBuilder += key -> (extrasStr, missingsStr)
+        case (true, false) =>
+          extraElemsBuilder += key -> extrasStr
+        case (false, true) =>
+          missingElemsBuilder += key -> missingsStr
+        case (false, false) =>
+          // Can't get here.
+      }
     }
 
-    if (missingElems.nonEmpty) {
-      errors += s"Missing elems:"
-      errors += missingElems.mkString("\t", "\n\t", "")
-      errors += ""
-    }
+    val differingElems = differingElemsBuilder.result()
+    val extraElems = extraElemsBuilder.result()
+    val missingElems = missingElemsBuilder.result()
 
-    if (diffElems.nonEmpty) {
+    if (extraElems.nonEmpty || missingElems.nonEmpty || differingElems.nonEmpty) {
 
-      val diffLines =
-        for {
-          (k, (actualValue, expectedValue)) <- diffElems
-        } yield
-          s"$k: actual: $actualValue, expected: $expectedValue"
+      if (extraElems.nonEmpty) {
+        errors += s"Extra elems:"
+        errors += extraElems.mkString("\t", "\n\t", "\n")
+      }
 
-      errors += s"Differing values:"
-      errors += diffLines.mkString("\t", "\n\t", "")
-      errors += ""
+      if (missingElems.nonEmpty) {
+        errors += s"Missing elems:"
+        errors += missingElems.mkString("\t", "\n\t", "\n")
+      }
+
+      if (differingElems.nonEmpty) {
+        val diffLines =
+          for {
+            (k, (actualValue, expectedValue)) <- differingElems
+          } yield
+            s"$k: actual: $actualValue, expected: $expectedValue"
+
+        errors += s"Differing values:"
+        errors += diffLines.mkString("\t", "\n\t", "\n")
+      }
+    } else if (actual != expected) {
+      errors += s"Elements out of order:"
+      errors += "Expected:"
+      errors += expected.mkString("\t", "\n\t", "\n")
+      errors += "Actual:"
+      errors += actual.mkString("\t", "\n\t", "\n")
     }
 
     MatchResult(
@@ -68,6 +102,6 @@ case class SeqMatcher[K: Ordering, V](expected: Seq[(K, V)]) extends Matcher[Seq
 }
 
 object SeqMatcher {
-  def seqMatch[K: Ordering, V](expected: Seq[(K, V)]): Matcher[Seq[(K, V)]] = SeqMatcher[K, V](expected)
-  def seqMatch[K: Ordering, V](expected: Array[(K, V)]): Matcher[Seq[(K, V)]] = SeqMatcher[K, V](expected.toList)
+  def seqMatch[K: Ordering, V: Ordering](expected: Seq[(K, V)]): Matcher[Seq[(K, V)]] = SeqMatcher[K, V](expected)
+  def seqMatch[K: Ordering, V: Ordering](expected: Array[(K, V)]): Matcher[Seq[(K, V)]] = SeqMatcher[K, V](expected.toList)
 }
