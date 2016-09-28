@@ -8,7 +8,7 @@
 Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
 
 ```scala
-$ spark-shell --packages "org.hammerlab:magic-rdds:1.2.3"
+$ spark-shell --packages "org.hammerlab:magic-rdds:1.2.5"
 …
 scala> import org.hammerlab.magic.rdd.RunLengthRDD._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -17,17 +17,17 @@ res0: Array[(Int, Int)] = Array((1,3), (2,6), (10,1))
 
 ## Using
 
-Use these Maven coordinates to depend on magic-rdds:
+Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 
 ```
 <dependency>
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds_2.11</artifactId>
-  <version>1.2.3</version>
+  <version>1.2.5</version>
 </dependency>
 ```
 
-`magic-rdds_2.10` is also available.
+`magic-rdds_2.10:1.2.5` is also available.
 
 ## Overview
 Following are explanations of some of the RDDs provided by this repo and the functionality they provide:
@@ -251,8 +251,10 @@ To release the current (presumably `-SNAPSHOT`) version:
 mvn deploy -Prelease,all -DskipTests
 ```
 
+This will release both `magic_rdds_2.10` and `magic_rdds_2.11` JARs, as well as a `magic_rdds` POM that they both are thin wrappers/implementations of.
+
 To set the version, (i.e. while preparing or cleaning up from a non-snapshot release):
 
 ```bash
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion=…
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion=… -Pall
 ```
