@@ -155,16 +155,46 @@ object CachedCountRegistry {
 
   private val instances = mutable.HashMap[SparkContext, CachedCountRegistry]()
 
-  private[rdd] def apply()(implicit sc: SparkContext): CachedCountRegistry =
+  private[rdd] def apply(sc: SparkContext): CachedCountRegistry =
     instances.getOrElseUpdate(sc, new CachedCountRegistry)
 
   // == Implicit API ==
-  implicit class SingleRDDCount(rdd: RDD[_])(implicit sc: SparkContext) {
-    def size: Long = apply.cachedCount(rdd)
+  implicit class SingleRDDCount(rdd: RDD[_]) {
+    def size: Long = apply(rdd.sparkContext).cachedCount(rdd)
   }
 
-  implicit class MultiRDDCount(rdds: Seq[RDD[_]])(implicit sc: SparkContext) {
-    def total: Long = apply.multiCachedCount(rdds).sum
-    def sizes: Seq[Long] = apply.multiCachedCount(rdds)
+  implicit class MultiRDDCount(rdds: Seq[RDD[_]]) {
+    private lazy val scOpt = rdds.headOption.map(_.sparkContext)
+
+    def total: Long =
+      scOpt match {
+        case Some(sc) => apply(sc).multiCachedCount(rdds).sum
+        case None => 0
+      }
+
+    def sizes: Seq[Long] =
+      scOpt match {
+        case Some(sc) => apply(sc).multiCachedCount(rdds)
+        case None => Nil
+      }
+  }
+
+  class HasMultiRDDCount(rdds: RDD[_]*) {
+    protected val multiRDDCount = new MultiRDDCount(rdds)
+    def total: Long = multiRDDCount.total
+  }
+
+  implicit class Tuple2RDDCount(t: (RDD[_], RDD[_])) extends HasMultiRDDCount(t._1, t._2) {
+    def sizes: (Long, Long) = {
+      val s = multiRDDCount.sizes
+      (s(0), s(1))
+    }
+  }
+
+  implicit class Tuple3RDDCount(t: (RDD[_], RDD[_], RDD[_])) extends HasMultiRDDCount(t._1, t._2, t._3) {
+    def sizes: (Long, Long, Long) = {
+      val s = multiRDDCount.sizes
+      (s(0), s(1), s(2))
+    }
   }
 }
