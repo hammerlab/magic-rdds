@@ -48,6 +48,9 @@
         <module>2.11</module>
       </modules>
     </profile>
+    <profile>
+      <id>root</id>
+    </profile>
   </profiles>
 
   <dependencies>

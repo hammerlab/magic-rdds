@@ -4,7 +4,7 @@ sudo: false
 jdk:
   - oraclejdk8
 
-script: mvn scoverage:report -B
+script: mvn scoverage:report -B -Proot
 
 cache:
   directories:
