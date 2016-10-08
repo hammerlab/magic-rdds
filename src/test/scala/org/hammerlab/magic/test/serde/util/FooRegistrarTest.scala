@@ -7,7 +7,7 @@ import org.hammerlab.magic.test.spark.{KryoSerializerSuite, SparkSuite}
  */
 class FooRegistrarTest
   extends KryoSerializerSuite(
-    registrar = "org.hammerlab.magic.test.serde.util.FooKryoRegistrator",
+    registrar = classOf[FooKryoRegistrator],
     registrationRequired = false,
     referenceTracking = true
   )
