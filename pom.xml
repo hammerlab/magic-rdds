@@ -25,34 +25,6 @@
     <tag>HEAD</tag>
   </scm>
 
-  <profiles>
-    <profile>
-      <id>2.11</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>2.11</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>2.10</id>
-      <modules>
-        <module>2.10</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>all</id>
-      <modules>
-        <module>2.10</module>
-        <module>2.11</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>root</id>
-    </profile>
-  </profiles>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
