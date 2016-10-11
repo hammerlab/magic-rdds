@@ -9,9 +9,9 @@ import scala.reflect.ClassTag
  * Package-cheat to expose [[org.apache.spark.rdd.ZippedPartitionsBaseRDD]].
  */
 abstract class ZippedPartitionsBaseRDD[V: ClassTag](sc: SparkContext,
-                                                    rdds: Seq[RDD[_]],
+                                                    rddsBase: Seq[RDD[_]],
                                                     preservesPartitioning: Boolean = false)
-  extends SparkZippedPartitionsBaseRDD[V](sc, rdds, preservesPartitioning) {
+  extends SparkZippedPartitionsBaseRDD[V](sc, rddsBase, preservesPartitioning) {
 
   // Replace Spark's ZippedPartitionsPartitions with ours.
   override def getPartitions: Array[Partition] =
@@ -20,7 +20,7 @@ abstract class ZippedPartitionsBaseRDD[V: ClassTag](sc: SparkContext,
     } yield
       new ZippedPartitionsPartition(
         idx,
-        rdds,
+        rddsBase,
         partition.asInstanceOf[SparkZippedPartitionsPartition].preferredLocations
       )
 }
