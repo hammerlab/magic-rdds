@@ -17,7 +17,7 @@
   <properties>
     <github.repo>hammerlab/magic-rdds</github.repo>
     <spark.version>1.6.1</spark.version>
-    <target.dir>${repo.root}/${scala.version.prefix}/target</target.dir>
+    <target.dir>${repo.root}/target/${scala.version.prefix}</target.dir>
   </properties>
 
   <scm>
