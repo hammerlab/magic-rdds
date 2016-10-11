@@ -18,6 +18,7 @@
     <github.repo>hammerlab/magic-rdds</github.repo>
     <spark.version>1.6.1</spark.version>
     <target.dir>${repo.root}/target/${scala.version.prefix}</target.dir>
+    <spark.hadoop.scope>provided</spark.hadoop.scope>
   </properties>
 
   <scm>
@@ -26,12 +27,6 @@
   </scm>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.version.prefix}</artifactId>
-      <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>com.esotericsoftware.kryo</groupId>
       <artifactId>kryo</artifactId>
@@ -59,6 +54,45 @@
           <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.6.0</version>
+      <exclusions>
+        <!--
+          hadoop-client's javax.servlet:servlet-api dependency includes classes that conflict with spark-core's
+          org.eclipse.jetty.orbit:javax.servlet dependency; excluding the former resolves this, cf.
+          https://issues.apache.org/jira/browse/SPARK-1693.
+        -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>2.2.0</version>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.version.prefix}</artifactId>
+      <version>${spark.version}</version>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.4.1</version>
     </dependency>
 
     <!--
