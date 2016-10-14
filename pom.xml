@@ -3,60 +3,25 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>magic-rdds</artifactId>
-  <version>1.2.6-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <version>1.2.8-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <name>Magic RDDs: Extra Functionality for Spark RDDs</name>
 
   <parent>
     <groupId>org.hammerlab</groupId>
     <artifactId>scala-parent-pom</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <relativePath />
   </parent>
 
   <properties>
     <github.repo>hammerlab/magic-rdds</github.repo>
     <spark.version>1.6.1</spark.version>
-    <target.dir>${repo.root}/${scala.version.prefix}/target</target.dir>
+    <target.dir>${repo.root}/target/${scala.version.prefix}</target.dir>
+    <spark.hadoop.scope>provided</spark.hadoop.scope>
   </properties>
 
-  <scm>
-    <developerConnection>scm:git:git@github.com:hammerlab/magic-rdds.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
-
-  <profiles>
-    <profile>
-      <id>2.11</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>2.11</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>2.10</id>
-      <modules>
-        <module>2.10</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>all</id>
-      <modules>
-        <module>2.10</module>
-        <module>2.11</module>
-      </modules>
-    </profile>
-  </profiles>
-
   <dependencies>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.version.prefix}</artifactId>
-      <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>com.esotericsoftware.kryo</groupId>
       <artifactId>kryo</artifactId>
@@ -84,6 +49,45 @@
           <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.6.0</version>
+      <exclusions>
+        <!--
+          hadoop-client's javax.servlet:servlet-api dependency includes classes that conflict with spark-core's
+          org.eclipse.jetty.orbit:javax.servlet dependency; excluding the former resolves this, cf.
+          https://issues.apache.org/jira/browse/SPARK-1693.
+        -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>2.2.0</version>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.version.prefix}</artifactId>
+      <version>${spark.version}</version>
+      <scope>${spark.hadoop.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.4.1</version>
     </dependency>
 
     <!--

@@ -1,9 +1,10 @@
-package org.hammerlab.magic.test.spark
+package org.hammerlab.magic.test.serde.util
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import org.apache.spark.serializer.KryoSerializer
 import org.hammerlab.magic.test.serde.KryoSerialization.{kryoBytes, kryoRead}
+import org.hammerlab.magic.test.spark.SparkSuite
 
 import scala.reflect.ClassTag
 

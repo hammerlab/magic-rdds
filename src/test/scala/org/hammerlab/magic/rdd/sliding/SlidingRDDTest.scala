@@ -5,9 +5,29 @@ import org.hammerlab.magic.test.spark.SparkSuite
 
 class SlidingRDDTest extends SparkSuite {
 
-  def lToT(l: IndexedSeq[Int]): (Int, Int, Int) = (l(0), l(1), l(2))
+  def test2N(n: Int): Unit = {
+    def lToT(l: IndexedSeq[Int]): (Int, Int) = (l(0), l(1))
+    test(s"two:$n") {
+      val range = 1 to n
+      var expectedSlid = range.sliding(2).map(lToT).toArray
+
+      sc.parallelize(range).sliding2().collect should be(expectedSlid)
+
+      expectedSlid ++= Array((n, 0))
+
+      sc.parallelize(range).sliding2(0).collect should be(expectedSlid)
+    }
+  }
+
+  test2N(100)
+  test2N(12)
+  test2N(11)
+  test2N(10)
+  test2N(9)
+  test2N(8)
 
   def test3N(n: Int): Unit = {
+    def lToT(l: IndexedSeq[Int]): (Int, Int, Int) = (l(0), l(1), l(2))
     test(s"three:$n") {
       val range = 1 to n
       var expectedSlid = range.sliding(3).map(lToT).toArray

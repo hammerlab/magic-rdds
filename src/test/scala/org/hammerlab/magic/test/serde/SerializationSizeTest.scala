@@ -2,8 +2,7 @@ package org.hammerlab.magic.test.serde
 
 import org.hammerlab.magic.test.version.Util
 import org.hammerlab.magic.test.serde.JavaSerialization._
-import org.hammerlab.magic.test.serde.util.{Foo, FooRegistrarTest}
-import org.hammerlab.magic.test.spark.HasKryoSuite
+import org.hammerlab.magic.test.serde.util.{Foo, FooRegistrarTest, HasKryoSuite}
 
 class SerializationSizeTest
   extends FooRegistrarTest

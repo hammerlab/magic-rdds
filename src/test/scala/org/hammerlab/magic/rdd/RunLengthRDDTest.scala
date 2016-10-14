@@ -7,7 +7,7 @@ import org.hammerlab.magic.test.spark.SparkSuite
 class RunLengthRDDTest extends SparkSuite {
 
   def check(partitionStrs: Iterable[Char]*)(expected: String) = {
-    val rle = makeRDD(partitionStrs).runLengthEncode.collect
+    val rle = makeRDD(partitionStrs: _*).runLengthEncode.collect
 
     val str =
       (for {

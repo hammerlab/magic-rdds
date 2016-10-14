@@ -15,12 +15,17 @@ class CachedCountRegistryTest
 
   override def beforeEach() {
     super.beforeEach()
-    countCache = CachedCountRegistry()
+    countCache = CachedCountRegistry(sc)
   }
 
   override def afterEach(): Unit = {
     super.afterEach()
     countCache = null
+  }
+
+  test("empty") {
+    List[RDD[_]]().sizes should be(Nil)
+    List[RDD[_]]().total should be(0)
   }
 
   test("single rdd count") {
@@ -56,6 +61,21 @@ class CachedCountRegistryTest
       )
     )
     numJobs should be(2)
+  }
+
+  test("tuple2-RDD sizes") {
+    val rdd0 = sc.parallelize(0 until 8)
+    val rdd1 = sc.parallelize(0 until 4)
+    (rdd0, rdd1).sizes should be(8, 4)
+    (rdd0, rdd1).total should be(12)
+  }
+
+  test("tuple3-RDD sizes") {
+    val rdd0 = sc.parallelize(0 until 8)
+    val rdd1 = sc.parallelize(0 until 4)
+    val rdd2 = sc.parallelize(0 until 2)
+    (rdd0, rdd1, rdd2).sizes should be(8, 4, 2)
+    (rdd0, rdd1, rdd2).total should be(14)
   }
 
   test("reuse list/union RDDs") {
