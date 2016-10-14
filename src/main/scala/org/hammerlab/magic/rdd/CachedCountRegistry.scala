@@ -9,10 +9,10 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * [[CachedCountRegistry]] adds a `.size` method to [[RDD]]s that mimicks [[RDD.count]], but caches its result.
  *
- * It also exposes `.sizes` and `.total` on [[Seq[RDD]]]s, which compute the constituent [[RDD]]s' sizes (per above) in
- * one Spark job.
+ * It also exposes `.sizes` and `.total` on [[Seq[RDD]]]s, [[Tuple2[RDD]]]s, and [[Tuple3[RDD]]]'s which compute the
+ * constituent [[RDD]]s' sizes (per above) in one Spark job.
  *
- * Additionally, both sets of APIs optimize computations on [[UnionRDD]]s by computing their component [[RDD]]s' sizes
+ * Additionally, all the above APIs optimize computations on [[UnionRDD]]s by computing their component [[RDD]]s' sizes
  * and caching those as well as the [[UnionRDD]]'s total.
  *
  * Cached `size` info is keyed by a [[SparkContext]] for robustness in apps that stop their [[SparkContext]] and then
@@ -24,8 +24,8 @@ import scala.collection.mutable.ArrayBuffer
  * val rdd1 = sc.parallelize(0 until 4)
  * val rdd2 = sc.parallelize("a" :: "b" :: Nil)
  * rdd1.size()
- * (rdd1 :: rdd2 :: Nil).sizes()
- * (rdd1 :: rdd2 :: Nil).total()
+ * (rdd1, rdd2).sizes()
+ * (rdd1, rdd2).total()
  * }}}
  */
 class CachedCountRegistry private() {
@@ -179,6 +179,7 @@ object CachedCountRegistry {
       }
   }
 
+  // Small wrapper used in Tuple*RDD classes below.
   class HasMultiRDDCount(rdds: RDD[_]*) {
     protected val multiRDDCount = new MultiRDDCount(rdds)
     def total: Long = multiRDDCount.total

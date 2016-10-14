@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
  * Make an RDD where the provided elements reside in specific partitions, for testing purposes.
  */
 object Util {
-  def makeRDD[T: ClassTag](partitions: Seq[Iterable[T]])(implicit sc: SparkContext): RDD[T] = {
+  def makeRDD[T: ClassTag](partitions: Iterable[T]*)(implicit sc: SparkContext): RDD[T] =
     sc
       .parallelize(
         for {
@@ -22,5 +22,4 @@ object Util {
       )
       .repartitionAndSortWithinPartitions(KeyPartitioner(partitions.size))
       .values
-  }
 }
