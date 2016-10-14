@@ -8,7 +8,7 @@
 Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
 
 ```scala
-$ spark-shell --packages "org.hammerlab:magic-rdds:1.2.5"
+$ spark-shell --packages "org.hammerlab:magic-rdds:1.2.8_2.11"
 …
 scala> import org.hammerlab.magic.rdd.RunLengthRDD._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -22,12 +22,12 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 ```
 <dependency>
   <groupId>org.hammerlab</groupId>
-  <artifactId>magic-rdds_2.11</artifactId>
-  <version>1.2.5</version>
+  <artifactId>magic-rdds</artifactId>
+  <version>1.2.8_2.11</version>
 </dependency>
 ```
 
-`magic-rdds_2.10:1.2.5` is also available.
+`magic-rdds:1.2.8_2.10` is also available.
 
 ## Overview
 Following are explanations of some of the RDDs provided by this repo and the functionality they provide:
@@ -106,9 +106,7 @@ val count2 = rdd2.count
 You can instead write:
 
 ```scala
-val sizes = Seq(rdd1, rdd2).sizes
-val count1 = sizes(0)
-val count2 = sizes(1)
+val (count1, coun2) = (rdd1, rdd2).sizes
 ````
 
 and save yourself a Spark job.
@@ -245,16 +243,26 @@ mvn -DskipTests package -P2.10
 This is enabled by inheriting [hammerlab/scala-parent-pom](https://github.com/hammerlab/scala-parent-pom).
 
 ## Releasing
-To release the current (presumably `-SNAPSHOT`) version:
+For a given release version `X`, we release `org.hammerlab:magic-rdds:X_2.10` and `org.hammerlab:magic-rdds:X_2.11`. This breaks the usual convention in the Scala+Maven ecosystem of stuffing the Scala minor-version into the artifact ID, but arguably makes more sense; it is also marginally easier to script the release with Maven plugins, instead of using a `sed` script to change the `artifactId` in the POM file:
 
 ```bash
-mvn deploy -Prelease,all -DskipTests
+version=1.2.9  # or whatever next version you want to release
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.10"
+mvn deploy -Prelease,2.10 -DskipTests
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.11"
+mvn deploy -Prelease -DskipTests
+git tag $version
+git push --tags
 ```
 
-This will release both `magic_rdds_2.10` and `magic_rdds_2.11` JARs, as well as a `magic_rdds` POM that they both are thin wrappers/implementations of.
-
-To set the version, (i.e. while preparing or cleaning up from a non-snapshot release):
+Releasing a `SNAPSHOT` version works very similarly:
 
 ```bash
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion=… -Pall
+version=1.2.9
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.10-SNAPSHOT"
+mvn deploy -Prelease,2.10 -DskipTests
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.11-SNAPSHOT"
+mvn deploy -Prelease -DskipTests
 ```
+
+Including the `release` profile will determine whether `-javadoc` and `-sources` JARs are included, as well as whether the GPG-signing plugin is activated.
