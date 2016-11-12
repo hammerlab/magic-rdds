@@ -1,4 +1,4 @@
-package org.hammerlab.magic.test.rdd
+package org.hammerlab.magic.rdd.serde
 
 import org.apache.hadoop.io.compress.{BZip2Codec, CompressionCodec}
 

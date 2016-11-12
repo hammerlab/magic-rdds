@@ -1,6 +1,7 @@
 package org.hammerlab.magic.rdd.serde
 
-import org.hammerlab.magic.test.rdd.{BZippedSequenceFileRDDTest, SequenceFileRDDTest}
+import org.hammerlab.magic.test.rdd.SequenceFileRDDTest
+import org.hammerlab.magic.test.serde.SequenceFileRDDTest
 import org.hammerlab.magic.test.version.Util
 import org.hammerlab.magic.test.serde.util.FooRegistrarTest
 import org.hammerlab.magic.test.spark.{JavaSerializerSuite, KryoSerializerSuite}
