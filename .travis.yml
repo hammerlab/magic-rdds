@@ -7,6 +7,7 @@ cache:
   directories:
   - .autoconf
   - $HOME/.m2
+  - $HOME/.ivy2
   - $HOME/.zinc
   - target/scala-2.11
 
