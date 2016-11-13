@@ -1,4 +1,4 @@
-package org.hammerlab.magic.test.serde.util
+package org.hammerlab.magic.rdd.serde.util
 
 /**
  * Dummy case-class for use in serde tests.

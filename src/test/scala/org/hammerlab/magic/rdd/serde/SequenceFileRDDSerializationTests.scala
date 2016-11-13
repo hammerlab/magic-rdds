@@ -1,10 +1,8 @@
 package org.hammerlab.magic.rdd.serde
 
-import org.hammerlab.magic.test.rdd.SequenceFileRDDTest
-import org.hammerlab.magic.test.serde.SequenceFileRDDTest
-import org.hammerlab.magic.test.version.Util
-import org.hammerlab.magic.test.serde.util.FooRegistrarTest
+import org.hammerlab.magic.rdd.serde.util.FooRegistrarTest
 import org.hammerlab.magic.test.spark.{JavaSerializerSuite, KryoSerializerSuite}
+import org.hammerlab.magic.test.version.Util
 
 // Java serde, Foos not registered, not compressed.
 class JavaSequenceFileRDDTest
@@ -16,10 +14,10 @@ class JavaSequenceFileRDDTest
   testMediumInts(9475)
   testLongs(9575)
 
-  testSomeFoos(   1,    223)
-  testSomeFoos(  10,   1375)
-  testSomeFoos( 100,  13015)
-  testSomeFoos(1000, 129335)
+  testSomeFoos(   1,    222)
+  testSomeFoos(  10,   1365)
+  testSomeFoos( 100,  12915)
+  testSomeFoos(1000, 128335)
 }
 
 // Java serde, Foos not registered, compressed.
@@ -33,15 +31,15 @@ class JavaBZippedSequenceFileRDDTest
   testLongs(662, 676, 664, 675)
 
   if (Util.is2_10) {
-    testSomeFoos(   1,  404,  407,  409,  398)
-    testSomeFoos(  10,  531,  539,  528,  532)
-    testSomeFoos( 100,  864,  854,  875,  835)
-    testSomeFoos(1000, 2122, 2113, 2133, 2147)
+    testSomeFoos(   1,  400,  394,  396,  395)
+    testSomeFoos(  10,  526,  533,  534,  528)
+    testSomeFoos( 100,  826,  856,  888,  860)
+    testSomeFoos(1000, 2113, 2110, 2112, 2151)
   } else {
-    testSomeFoos(   1,  406,  403,  403,  397)
-    testSomeFoos(  10,  536,  538,  528,  529)
-    testSomeFoos( 100,  874,  856,  867,  847)
-    testSomeFoos(1000, 2089, 2134, 2076, 2150)
+    testSomeFoos(   1,  403,  403,  405,  404)
+    testSomeFoos(  10,  530,  534,  525,  530)
+    testSomeFoos( 100,  860,  845,  884,  835)
+    testSomeFoos(1000, 2117, 2148, 2083, 2136)
   }
 }
 
@@ -55,10 +53,10 @@ class KryoSequenceFileRDDTest
   testMediumInts(1595)
   testLongs(1795)
 
-  testSomeFoos(   1,   169)
-  testSomeFoos(  10,   835)
-  testSomeFoos( 100,  7592,  7655)
-  testSomeFoos(1000, 75772, 75835)
+  testSomeFoos(   1,   168)
+  testSomeFoos(  10,   825)
+  testSomeFoos( 100,  7492,  7555)
+  testSomeFoos(1000, 74732, 74795)
 }
 
 // Kryo serde, register Foo classes, no compression.

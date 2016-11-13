@@ -213,15 +213,6 @@ sorted:	1×10000000100, 2×2000000000
 100.0: 	2
 ```
 
-### Scalatest Utilities
-Helpers for:
-- giving your tests fresh `SparkContext`s
-  - [per-`Suite`](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/spark/SparkSuite.scala) (a thin wrapper around [holdenk/spark-testing-base](https://github.com/holdenk/spark-testing-base)'s [`SharedSparkContext`](https://github.com/holdenk/spark-testing-base/blob/v0.3.3/src/main/1.3/scala/com/holdenkarau/spark/testing/SharedSparkContext.scala))
-  - or [per-case](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/spark/PerCaseSuite.scala)
-- [making an RDD with specific elements in specific partitions](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/rdd/Util.scala), 
-- [creating and cleaning up temporary files and directories](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/TmpFiles.scala)
-- [verifying the number of Spark jobs that have been run](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/apache/spark/scheduler/test/ContextUtil.scala)
-
 ### And more!
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
 
