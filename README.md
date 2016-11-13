@@ -174,54 +174,6 @@ Output:
 120  84  52  24
 ```
 
-### Iterators
-[The `iterators` package](https://github.com/hammerlab/magic-rdds/tree/master/src/main/scala/org/hammerlab/magic/iterator) has some handy custom iterators, some necessitated by the RDDs described above, others just there for fun.
-
-### Descriptive Statistics
-[`org.hammerlab.magic.stats.Stats`](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/stats/Stats.scala) has APIs for ingesting numeric elements and outputting nicely formatted statistics about them; modeled after [Apache commons-math `DescriptiveStatistics`](https://github.com/apache/commons-math/blob/MATH_3_6_1/src/main/java/org/apache/commons/math3/stat/descriptive/DescriptiveStatistics.java).
-
-As a bonus, [it can ingest numbers in histogram-style / run-length-encoded format](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/stats/Stats.scala#L81), supporting `Long` values as well for computations involving element counts from RDDs: 
-
-```scala
-scala> import org.hammerlab.magic.stats.Stats
-scala> :paste
-Stats.fromHist(
-    List[(Int, Long)](
-        1 ->  10000000000L,
-        2 ->   1000000000,
-        1 ->          100,
-        2 ->   1000000000
-    )
-)
-
-res0: org.hammerlab.magic.stats.Stats[Int,Long] =
-num:   	12000000100,   	mean:  	1.2,   	stddev:	0.4,   	mad:   	0
-elems: 	1×10000000000, 2×1000000000, 1×100, 2×1000000000
-sorted:	1×10000000100, 2×2000000000
-0.0:   	1
-0.1:   	1
-1:     	1
-5:     	1
-10:    	1
-25:    	1
-50:    	1
-75:    	1
-90:    	2
-95:    	2
-99:    	2
-99.9:  	2
-100.0: 	2
-```
-
-### Scalatest Utilities
-Helpers for:
-- giving your tests fresh `SparkContext`s
-  - [per-`Suite`](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/spark/SparkSuite.scala) (a thin wrapper around [holdenk/spark-testing-base](https://github.com/holdenk/spark-testing-base)'s [`SharedSparkContext`](https://github.com/holdenk/spark-testing-base/blob/v0.3.3/src/main/1.3/scala/com/holdenkarau/spark/testing/SharedSparkContext.scala))
-  - or [per-case](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/spark/PerCaseSuite.scala)
-- [making an RDD with specific elements in specific partitions](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/rdd/Util.scala), 
-- [creating and cleaning up temporary files and directories](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/test/TmpFiles.scala)
-- [verifying the number of Spark jobs that have been run](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/apache/spark/scheduler/test/ContextUtil.scala)
-
 ### And more!
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
 

@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd.partitions
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{RDD, UnionRDD}
-import org.hammerlab.magic.stats.Stats
+import org.hammerlab.stats.Stats
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

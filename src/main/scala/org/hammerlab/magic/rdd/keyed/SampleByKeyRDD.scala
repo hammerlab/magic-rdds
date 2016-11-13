@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.keyed
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.math.HyperGeometricDistribution
+import org.hammerlab.math.HypergeometricDistribution
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -54,7 +54,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
 
     val finalNumSamples = math.min(vals.length + oVals.length, max)
 
-    val hgd = HyperGeometricDistribution(finalNum, num, finalNumSamples)
+    val hgd = HypergeometricDistribution(finalNum, num, finalNumSamples)
 
     val d = Random.nextDouble()
     println(s"double: $d")

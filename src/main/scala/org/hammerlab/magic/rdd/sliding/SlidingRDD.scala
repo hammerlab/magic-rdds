@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.sliding
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.iterator.TakeUntilIterator
+import org.hammerlab.iterator.TakeUntilIterator
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.reflect.ClassTag

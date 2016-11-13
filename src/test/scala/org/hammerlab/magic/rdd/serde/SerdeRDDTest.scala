@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.serde
 
+import org.hammerlab.magic.rdd.serde.util.{Foo, Foos}
 import org.hammerlab.magic.test.rdd.VerifyRDDSerde
-import org.hammerlab.magic.test.serde.util.{Foo, Foos}
 
 trait SerdeRDDTest {
   self: VerifyRDDSerde =>

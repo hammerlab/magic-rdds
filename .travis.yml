@@ -1,17 +1,14 @@
-language: java
+language: scala
 sudo: false
 
-jdk:
-  - oraclejdk8
-
-script: mvn scoverage:report -B -Proot
+script: sbt clean coverage test
 
 cache:
   directories:
   - .autoconf
   - $HOME/.m2
+  - $HOME/.ivy2
   - $HOME/.zinc
-  - 2.11/target/scala-2.11.8
-  - 2.11/target/analysis
+  - target/scala-2.11
 
-after_success: mvn coveralls:report
+after_success: sbt coverageReport coveralls
