@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.iterator.{RangeAccruingIterator, RunLengthIterator}
+import org.hammerlab.iterator.{RangeAccruingIterator, RunLengthIterator}
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.collection.SortedSet
