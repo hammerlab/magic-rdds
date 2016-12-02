@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.partitions
 
-import org.hammerlab.magic.test.spark.SparkSuite
-import org.hammerlab.magic.test.rdd.Util.makeRDD
+import org.hammerlab.spark.test.rdd.Util.makeRDD
+import org.hammerlab.spark.test.suite.SparkSuite
 
 class RDDStatsTest extends SparkSuite {
   implicit val ordering = implicitly[Ordering[Int]]

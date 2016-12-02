@@ -1,6 +1,6 @@
 package org.hammerlab.magic.rdd.grid
 
-import org.hammerlab.magic.test.spark.SparkSuite
+import org.hammerlab.spark.test.suite.SparkSuite
 
 import scala.math.ceil
 
