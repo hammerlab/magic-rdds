@@ -1,6 +1,6 @@
 package org.hammerlab.magic.rdd.serde.util
 
-import org.hammerlab.magic.test.spark.KryoSerializerSuite
+import org.hammerlab.spark.test.suite.KryoSerializerSuite
 
 /**
  * Test base-class that registers dummy case-class [[Foo]] for Kryo serde.

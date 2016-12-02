@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd.serde
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.serde.SequenceFileSerializableRDD._
-import org.hammerlab.magic.test.rdd.VerifyRDDSerde
+import org.hammerlab.spark.test.rdd.VerifyRDDSerde
 
 import scala.reflect.ClassTag
 

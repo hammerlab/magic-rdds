@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.zip
 
 import org.apache.spark.scheduler.test.NumJobsUtil
 import org.hammerlab.magic.rdd.zip.LazyZippedWithIndexRDD._
-import org.hammerlab.magic.test.spark.PerCaseSuite
+import org.hammerlab.spark.test.suite.PerCaseSuite
 
 class LazyZippedWithIndexRDDTest
   extends PerCaseSuite

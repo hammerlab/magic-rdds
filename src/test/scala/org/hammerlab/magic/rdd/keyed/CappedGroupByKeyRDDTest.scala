@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd.keyed
 
 import org.hammerlab.magic.rdd.keyed.CappedGroupByKeyRDD._
-import org.hammerlab.magic.test.rdd.Util.makeRDD
-import org.hammerlab.magic.test.spark.SparkSuite
+import org.hammerlab.spark.test.rdd.Util.makeRDD
+import org.hammerlab.spark.test.suite.SparkSuite
 
 class CappedGroupByKeyRDDTest extends SparkSuite {
   // 4 partitions, each with 20 random ints from [0, 20).

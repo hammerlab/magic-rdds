@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd.serde
 
 import org.hammerlab.magic.rdd.serde.util.FooRegistrarTest
-import org.hammerlab.magic.test.spark.{JavaSerializerSuite, KryoSerializerSuite}
-import org.hammerlab.magic.test.version.Util
+import org.hammerlab.spark.test.suite.{ JavaSerializerSuite, KryoSerializerSuite }
+import org.hammerlab.spark.test.version.Util
 
 // Java serde, Foos not registered, not compressed.
 class JavaSequenceFileRDDTest
