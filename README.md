@@ -3,12 +3,13 @@
 [![Join the chat at https://gitter.im/hammerlab/magic-rdds](https://badges.gitter.im/hammerlab/magic-rdds.svg)](https://gitter.im/hammerlab/magic-rdds?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/hammerlab/magic-rdds.svg?branch=master)](https://travis-ci.org/hammerlab/magic-rdds)
 [![Coverage Status](https://coveralls.io/repos/github/hammerlab/magic-rdds/badge.svg?branch=master)](https://coveralls.io/github/hammerlab/magic-rdds?branch=master)
-[![Maven Central](https://img.shields.io/maven-central/v/org.hammerlab/magic-rdds.svg?maxAge=25920)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22magic-rdds%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.hammerlab/magic-rdds_2.11.svg?maxAge=600)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22magic-rdds%22)
 
 Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
 
 ```scala
-$ spark-shell --packages "org.hammerlab:magic-rdds:1.2.8_2.11"
+$ sbt assembly
+$ spark-shell --jars target/scala-2.11/magic-rdds-assembly-1.3.1.jar
 …
 scala> import org.hammerlab.magic.rdd.RunLengthRDD._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -22,12 +23,18 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 ```
 <dependency>
   <groupId>org.hammerlab</groupId>
-  <artifactId>magic-rdds</artifactId>
-  <version>1.2.8_2.11</version>
+  <artifactId>magic-rdds_2.11</artifactId>
+  <version>1.3.1</version>
 </dependency>
 ```
 
 `magic-rdds:1.2.8_2.10` is also available.
+
+In SBT, use:
+
+```
+"org.hammerlab" %% "magic-rdds" % "1.3.1"
+```
 
 ## Overview
 Following are explanations of some of the RDDs provided by this repo and the functionality they provide:
@@ -150,6 +157,16 @@ Split an `RDD[(K, V)]` into a `Map[K, RDD[V]]`, i.e. multiple RDDs each containi
  
  Instead, we shuffle the full RDD once, into a partitioning where each key's pairs occupy a contiguous range of partitions, then partition-slice views over those ranges are exposed as standalone, per-key RDDs.
   
+#### [ScanLeftRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/ScanLeftRDD.scala)  
+
+Exposes `.scanLeft` methods for replacing each of an RDD's elements with the sum of all elements preceding (and including) it:
+
+```scala
+scala> import org.hammerlab.magic.rdd.sliding.ScanLeftRDD._
+scala> sc.parallelize(1 to 10).scanLeft(0)(_ + _).collect
+res1: Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+```
+
 #### [PartialSumGridRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/grid/PartialSumGridRDD.scala)
 
 Given an RDD of elements that each have a logical "row", "column", and "summable" value (an `RDD[((Int, Int), V)]`), generate an RDD that replaces each value with the sum of all values at greater (or equal) rows and columns.
