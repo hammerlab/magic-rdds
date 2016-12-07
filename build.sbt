@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-version := "1.3.2-SNAPSHOT"
+version := "1.3.2"
 
 libraryDependencies ++= Seq(
   libraries.value('iterators),
