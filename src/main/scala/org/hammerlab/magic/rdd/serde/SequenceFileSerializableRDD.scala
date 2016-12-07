@@ -84,23 +84,35 @@ class SequenceFileSparkContext(val sc: SparkContext) {
                                      keyClass: Class[K],
                                      valueClass: Class[V],
                                      minPartitions: Int
-                                    ): RDD[(K, V)] = {
-    val inputFormatClass = classOf[UnsplittableSequenceFileInputFormat[K, V]]
-    sc.hadoopFile(path, inputFormatClass, keyClass, valueClass, minPartitions)
-  }
+                                    ): RDD[(K, V)] =
+    sc.hadoopFile(
+      path,
+      classOf[UnsplittableSequenceFileInputFormat[K, V]],
+      keyClass,
+      valueClass,
+      minPartitions
+    )
 
-  def fromSequenceFile[T: ClassTag](path: String, splittable: Boolean = true): RDD[T] = {
-    (
+  def fromSequenceFile[T: ClassTag](path: Path): RDD[T] =
+    fromSequenceFile(path, splittable = true)
+
+  def fromSequenceFile[T: ClassTag](path: Path,
+                                    splittable: Boolean): RDD[T] =
+    fromSequenceFile(path.toString, splittable)
+
+  def fromSequenceFile[T: ClassTag](path: String,
+                                    splittable: Boolean = true): RDD[T] = {
+    val rdd =
       if (splittable)
         sc.sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
       else
         unsplittableSequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
-    )
-    .mapPartitions[T](iter => {
+
+    rdd.mapPartitions[T](iter => {
       val serializer = SparkEnv.get.serializer.newInstance()
-      iter.map(x => {
+      iter.map(x =>
         serializer.deserialize(ByteBuffer.wrap(x._2.getBytes))
-      })
+      )
     })
   }
 }
