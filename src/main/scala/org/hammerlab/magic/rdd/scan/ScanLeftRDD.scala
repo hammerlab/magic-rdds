@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd.sliding
+package org.hammerlab.magic.rdd.scan
 
 import org.apache.spark.rdd.RDD
 
@@ -9,10 +9,10 @@ import scala.reflect.ClassTag
  */
 class ScanLeftRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
 
-  def scanLeft(zero: T)(combine: (T, T) ⇒ T): RDD[T] =
-    scanLeft(zero, combine, combine)
+  def scanLeft(identity: T)(combine: (T, T) ⇒ T): RDD[T] =
+    scanLeft(identity, combine, combine)
 
-  def scanLeft[U: ClassTag](zero: U, aggregate: (U, T) ⇒ U, combine: (U, U) ⇒ U): RDD[U] = {
+  def scanLeft[U: ClassTag](identity: U, aggregate: (U, T) ⇒ U, combine: (U, U) ⇒ U): RDD[U] = {
     val numPartitions = rdd.getNumPartitions
     val partitionSums =
       rdd
@@ -22,11 +22,11 @@ class ScanLeftRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable 
               Iterator()
             else
               Iterator(
-                it.foldLeft(zero)(aggregate)
+                it.foldLeft(identity)(aggregate)
               )
         )
         .collect()
-        .scanLeft(zero)(combine)
+        .scanLeft(identity)(combine)
 
     val partitionSumsRDD =
       rdd
@@ -44,5 +44,5 @@ class ScanLeftRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable 
 }
 
 object ScanLeftRDD {
-  implicit def make[T: ClassTag](rdd: RDD[T]): ScanLeftRDD[T] = new ScanLeftRDD(rdd)
+  implicit def toScanLeftRDD[T: ClassTag](rdd: RDD[T]): ScanLeftRDD[T] = new ScanLeftRDD(rdd)
 }

@@ -1,12 +1,12 @@
 name := "magic-rdds"
 
-version := "1.3.2"
+version := "1.3.2-SNAPSHOT"
 
 libraryDependencies ++= Seq(
+  libraries.value('iterators),
   libraries.value('kryo),
   libraries.value('spark_util),
-  libraries.value('spire),
-  "org.hammerlab" %% "iterator" % "1.0.0"
+  libraries.value('spire)
 )
 
 providedDeps += libraries.value('spark)
