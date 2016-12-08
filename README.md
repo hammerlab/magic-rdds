@@ -8,8 +8,7 @@
 Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
 
 ```scala
-$ sbt assembly
-$ spark-shell --jars target/scala-2.11/magic-rdds-assembly-1.3.1.jar
+$ spark-shell --packages org.hammerlab:magic-rdds_2.11:1.3.2
 …
 scala> import org.hammerlab.magic.rdd.RunLengthRDD._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -24,16 +23,16 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 <dependency>
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds_2.11</artifactId>
-  <version>1.3.1</version>
+  <version>1.3.2</version>
 </dependency>
 ```
 
-`magic-rdds:1.2.8_2.10` is also available.
+`magic-rdds_2.10:1.3.2` is also available.
 
 In SBT, use:
 
 ```
-"org.hammerlab" %% "magic-rdds" % "1.3.1"
+"org.hammerlab" %% "magic-rdds" % "1.3.2"
 ```
 
 ## Overview
@@ -43,7 +42,37 @@ Following are explanations of some of the RDDs provided by this repo and the fun
 RDD-helpers found in [the `org.hammerlab.magic.rdd` package](https://github.com/hammerlab/magic-rdds/tree/master/src/main/scala/org/hammerlab/magic/rdd).
 
 #### [RunLengthRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/RunLengthRDD.scala)
-Exposes one method (actually a `lazy val`, so result is cached), `runLengthEncode`, which run-length-encodes the elements of an RDD, per the example above.
+Exposes a `runLengthEncode` method on RDDs, per the example above.
+
+#### [ScanLeftRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanLeftRDD.scala)
+Exposes `.scanLeft` on RDDs:
+
+```scala
+scala> import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
+scala> sc.parallelize(1 to 10).scanLeft(0)(_ + _).collect
+res1: Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+```
+
+See also:
+- [ScanRightRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanRightRDD.scala) (`.scanRight`)
+- [ScanLeftByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanLeftByKeyRDD.scala) (`.scanLeftByKey`)
+- [ScanRightByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanRightByKeyRDD.scala) (`.scanRightByKey`)
+
+Additionally, note that `.scanRight` and `.scanRightByKey` expose two implementations with performance tradeoffs:
+- the default implementation calls `Iterator.scanRight` on each partition at one point, which materializes the entire partition into memory.
+- an alternate implementation, enabled by passing `true` to the `useReverseRDD` parameter, achieves a `scanRight` by sequencing the following operations:
+  - `reverse`
+  - `scanLeft`
+  - `reverse`
+
+#### [ReverseRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/rev/ReverseRDD.scala)
+Reverse the elements in an RDD, optionally preserving (though still inverting) their partitioning:
+
+```scala
+import org.hammerlab.magic.rdd.rev.ReverseRDD._
+sc.parallelize(1 to 10).reverse().collect
+res2: Array[Int] = Array(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+```
 
 #### [ReduceByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/ReduceByKeyRDD.scala)
 Given an `RDD[(K, V)]` and an implicit `Ordering[V]`, provides `maxByKey` and `minByKey` methods.
@@ -128,7 +157,7 @@ Adds `.lazyZipWithIndex`, which is functionally equivalent to [`RDD.zipWithIndex
 
 #### [SlidingRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/SlidingRDD.scala)
 
-Exposes `.sliding` methods (and several variants) in the spirit of []Scala collections' similar API](https://github.com/scala/scala/blob/v2.10.5/src/library/scala/collection/IterableLike.scala#L164): 
+Exposes `.sliding` methods (and several variants) in the spirit of [Scala collections' similar API](https://github.com/scala/scala/blob/v2.10.5/src/library/scala/collection/IterableLike.scala#L164): 
 
 ```scala
 scala> import org.hammerlab.magic.rdd.SlidingRDD._
