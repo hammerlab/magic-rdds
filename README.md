@@ -224,43 +224,31 @@ Output:
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
 
 ## Building
-Typical Maven commands will build/test/package the project for Scala 2.11.8:
+Typical SBT commands will build/test/package the project for Scala 2.11.8:
 
 ```bash
-mvn test
-mvn package -DskipTests
+sbt test
+sbt assembly
 ```
 
-To build for Scala 2.10.6, use the `2.10` profile:
+To build for Scala 2.10.6, use `++2.10.6` as usual:
 
 ```bash
-mvn test -P2.10
-mvn -DskipTests package -P2.10
+sbt ++2.10.6 test
+sbt ++2.10.6 assembly
 ```
 
 This is enabled by inheriting [hammerlab/scala-parent-pom](https://github.com/hammerlab/scala-parent-pom).
 
 ## Releasing
-For a given release version `X`, we release `org.hammerlab:magic-rdds:X_2.10` and `org.hammerlab:magic-rdds:X_2.11`. This breaks the usual convention in the Scala+Maven ecosystem of stuffing the Scala minor-version into the artifact ID, but arguably makes more sense; it is also marginally easier to script the release with Maven plugins, instead of using a `sed` script to change the `artifactId` in the POM file:
+While set to a `-SNAPSHOT` version:
 
 ```bash
-version=1.2.9  # or whatever next version you want to release
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.10"
-mvn deploy -Prelease,2.10 -DskipTests
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.11"
-mvn deploy -Prelease -DskipTests
-git tag $version
-git push --tags
+sbt publish
 ```
 
-Releasing a `SNAPSHOT` version works very similarly:
+To release a non-`-SNAPSHOT` version:
 
 ```bash
-version=1.2.9
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.10-SNAPSHOT"
-mvn deploy -Prelease,2.10 -DskipTests
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$version_2.11-SNAPSHOT"
-mvn deploy -Prelease -DskipTests
+sbt +publishSigned sonatypeRelease
 ```
-
-Including the `release` profile will determine whether `-javadoc` and `-sources` JARs are included, as well as whether the GPG-signing plugin is activated.
