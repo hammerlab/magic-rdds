@@ -31,7 +31,7 @@ object GridPartitioner {
      * Introduce a factor of sqrt(penalty) difference between [partition width] and [num partition columns],
      * and also between [partition height] and [num partition rows].
      *
-     * Overall, this will result in each partition having approximately @partitionPenalty times as many elements
+     * Overall, this will result in each partition having approximately `partitionPenalty` times as many elements
      * as there are partitions.
      */
     val cWidth = math.ceil(math.sqrt(maxRow * sqrtPenalty)).toInt

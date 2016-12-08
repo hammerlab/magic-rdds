@@ -3,6 +3,7 @@ package org.hammerlab.magic.rdd
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.{RangeAccruingIterator, RunLengthIterator}
+import org.hammerlab.iterator.RunLengthIterator._
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.collection.SortedSet
@@ -14,7 +15,7 @@ import scala.reflect.ClassTag
 class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val runLengthEncode: RDD[(T, Long)] = {
     val runLengthPartitions =
-      rdd.mapPartitions(it => RunLengthIterator(it))
+      rdd.mapPartitions(_.runLengthEncode)
 
     val oneOrFewerElementPartitions =
       SortedSet(

@@ -151,10 +151,7 @@ class PartialSumGridRDD[V: ClassTag] private(@transient val rdd: RDD[((Row, Col)
           val rowSums = MMap[Int, V]()
           var bottomLeftSum = zero
 
-          val msgsArr = msgsIter.toArray
-          val arr = iter.toArray
-
-          msgsArr.foreach {
+          msgsIter.foreach {
             case BottomLeftElem(t) ⇒
               bottomLeftSum = combineValues(bottomLeftSum, t)
             case BottomRow(m) ⇒
@@ -172,7 +169,7 @@ class PartialSumGridRDD[V: ClassTag] private(@transient val rdd: RDD[((Row, Col)
           }
 
           for {
-            ((r, c), t) ← arr.toIterator
+            ((r, c), t) ← iter
             rowSum = rowSums.getOrElse(r, zero)
             colSum = colSums.getOrElse(c, zero)
           } yield {
@@ -190,7 +187,8 @@ object PartialSumGridRDD {
 
   /**
    * Given an [[RDD]] or grid-mapped values (with keys of the form (row, col)), compute a "partial-sum RDD", where each
-   * element's value is replaced with the sum of the values of all elements with keys from higher rows and columns.
+   * element's value is replaced with the sum of the values of all elements with keys from higher (or equal) rows and
+   * columns.
    *
    * @param rdd input [[RDD]].
    * @param m   implicit Monoid exposing "addition" and identity for type `V`.

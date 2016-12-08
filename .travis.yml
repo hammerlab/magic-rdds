@@ -1,14 +1,23 @@
 language: scala
 sudo: false
 
+jdk:
+  - oraclejdk8
+
+scala:
+  - 2.11.8
+
 script: sbt clean coverage test
 
 cache:
   directories:
-  - .autoconf
-  - $HOME/.m2
-  - $HOME/.ivy2
+  - $HOME/.ivy2/cache
+  - $HOME/.sbt/boot/
   - $HOME/.zinc
-  - target/scala-2.11
 
 after_success: sbt coverageReport coveralls
+
+before_cache:
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt -name "*.lock" -delete
