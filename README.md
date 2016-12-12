@@ -109,7 +109,7 @@ Exposes one method, for `collect`ing an `RDD` to the driver while keeping elemen
 
 ```scala
 import org.hammerlab.magic.rdd.CollectPartitionsRDD._
-sc.parallelize(1 to 12).collectPartitions
+sc.parallelize(1 to 12).collectParts
 // Array(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9), Array(10, 11, 12))
 ```
 
