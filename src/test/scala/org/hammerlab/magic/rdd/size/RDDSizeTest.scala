@@ -2,10 +2,9 @@ package org.hammerlab.magic.rdd.size
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.test.NumJobsUtil
-import org.hammerlab.magic.rdd.size.CachedCountRegistry._
 import org.hammerlab.spark.test.suite.PerCaseSuite
 
-class CachedCountRegistryTest
+class RDDSizeTest
   extends PerCaseSuite
     with NumJobsUtil {
 
