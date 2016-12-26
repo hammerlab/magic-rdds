@@ -16,7 +16,7 @@ class RunLengthRDDTest extends SparkSuite {
         s"$num*$ch"
         ).mkString(" ")
 
-    str should be(expected)
+    str === expected
   }
 
   test("simple") {

@@ -3,10 +3,10 @@ package org.hammerlab.magic.util
 /**
  * Order [[Tuple2]]s by key.
  */
-class KeyOrdering[T, U](ordering: Ordering[T]) extends Ordering[(T, U)] {
-  override def compare(x: (T, U), y: (T, U)): Int = ordering.compare(x._1, y._1)
+class KeyOrdering[T](implicit ordering: Ordering[T]) extends Ordering[(T, _)] {
+  override def compare(x: (T, _), y: (T, _)): Int = ordering.compare(x._1, y._1)
 }
 
 object KeyOrdering {
-  implicit def toKeyOrdering[T, U](ordering: Ordering[T]): KeyOrdering[T, U] = new KeyOrdering(ordering)
+  implicit def toKeyOrdering[T](implicit ordering: Ordering[T]): KeyOrdering[T] = new KeyOrdering
 }
