@@ -22,7 +22,12 @@ abstract class RDDCache[T: ClassTag, U] {
   protected final def update(rdd: RDD[T], value: U): Unit = cache.update(rdd, value)
 
   /** Get current cache state; exposed for testing. */
-  def getCache: Map[Int, U] = cache.toMap.map { case ((_, id), value) ⇒ id -> value }
+  def getCache(implicit sc: SparkContext): Map[Int, U] =
+    for {
+      ((context, id), value) ← cache.toMap
+      if sc == context
+    } yield
+      id → value
 }
 
 abstract class MultiRDDCache[T: ClassTag, U] extends RDDCache[T, U] {

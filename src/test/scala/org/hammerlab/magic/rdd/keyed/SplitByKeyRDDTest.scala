@@ -35,14 +35,14 @@ class SplitByKeyRDDTest extends SparkSuite {
         k -> elems
       ).toMap
 
-    perKeyRDDs.mapValues(_.collect().toVector.sorted) === expectedElems
+    perKeyRDDs.mapValues(_.collect().toVector.sorted) should ===(expectedElems)
 
     for {
       (k, _, keyPartitions) <- expected
       rdd = perKeyRDDs(k)
     } {
       withClue(s"RDD for key $k: ") {
-        rdd.getNumPartitions === keyPartitions
+        rdd.getNumPartitions should ===(keyPartitions)
       }
     }
   }

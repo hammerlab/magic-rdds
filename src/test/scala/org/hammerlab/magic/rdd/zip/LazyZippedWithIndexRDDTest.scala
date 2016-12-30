@@ -13,21 +13,21 @@ class LazyZippedWithIndexRDDTest
 
     val lazyIndexed = rdd.lazyZipWithIndex
 
-    numJobs === 0
+    numJobs should ===(0)
 
     val indexed = rdd.zipWithIndex
 
     // only zipWithIndex will trigger job when initialized
-    numJobs === 1
+    numJobs should ===(1)
 
     val res1 = lazyIndexed.collect
 
-    numJobs === 3
+    numJobs should ===(3)
 
     val res2 = indexed.collect
 
-    numJobs === 4
+    numJobs should ===(4)
 
-    res1 === res2
+    res1 should ===(res2)
   }
 }

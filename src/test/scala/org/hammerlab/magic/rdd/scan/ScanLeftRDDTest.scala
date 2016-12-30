@@ -24,7 +24,7 @@ class ScanLeftRDDTest extends ScanRDDTest {
           .toArray
       )
 
-    actualArr === expectedArr
+    actualArr should ===(expectedArr)
   }
 
   test("strings") {

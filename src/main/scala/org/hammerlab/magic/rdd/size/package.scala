@@ -30,7 +30,8 @@ import scala.collection.mutable.ArrayBuffer
  * (rdd1, rdd2).total  // 6; runs no jobs
  * rdd2.size           // 2; runs no jobs
  * }}}
- */package object size extends MultiRDDCache[Any, Long] {
+ */
+package object size extends MultiRDDCache[Any, Long] {
 
   /**
    * Compute multiple [[RDD]]s' sizes with a single Spark job; cache and return these sizes separately.

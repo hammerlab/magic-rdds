@@ -11,11 +11,11 @@ class SlidingRDDTest extends SparkSuite {
       val range = 1 to n
       var expectedSlid = range.sliding(2).map(lToT).toArray
 
-      sc.parallelize(range).sliding2().collect === expectedSlid
+      sc.parallelize(range).sliding2().collect should ===(expectedSlid)
 
       expectedSlid ++= Array((n, 0))
 
-      sc.parallelize(range).sliding2(0).collect === expectedSlid
+      sc.parallelize(range).sliding2(0).collect should ===(expectedSlid)
     }
   }
 
@@ -32,11 +32,11 @@ class SlidingRDDTest extends SparkSuite {
       val range = 1 to n
       var expectedSlid = range.sliding(3).map(lToT).toArray
 
-      sc.parallelize(range).sliding3().collect === expectedSlid
+      sc.parallelize(range).sliding3().collect should ===(expectedSlid)
 
       expectedSlid ++= Array((n - 1, n, 0), (n, 0, 0))
 
-      sc.parallelize(range).sliding3(0).collect === expectedSlid
+      sc.parallelize(range).sliding3(0).collect should ===(expectedSlid)
     }
   }
 
@@ -57,12 +57,12 @@ class SlidingRDDTest extends SparkSuite {
       {
         val actual = sc.parallelize(range).sliding(n).collect.map(_.toArray)
         val expected = range.sliding(n).map(_.toArray).toSeq
-        str(actual) === str(expected)
+        str(actual) should ===(str(expected))
       }
       {
         val actual = sc.parallelize(range).sliding(n, 0).collect.map(_.toArray)
         val expected = paddedRange.sliding(n).map(_.toArray).toSeq
-        str(actual) === str(expected)
+        str(actual) should ===(str(expected))
       }
     }
   }
@@ -110,7 +110,7 @@ class SlidingRDDTest extends SparkSuite {
     val s = in.stripMargin.trim.split("\n").mkString("")
     val actual = sc.parallelize(s).slideUntil('$').map(_.mkString("")).collect.toList
     val expected = getExpected(s)
-    actual === expected
+    actual should ===(expected)
   }
 
   test("until:1:1") {
