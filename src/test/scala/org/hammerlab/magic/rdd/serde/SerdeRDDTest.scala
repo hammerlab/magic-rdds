@@ -1,10 +1,10 @@
 package org.hammerlab.magic.rdd.serde
 
 import org.hammerlab.magic.rdd.serde.util.{ Foo, Foos }
-import org.hammerlab.spark.test.rdd.VerifyRDDSerde
+import org.hammerlab.spark.test.rdd.RDDSerialization
 
 trait SerdeRDDTest {
-  self: VerifyRDDSerde =>
+  self: RDDSerialization =>
 
   def testSmallInts(ps: Int*): Unit = {
     test("rdd small ints") {
