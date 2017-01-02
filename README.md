@@ -128,24 +128,30 @@ sc.parallelize(1 to 12).copyLeft(1).collectPartitions
 // Array(Array(1, 2, 3, 4), Array(4, 5, 6, 7), Array(7, 8, 9, 10), Array(10, 11, 12))
 ```
 
-#### [CachedCountRegistry](https://github.com/hammerlab/magic-rdds/blob/master/src/test/scala/org/hammerlab/magic/rdd/CachedCountRegistryTest.scala)
+#### [rdd.size](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/size/package.scala)
 
-Exposes `.size` on RDDs, which is identical to `.count` but is cached! Also performs optimizations in the presence of [UnionRDDs](https://github.com/apache/spark/blob/v1.6.1/core/src/main/scala/org/apache/spark/rdd/UnionRDD.scala), caching sizes for the union and its components.
+Implicit classes in this package:
 
-Also exposes `.sizes` and `.total` on sequences of RDDs, computing their respective sizes in one Spark job, for added efficiency over code like:
+- expose `.size` on RDDs, which is identical to `.count` but is cached!
+- perform optimizations in the presence of [UnionRDDs](https://github.com/apache/spark/blob/v1.6.1/core/src/main/scala/org/apache/spark/rdd/UnionRDD.scala), caching sizes for the union and its components.
+- expose `.sizes` and `.total` on sequences and tuples of RDDs, computing their respective sizes in one Spark job.
 
-```scala
-val count1 = rdd1.count
-val count2 = rdd2.count
-```
+  Instead of code like:
 
-You can instead write:
+	```scala
+	val count1 = rdd1.count
+	val count2 = rdd2.count
+	```
 
-```scala
-val (count1, coun2) = (rdd1, rdd2).sizes
-````
+	which runs two Spark jobs, you can instead write:
 
-and save yourself a Spark job.
+	```scala
+	val (count1, count2) = (rdd1, rdd2).sizes
+	````
+
+	and save one job.
+	
+	`sizes`/`total` integrate optimally with the caching and UnionRDD-optimizations above. 
 
 #### [LazyZippedWithIndexRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/zip/LazyZippedWithIndexRDD.scala)
 

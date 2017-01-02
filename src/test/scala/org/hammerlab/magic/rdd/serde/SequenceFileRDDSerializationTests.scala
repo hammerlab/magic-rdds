@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd.serde
 
 import org.hammerlab.magic.rdd.serde.util.FooRegistrarTest
-import org.hammerlab.spark.test.suite.{ JavaSerializerSuite, KryoSerializerSuite }
-import org.hammerlab.test.version.Util
+import org.hammerlab.spark.test.suite.{ JavaSerializerSuite, KryoSparkSuite }
+import org.hammerlab.test.version.Util.is2_10
 
 // Java serde, Foos not registered, not compressed.
 class JavaSequenceFileRDDTest
@@ -10,14 +10,14 @@ class JavaSequenceFileRDDTest
     with SerdeRDDTest
     with JavaSerializerSuite {
 
-  testSmallInts(9475)
-  testMediumInts(9475)
-  testLongs(9575)
+  testSmallInts(14215)
+  testMediumInts(14215)
+  testLongs(14215)
 
-  testSomeFoos(   1,    222)
-  testSomeFoos(  10,   1365)
-  testSomeFoos( 100,  12915)
-  testSomeFoos(1000, 128335)
+  testSomeFoos(   1,    279)
+  testSomeFoos(  10,   1935)
+  testSomeFoos( 100,  18675)
+  testSomeFoos(1000, 185895)
 }
 
 // Java serde, Foos not registered, compressed.
@@ -26,26 +26,26 @@ class JavaBZippedSequenceFileRDDTest
     with SerdeRDDTest
     with JavaSerializerSuite {
 
-  testSmallInts(648, 655, 666, 651)
-  testMediumInts(652, 655, 668, 646)
-  testLongs(662, 676, 664, 675)
+  testSmallInts(650, 659, 672, 658)
+  testMediumInts(662, 663, 678, 656)
+  testLongs(665, 681, 664, 672)
 
-  if (Util.is2_10) {
-    testSomeFoos(   1,  400,  394,  396,  395)
-    testSomeFoos(  10,  526,  533,  534,  528)
-    testSomeFoos( 100,  826,  856,  888,  860)
-    testSomeFoos(1000, 2113, 2110, 2112, 2151)
+  if (is2_10) {
+    testSomeFoos(   1,  401,  406,  402,  407)
+    testSomeFoos(  10,  533,  538,  540,  534)
+    testSomeFoos( 100,  870,  874,  885,  850)
+    testSomeFoos(1000, 2138, 2137, 2160, 2159)
   } else {
-    testSomeFoos(   1,  403,  403,  405,  404)
-    testSomeFoos(  10,  530,  534,  525,  530)
-    testSomeFoos( 100,  860,  845,  884,  835)
-    testSomeFoos(1000, 2117, 2148, 2083, 2136)
+    testSomeFoos(   1,  409,  411,  410,  409)
+    testSomeFoos(  10,  535,  537,  535,  535)
+    testSomeFoos( 100,  868,  856,  886,  880)
+    testSomeFoos(1000, 2147, 2173, 2182, 2189)
   }
 }
 
 // Kryo serde, Foos not registered, not compressed.
 class KryoSequenceFileRDDTest
-  extends KryoSerializerSuite(registrationRequired = false)
+  extends KryoSparkSuite(registrationRequired = false)
     with SequenceFileRDDTest
     with SerdeRDDTest {
 
@@ -85,8 +85,8 @@ class KryoBzippedSequenceFileFooRDDTest
   testMediumInts(443, 446, 447, 444)
   testLongs(461, 462, 460, 461)
 
-  testSomeFoos(   1,  303)
-  testSomeFoos(  10,  355,  361,  360,  361)
-  testSomeFoos( 100,  701,  731,  708,  724)
-  testSomeFoos(1000, 1976, 1722, 1700, 1665)
+  testSomeFoos(   1,  301)
+  testSomeFoos(  10,  353,  361,  360,  359)
+  testSomeFoos( 100,  716,  729,  706,  722)
+  testSomeFoos(1000, 1985, 1714, 1674, 1665)
 }

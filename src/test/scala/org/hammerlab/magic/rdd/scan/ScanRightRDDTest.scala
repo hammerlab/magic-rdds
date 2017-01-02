@@ -26,6 +26,6 @@ class ScanRightRDDTest extends ScanRightRDDTestI {
           .toArray
       )
 
-    actualArr should be(expectedArr)
+    actualArr should ===(expectedArr)
   }
 }

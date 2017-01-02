@@ -1,14 +1,11 @@
 name := "magic-rdds"
 
-version := "1.3.3-SNAPSHOT"
+version := "1.3.3"
+
+addSparkDeps
 
 libraryDependencies ++= Seq(
-  libraries.value('iterators),
-  libraries.value('kryo),
-  libraries.value('spark_util),
-  libraries.value('spire)
+  libs.value('iterators),
+  libs.value('spark_util),
+  libs.value('spire)
 )
-
-providedDeps += libraries.value('spark)
-
-testDeps += libraries.value('spark_tests)

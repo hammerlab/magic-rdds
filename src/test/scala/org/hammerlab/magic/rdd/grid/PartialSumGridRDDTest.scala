@@ -54,17 +54,17 @@ abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
     val pRows = ceil(n * 1.0 / rHeight).toInt
     val pCols = ceil(n * 1.0 / cWidth).toInt
 
-    partitioner.numPartitionRows should be(pRows)
-    partitioner.numPartitionCols should be(pCols)
-    partitioner.numPartitions should be(pRows * pCols)
+    partitioner.numPartitionRows should ===(pRows)
+    partitioner.numPartitionCols should ===(pCols)
+    partitioner.numPartitions should ===(pRows * pCols)
 
-    gridRDD.count should be (input.length)
+    gridRDD.count should ===(input.length)
 
     val partialSums = partialSumsRDD.sortByKey().collect
 
     val actual = partialSums.grouped(n).toArray.map(_.map(_._2))
 
-    actual should be(expected)
+    actual should ===(expected)
   }
 
 }

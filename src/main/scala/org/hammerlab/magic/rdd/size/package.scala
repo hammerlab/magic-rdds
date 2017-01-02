@@ -1,45 +1,44 @@
 package org.hammerlab.magic.rdd
 
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.{RDD, UnionRDD}
+import org.apache.spark.rdd.{ RDD, UnionRDD }
+import org.hammerlab.magic.rdd.cache.MultiRDDCache
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * [[CachedCountRegistry]] adds a `.size` method to [[RDD]]s that mimicks [[RDD.count]], but caches its result.
+ * Exposes a `.size` method to [[RDD]]s that mimics [[RDD.count]], but caches the result.
  *
- * It also exposes `.sizes` and `.total` on [[Seq[RDD]]]s, [[Tuple2[RDD]]]s, and [[Tuple3[RDD]]]'s which compute the
- * constituent [[RDD]]s' sizes (per above) in one Spark job.
+ * It also exposes `.sizes` and `.total` on [[Seq[RDD]]]s and 2- to 4-tuples which computes the constituent [[RDD]]s'
+ * sizes (per above) in one Spark job.
  *
  * Additionally, all the above APIs optimize computations on [[UnionRDD]]s by computing their component [[RDD]]s' sizes
- * and caching those as well as the [[UnionRDD]]'s total.
+ * (again in just one job, along with any other RDDs being operated on) and caching those as well as the [[UnionRDD]]'s
+ * total.
  *
- * Cached `size` info is keyed by a [[SparkContext]] for robustness in apps that stop their [[SparkContext]] and then
- * resume with a new one; this is especially useful for testing!
+ * Cached-size info is keyed by a [[org.apache.spark.SparkContext]], as well as each RDD's ID, for robustness in apps
+ * that stop their [[org.apache.spark.SparkContext]] and then resume with a new one; this is especially useful for
+ * testing.
  *
  * Usage:
  * {{{
-\ * import org.hammerlab.magic.rdd.CachedCountRegistry._
+ * import org.hammerlab.magic.rdd.size._
  * val rdd1 = sc.parallelize(0 until 4)
  * val rdd2 = sc.parallelize("a" :: "b" :: Nil)
- * rdd1.size()
- * (rdd1, rdd2).sizes()
- * (rdd1, rdd2).total()
+ * rdd1.size           // 4; runs one job
+ * (rdd1, rdd2).sizes  // (4, 2); runs one job
+ * (rdd1, rdd2).total  // 6; runs no jobs
+ * rdd2.size           // 2; runs no jobs
  * }}}
  */
-class CachedCountRegistry private() {
-  private val cache = mutable.HashMap[Int, Long]()
-
-  /** Count RDD and cache result for RDD id */
-  def cachedCount(rdd: RDD[_]): Long = multiCachedCount(List(rdd))(0)
+package object size extends MultiRDDCache[Any, Long] {
 
   /**
    * Compute multiple [[RDD]]s' sizes with a single Spark job; cache and return these sizes separately.
    *
    * Along the way, this method will construct a [[UnionRDD]] from all non-cached, non-Union [[RDD]]s.
    */
-  def multiCachedCount(rdds: Seq[RDD[_]]): Seq[Long] = {
+  override def compute(rdds: Seq[RDD[Any]]): Seq[Long] = {
 
     val (nonCachedUnionRDDs, nonCachedLeafRDDs) = findNonCachedUnionAndLeafRDDs(rdds)
 
@@ -50,11 +49,11 @@ class CachedCountRegistry private() {
     for {
       unionRDD <- nonCachedUnionRDDs
     } {
-      cache(unionRDD.id) = unionRDD.rdds.map(rdd => cache(rdd.id)).sum
+      update(unionRDD, unionRDD.rdds.map(rdd ⇒ apply(rdd)).sum)
     }
 
     // At this point all RDDs' sizes should have been computed and cached; return them.
-    rdds.map(rdd => cache(rdd.id))
+    rdds.map(apply)
   }
 
   /**
@@ -77,9 +76,8 @@ class CachedCountRegistry private() {
     while (rddQueue.nonEmpty) {
       rddQueue.dequeue() match {
 
-        case cachedRDD: RDD[_]
-          if cache.contains(cachedRDD.id) =>
-            // Skip already-computed RDDs.
+        case cachedRDD: RDD[_] if contains(cachedRDD) =>
+        // Skip already-computed RDDs.
 
         case unionRDD: UnionRDD[_] =>
           nonCachedUnionRDDs += unionRDD
@@ -103,99 +101,95 @@ class CachedCountRegistry private() {
    *
    * They should not already exist in the cache, and should not be UnionRDDs.
    */
-  private def computeRDDSizes(rdds: Seq[RDD[_]]): Unit =
+  private def computeRDDSizes(rdds: Seq[RDD[Any]]): Unit =
     rdds
       .headOption
       .map(_.sparkContext)
       .foreach {
         sc =>
 
-          // UnionRDD needs RDD-types genericized.
-          val genericRDDs = rdds.map(_.asInstanceOf[RDD[Any]])
-
-          val union = new UnionRDD(sc, genericRDDs)
+          val union = new UnionRDD(sc, rdds)
 
           // "Map" (really just pairs) from RDD ID to the range which its partitions occupy within the UnionRDD above.
-          val partitionRangesByRDD: Seq[(Int, Range)] =
-            genericRDDs
-              .scanLeft((null: RDD[Any], 0)) {
-                case ((lastRDD, offset), curRDD) =>
-                  val lastRDDPartitions = Option(lastRDD).map(_.getNumPartitions).getOrElse(0)
-                  (curRDD: RDD[Any]) -> (offset + lastRDDPartitions)
-              }
-              .drop(1)
-              .map {
-                case (rdd, offset) =>
-                  rdd.id -> (offset until offset + rdd.getNumPartitions)
-              }
+          val partitionRangesByRDD: Seq[(RDD[_], Range)] =
+            rdds
+            .scanLeft((null: RDD[Any], 0)) {
+              case ((lastRDD, offset), curRDD) =>
+                val lastRDDPartitions = Option(lastRDD).map(_.getNumPartitions).getOrElse(0)
+                (curRDD: RDD[Any]) -> (offset + lastRDDPartitions)
+            }
+            .drop(1)
+            .map {
+              case (rdd, offset) =>
+                rdd -> (offset until offset + rdd.getNumPartitions)
+            }
 
           // Compute each partition's size in the UnionRDD.
           val partitionSizes =
             union
-              .mapPartitionsWithIndex(
-                (index, iterator) => Iterator(index -> iterator.size),
-                preservesPartitioning = true
-              )
-              .collectAsMap
+            .mapPartitionsWithIndex(
+              (index, iterator) => Iterator(index -> iterator.size),
+              preservesPartitioning = true
+            )
+            .collectAsMap
 
           // For each RDD, infer its size from the partition-sizes computed above.
           for {
-            (rddId, partitionsRange) <- partitionRangesByRDD
+            (rdd, partitionsRange) <- partitionRangesByRDD
             rddSize = partitionsRange.map(partitionSizes(_)).sum
           } {
-            cache(rddId) = rddSize
+            update(rdd, rddSize)
           }
       }
 
-  /** Get current cache state; exposed for testing. */
-  private[rdd] def getCache: Map[Int, Long] = cache.toMap
-}
-
-object CachedCountRegistry {
-
-  private val instances = mutable.HashMap[SparkContext, CachedCountRegistry]()
-
-  private[rdd] def apply(sc: SparkContext): CachedCountRegistry =
-    instances.getOrElseUpdate(sc, new CachedCountRegistry)
-
   // == Implicit API ==
-  implicit class SingleRDDCount(rdd: RDD[_]) {
-    def size: Long = apply(rdd.sparkContext).cachedCount(rdd)
+  implicit class SingleRDDSize(rdd: RDD[_]) {
+    def size: Long = apply(rdd)
   }
 
-  implicit class MultiRDDCount(rdds: Seq[RDD[_]]) {
+  implicit class MultiRDDSize(rdds: Seq[RDD[_]]) {
     private lazy val scOpt = rdds.headOption.map(_.sparkContext)
 
     def total: Long =
       scOpt match {
-        case Some(sc) => apply(sc).multiCachedCount(rdds).sum
+        case Some(sc) => apply(rdds).sum
         case None => 0
       }
 
     def sizes: Seq[Long] =
       scOpt match {
-        case Some(sc) => apply(sc).multiCachedCount(rdds)
+        case Some(sc) => apply(rdds)
         case None => Nil
       }
   }
 
   // Small wrapper used in Tuple*RDD classes below.
-  class HasMultiRDDCount(rdds: RDD[_]*) {
-    protected val multiRDDCount = new MultiRDDCount(rdds)
-    def total: Long = multiRDDCount.total
+  class HasMultiRDDSize(rdds: RDD[_]*) {
+    protected val multiRDDSize = new MultiRDDSize(rdds)
+    def total: Long = multiRDDSize.total
   }
 
-  implicit class Tuple2RDDCount(t: (RDD[_], RDD[_])) extends HasMultiRDDCount(t._1, t._2) {
+  implicit class Tuple2RDDSize(t: (RDD[_], RDD[_])) extends HasMultiRDDSize(t._1, t._2) {
     def sizes: (Long, Long) = {
-      val s = multiRDDCount.sizes
+      val s = multiRDDSize.sizes
       (s(0), s(1))
     }
   }
 
-  implicit class Tuple3RDDCount(t: (RDD[_], RDD[_], RDD[_])) extends HasMultiRDDCount(t._1, t._2, t._3) {
+  implicit class Tuple3RDDSize(t: (RDD[_], RDD[_], RDD[_])) extends HasMultiRDDSize(t._1, t._2, t._3) {
     def sizes: (Long, Long, Long) = {
-      val s = multiRDDCount.sizes
+      val s = multiRDDSize.sizes
       (s(0), s(1), s(2))
     }
   }
+
+  implicit class Tuple4RDDSize(t: (RDD[_], RDD[_], RDD[_], RDD[_])) extends HasMultiRDDSize(t._1, t._2, t._3, t._4) {
+    def sizes: (Long, Long, Long, Long) = {
+      val s = multiRDDSize.sizes
+      (s(0), s(1), s(2), s(3))
+    }
+  }
+
+  private implicit def toRDDAny(rdd: RDD[_]): RDD[Any] = rdd.asInstanceOf[RDD[Any]]
+  private implicit def toRDDsAny(rdds: Seq[RDD[_]]): Seq[RDD[Any]] = rdds.map(toRDDAny)
 }
