@@ -192,16 +192,6 @@ Split an `RDD[(K, V)]` into a `Map[K, RDD[V]]`, i.e. multiple RDDs each containi
  
  Instead, we shuffle the full RDD once, into a partitioning where each key's pairs occupy a contiguous range of partitions, then partition-slice views over those ranges are exposed as standalone, per-key RDDs.
   
-#### [ScanLeftRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/ScanLeftRDD.scala)  
-
-Exposes `.scanLeft` methods for replacing each of an RDD's elements with the sum of all elements preceding (and including) it:
-
-```scala
-scala> import org.hammerlab.magic.rdd.sliding.ScanLeftRDD._
-scala> sc.parallelize(1 to 10).scanLeft(0)(_ + _).collect
-res1: Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
-```
-
 #### [PartialSumGridRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/grid/PartialSumGridRDD.scala)
 
 Given an RDD of elements that each have a logical "row", "column", and "summable" value (an `RDD[((Int, Int), V)]`), generate an RDD that replaces each value with the sum of all values at greater (or equal) rows and columns.
