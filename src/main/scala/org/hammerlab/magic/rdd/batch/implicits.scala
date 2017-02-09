@@ -20,13 +20,13 @@ package object implicits {
         val batches = rdd.partitions.sliding(numPartitionsPerBatch, numPartitionsPerBatch)
         // build RDD operations graph, looks like this:
         // reduce -> map -> map -> map -> map -> mapPartitions -> RDD
-        var mapRdd: Option[BatchMapRDD[T]] = None
+        var mapRdd: Option[MapRDD[T]] = None
         for (batch <- batches) {
-          mapRdd = Some(new BatchMapRDD[T](rdd, mapRdd, batch))
+          mapRdd = Some(new MapRDD[T](rdd, mapRdd, batch))
         }
         mapRdd match {
           case Some(mapPart) =>
-            new BatchReduceRDD(mapPart)
+            new ReduceRDD(mapPart)
           case None =>
             throw new IllegalStateException(
               "No batches generated for map-side RDD using " +
