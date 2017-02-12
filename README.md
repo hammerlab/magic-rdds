@@ -150,8 +150,8 @@ Implicit classes in this package:
 	````
 
 	and save one job.
-	
-	`sizes`/`total` integrate optimally with the caching and UnionRDD-optimizations above. 
+
+	`sizes`/`total` integrate optimally with the caching and UnionRDD-optimizations above.
 
 #### [LazyZippedWithIndexRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/zip/LazyZippedWithIndexRDD.scala)
 
@@ -163,7 +163,7 @@ Adds `.lazyZipWithIndex`, which is functionally equivalent to [`RDD.zipWithIndex
 
 #### [SlidingRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/SlidingRDD.scala)
 
-Exposes `.sliding` methods (and several variants) in the spirit of [Scala collections' similar API](https://github.com/scala/scala/blob/v2.10.5/src/library/scala/collection/IterableLike.scala#L164): 
+Exposes `.sliding` methods (and several variants) in the spirit of [Scala collections' similar API](https://github.com/scala/scala/blob/v2.10.5/src/library/scala/collection/IterableLike.scala#L164):
 
 ```scala
 scala> import org.hammerlab.magic.rdd.SlidingRDD._
@@ -185,13 +185,13 @@ Powered by a custom [HyperGeometricDistribution](https://github.com/hammerlab/ma
 #### [SplitByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/SplitByKeyRDD.scala)
 
 Split an `RDD[(K, V)]` into a `Map[K, RDD[V]]`, i.e. multiple RDDs each containing the values corresponding to one key.
- 
- This is generally a questionable thing to want to do, as subsequent operations on each RDD lose out on Spark's ability to parallelize things. 
- 
- However, if you are going to do it, this implementation is much better than what you might do naively, i.e. using `.filter` N times on the original RDD. 
- 
+
+ This is generally a questionable thing to want to do, as subsequent operations on each RDD lose out on Spark's ability to parallelize things.
+
+ However, if you are going to do it, this implementation is much better than what you might do naively, i.e. using `.filter` N times on the original RDD.
+
  Instead, we shuffle the full RDD once, into a partitioning where each key's pairs occupy a contiguous range of partitions, then partition-slice views over those ranges are exposed as standalone, per-key RDDs.
-  
+
 #### [PartialSumGridRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/grid/PartialSumGridRDD.scala)
 
 Given an RDD of elements that each have a logical "row", "column", and "summable" value (an `RDD[((Int, Int), V)]`), generate an RDD that replaces each value with the sum of all values at greater (or equal) rows and columns.
@@ -214,6 +214,25 @@ Output:
  28  18  10   4
  66  45  27  12
 120  84  52  24
+```
+
+#### [Batch execution](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/apache/spark/batch/README.md)
+Given an input RDD of N partitions allows to run input RDD in batches to minimize OOM impact when running multiple
+computationally expensive (in terms of memory) tasks per JVM. Splits partitions set into (N/batch size) batches and
+executes each batch as single stage, and then combines results into single RDD.
+```scala
+scala> import org.hammerlab.magic.rdd.batch.implicits._
+// create RDD of 10 partitions
+scala> val rdd = sc.parallelize(0 until 100, 10)
+scala> val res = rdd.batch(numPartitionsPerBatch = 4)
+// print operations graph to see how many batches are selected
+scala> res.toDebugString
+res0: String =
+(10) ReduceRDD[4] at RDD at ReduceRDD.scala:19 []
+ +-(2) MapRDD[3] at RDD at MapRDD.scala:21 []
+    +-(4) MapRDD[2] at RDD at MapRDD.scala:21 []
+       +-(4) MapRDD[1] at RDD at MapRDD.scala:21 []
+          |  ParallelCollectionRDD[0] at parallelize at <console>:27 []
 ```
 
 ### And more!
