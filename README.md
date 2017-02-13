@@ -216,10 +216,22 @@ Output:
 120  84  52  24
 ```
 
-#### [Batch execution](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/apache/spark/batch/README.md)
-Given an input RDD of N partitions allows to run input RDD in batches to minimize OOM impact when running multiple
-computationally expensive (in terms of memory) tasks per JVM. Splits partitions set into (N/batch size) batches and
-executes each batch as single stage, and then combines results into single RDD.
+### ["Batch" execution](src/main/scala/org/apache/spark/batch)
+This feature exposes a coarse avenue for forcing fewer than `spark.executor.cores` tasks to run concurrently on each 
+executor, during a given stage.
+
+The stage in question is split up into multiple Spark stages, each comprised of a set
+number of partitions from the upstream RDD (the "batch size").
+
+If this size is chosen to be ≤ the number of executors, then in general a maximum of one task will be assigned to each 
+executor.
+
+This can be useful when some stages in an app are very memory-expensive, while others are not: the memory-expensive ones 
+can be "batched" in this way, each task availing itself of a full executor's-worth of memory. 
+
+The implementation splits the upstream partitions into (N/batch size) batches and executes each batch as a single stage 
+before combining the results into single RDD:
+
 ```scala
 scala> import org.hammerlab.magic.rdd.batch.implicits._
 // create RDD of 10 partitions
@@ -234,6 +246,8 @@ res0: String =
        +-(4) MapRDD[1] at RDD at MapRDD.scala:21 []
           |  ParallelCollectionRDD[0] at parallelize at <console>:27 []
 ```
+
+See [the package README](src/main/scala/org/apache/spark/batch) for more info!
 
 ### And more!
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
