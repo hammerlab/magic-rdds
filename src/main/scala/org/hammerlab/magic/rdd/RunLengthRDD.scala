@@ -38,9 +38,10 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
         range <- new RangeAccruingIterator(oneOrFewerElementPartitions.iterator)
         sendTo = math.max(0, range.start - 1)
         i <- range
-      } yield {
+      } yield
         (i + 1) -> sendTo
-      }).toMap
+      )
+      .toMap
 
     runLengthPartitions
       .shiftLeft(1, partitionOverrides, allowIncompletePartitions = true)

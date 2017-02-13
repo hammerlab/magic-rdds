@@ -58,7 +58,7 @@ class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) exten
   def saveSequenceFile(path: String,
                        codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
-      .mapPartitions(iter => {
+      .mapPartitions { iter =>
         val serializer = SparkEnv.get.serializer.newInstance()
         iter.map(x =>
           (
@@ -66,7 +66,7 @@ class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) exten
             new BytesWritable(serializer.serialize(x).array())
           )
         )
-      })
+      }
       .saveAsSequenceFile(path, codec)
 
     rdd

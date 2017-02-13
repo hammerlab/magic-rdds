@@ -48,14 +48,13 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def copyLeft(n: Int, fill: T, partitionOverrides: Map[Int, Int]): RDD[T] =
     copyLeft(n, Some(fill), partitionOverrides)
 
-  def copyLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] = {
+  def copyLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] =
     copyN(
       n,
       (_: Int, it: Iterator[T], tail: Iterator[T]) => it ++ tail,
       fillOpt,
       partitionOverrides
     )
-  }
 
   def copyN(n: Int,
             fn: (Int, Iterator[T], Iterator[T]) => Iterator[T],
@@ -76,9 +75,12 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
       rdd
         .mapPartitionsWithIndex((partitionIdx, iter) =>
           if (partitionIdx == 0)
-            fillOpt.toSeq.flatMap(fill =>
-              (0 until n).map(i => (N - 1, 0, i) -> fill)
-            ).toIterator
+            fillOpt
+              .toSeq
+              .flatMap(fill =>
+                (0 until n).map(i => (N - 1, 0, i) -> fill)
+              )
+              .toIterator
           else {
             val copiedElems =
               if (allowIncompletePartitions)
