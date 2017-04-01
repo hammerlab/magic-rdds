@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
 class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val runLengthEncode: RDD[(T, Long)] = {
     val runLengthPartitions =
-      rdd.mapPartitions(_.runLengthEncode)
+      rdd.mapPartitions(_.runLengthEncode())
 
     val oneOrFewerElementPartitions =
       SortedSet(
