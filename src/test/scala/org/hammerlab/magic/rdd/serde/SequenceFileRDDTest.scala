@@ -4,6 +4,7 @@ import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.serde.SequenceFileSerializableRDD._
 import org.hammerlab.spark.test.rdd.RDDSerialization
+import org.hammerlab.paths.Path
 
 import scala.reflect.ClassTag
 
@@ -18,9 +19,9 @@ trait SequenceFileRDDTest
 
   private def codecOpt = Option(codec)
 
-  def serializeRDD[T: ClassTag](rdd: RDD[T], path: String): RDD[T] =
-    rdd.saveSequenceFile(path, codecOpt)
+  def serializeRDD[T: ClassTag](rdd: RDD[T], path: Path): RDD[T] =
+    rdd.saveSequenceFile(path.toString, codecOpt)
 
-  def deserializeRDD[T: ClassTag](path: String): RDD[T] =
-    sc.fromSequenceFile[T](path, splittable = false)
+  def deserializeRDD[T: ClassTag](path: Path): RDD[T] =
+    sc.fromSequenceFile[T](path.toString, splittable = false)
 }
