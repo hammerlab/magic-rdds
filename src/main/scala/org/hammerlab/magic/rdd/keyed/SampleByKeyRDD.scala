@@ -33,9 +33,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
       var remaining = num
       (0 until n).foreach(i => {
         val eligible = n - i
-        val r = Random.nextInt(eligible)
-        println(s"int: $r")
-        if (r < remaining) {
+        if (Random.nextInt(eligible) < remaining) {
           v += vs(i)
           remaining -= 1
         }
@@ -56,9 +54,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
 
     val hgd = HypergeometricDistribution(finalNum, num, finalNumSamples)
 
-    val d = Random.nextDouble()
-    println(s"double: $d")
-    val selfNumToTake = hgd.invCDF(d)
+    val selfNumToTake = hgd.invCDF(Random.nextDouble())
 
     val otherNumToTake = finalNumSamples - selfNumToTake
 
