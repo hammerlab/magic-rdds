@@ -2,14 +2,16 @@ package org.hammerlab.magic.util
 
 import java.io.OutputStream
 
+import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.spark.SparkContext
 
 /**
  * Convenience APIs for classes that can persist themselves to disk.
  */
-trait Saveable {
+trait Saveable
+  extends Logging {
   def save(os: OutputStream): Unit
 
   def save(sc: SparkContext, fn: String): Unit = save(sc.hadoopConfiguration, new Path(fn))
@@ -27,7 +29,7 @@ trait Saveable {
       save(os)
       os.close()
     } else {
-      println(s"Skipping writing: $path")
+      logger.info(s"Skipping writing: $path")
     }
   }
 }
