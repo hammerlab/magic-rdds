@@ -2,6 +2,7 @@ package org.hammerlab.magic.rdd.keyed
 
 import org.apache.spark.rdd.{PartitionPruningRDD, RDD}
 import org.hammerlab.spark.util.KeyPartitioner
+import org.hammerlab.magic.rdd.partitions.SlicePartitionsRDD
 
 import scala.reflect.ClassTag
 
@@ -73,7 +74,3 @@ object SplitByKeyRDD {
   implicit def toSplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]): SplitByKeyRDD[K, V] =
     new SplitByKeyRDD(rdd)
 }
-
-class SlicePartitionsRDD[T: ClassTag](prev: RDD[T], start: Int, end: Int)
-  extends PartitionPruningRDD[T](prev, idx ⇒ start <= idx && idx < end)
-
