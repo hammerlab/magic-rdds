@@ -4,9 +4,9 @@ import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.RangeAccruingIterator
 import org.hammerlab.iterator.RunLengthIterator._
+import org.hammerlab.magic.rdd.partitions.FilterPartitionIdxs._
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
-import scala.collection.SortedSet
 import scala.reflect.ClassTag
 
 /**
@@ -18,20 +18,8 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
       rdd.mapPartitions(_.runLengthEncode())
 
     val oneOrFewerElementPartitions =
-      SortedSet(
-        runLengthPartitions
-          .mapPartitionsWithIndex((idx, it) ⇒
-            if (it.hasNext) {
-              val n = it.next()
-              if (it.hasNext)
-                Iterator()
-              else
-                Iterator(idx)
-            } else
-              Iterator(idx)
-          )
-          .collect(): _*
-      )
+      runLengthPartitions
+        .filterPartitionIdxs(_.take(2).size < 2)
 
     val partitionOverrides =
       (for {
