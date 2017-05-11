@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.rev
 
 import org.apache.spark.rdd.RDD
-import org.hammerlab.spark.util.KeyPartitioner
+import org.hammerlab.magic.rdd.partitions.PartitionByKeyRDD._
 
 import scala.reflect.ClassTag
 
@@ -18,13 +18,10 @@ class ReverseRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
               (numPartitions - 1 - partitionIdx, -idx) → elem
         )
 
-    val repartitionedRDD =
-      if (preservePartitioning)
-        keyedRDD.repartitionAndSortWithinPartitions(KeyPartitioner(numPartitions))
-      else
-        keyedRDD.sortByKey()
-
-    repartitionedRDD.values
+    if (preservePartitioning)
+      keyedRDD.partitionByKey(numPartitions)
+    else
+      keyedRDD.sortByKey().values
   }
 }
 
