@@ -28,9 +28,9 @@ class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
 
     val (keys, partitionsPerKey) =
       (for {
-        (k, num) <- keyCounts
+        (k, num) ← keyCounts
       } yield
-        k -> math.ceil(num.toDouble / elemsPerPartition).toInt
+        k → math.ceil(num.toDouble / elemsPerPartition).toInt
       ).toVector.unzip
 
     val partitionRangeBoundaries = partitionsPerKey.scanLeft(0)(_ + _)
@@ -39,11 +39,11 @@ class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
 
     val partitionRangesByKey =
       (for {
-        (k, bounds) <- keys.iterator.zip(partitionRangeBoundaries.sliding(2))
+        (k, bounds) ← keys.iterator.zip(partitionRangeBoundaries.sliding(2))
         start = bounds(0)
         end = bounds(1)
       } yield
-        k -> (start, end)
+        k → (start, end)
       ).toMap
 
     val sc = rdd.sparkContext
@@ -52,20 +52,20 @@ class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
 
     val partitionedRDD =
       (for {
-        (k, v) <- rdd
+        (k, v) ← rdd
         (start, end) = partitionRangesByKeyBroadcast.value(k)
         numPartitions = end - start
         partitionIdx = start + (math.abs((k, v).hashCode()) % numPartitions)
       } yield
-        partitionIdx -> v
+        partitionIdx → v
       ).partitionBy(KeyPartitioner(newNumPartitions))
 
     val partitionedValuesRDD = partitionedRDD.values
 
     for {
-      (k, (start, end)) <- partitionRangesByKey
+      (k, (start, end)) ← partitionRangesByKey
     } yield
-      k -> (new SlicePartitionsRDD(partitionedValuesRDD, start, end): RDD[V])
+      k → (new SlicePartitionsRDD(partitionedValuesRDD, start, end): RDD[V])
   }
 }
 
@@ -75,5 +75,5 @@ object SplitByKeyRDD {
 }
 
 class SlicePartitionsRDD[T: ClassTag](prev: RDD[T], start: Int, end: Int)
-  extends PartitionPruningRDD[T](prev, idx => start <= idx && idx < end)
+  extends PartitionPruningRDD[T](prev, idx ⇒ start <= idx && idx < end)
 

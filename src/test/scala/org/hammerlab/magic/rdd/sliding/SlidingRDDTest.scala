@@ -98,7 +98,7 @@ class SlidingRDDTest extends SparkSuite {
   testN(4, 12)
 
   def getExpected(s: String): Seq[String] =
-    s.indices.map(i => {
+    s.indices.map(i ⇒ {
       var j = s.indexOf('$', i)
       if (j < 0) {
         j = s.length

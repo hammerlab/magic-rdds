@@ -23,22 +23,22 @@ class SplitByKeyRDDTest extends SparkSuite {
       2, 5, 7, 3, 1, 4, 7, 9, 5, 0
     )
 
-  def check[T: ClassTag](ints: Seq[Int], numPartitions: Int, keyFn: Int => T)(expected: (T, Vector[Int], Int)*) = {
-    val rdd = sc.parallelize(ints, numPartitions).map(i => keyFn(i) -> i)
+  def check[T: ClassTag](ints: Seq[Int], numPartitions: Int, keyFn: Int ⇒ T)(expected: (T, Vector[Int], Int)*) = {
+    val rdd = sc.parallelize(ints, numPartitions).map(i ⇒ keyFn(i) → i)
 
     val perKeyRDDs = rdd.splitByKey()
 
     val expectedElems =
       (for {
-        (k, elems, _) <- expected
+        (k, elems, _) ← expected
       } yield
-        k -> elems
+        k → elems
       ).toMap
 
     perKeyRDDs.mapValues(_.collect().toVector.sorted) should ===(expectedElems)
 
     for {
-      (k, _, keyPartitions) <- expected
+      (k, _, keyPartitions) ← expected
       rdd = perKeyRDDs(k)
     } {
       withClue(s"RDD for key $k: ") {
@@ -66,7 +66,7 @@ class SplitByKeyRDDTest extends SparkSuite {
 
   test("100-4-10") {
     check(
-      ints100, 4, x => x
+      ints100, 4, x ⇒ x
     )(
       (0, Vector.fill(15)(0), 1),
       (1, Vector.fill(10)(1), 1),

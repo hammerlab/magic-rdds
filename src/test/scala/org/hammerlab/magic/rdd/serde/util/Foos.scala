@@ -7,7 +7,7 @@ import scala.collection.immutable.StringOps
  */
 object Foos {
   def apply(n: Int, k: Int = 8): Seq[Foo] = {
-    (1 to n).map(i => {
+    (1 to n).map(i ⇒ {
       val ch = ((i%26) + 96).toChar
       Foo(i, new StringOps(ch.toString) * k)
     })

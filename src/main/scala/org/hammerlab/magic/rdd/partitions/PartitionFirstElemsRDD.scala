@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val firstElems: SortedMap[Int, T] = {
     SortedMap(
-      rdd.mapPartitionsWithIndex((idx, it) =>
+      rdd.mapPartitionsWithIndex((idx, it) ⇒
         if (it.hasNext)
           Iterator((idx, it.next()))
         else
@@ -21,17 +21,17 @@ class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
     )
   }
 
-  def firstElemsMap[U: ClassTag](fn: T => U): scala.collection.Map[Int, U] =
-    rdd.mapPartitionsWithIndex((idx, it) =>
+  def firstElemsMap[U: ClassTag](fn: T ⇒ U): scala.collection.Map[Int, U] =
+    rdd.mapPartitionsWithIndex((idx, it) ⇒
       if (it.hasNext)
         Iterator((idx, fn(it.next())))
       else
         Iterator()
     ).collectAsMap()
 
-  def firstElemBounds[U: ClassTag](fn: T => U): IndexedSeq[(Option[U], Option[U])] = {
+  def firstElemBounds[U: ClassTag](fn: T ⇒ U): IndexedSeq[(Option[U], Option[U])] = {
     val map = firstElemsMap(fn)
-    (0 until rdd.getNumPartitions).map(i =>
+    (0 until rdd.getNumPartitions).map(i ⇒
       (
         map.get(i),
         map.get(i + 1)
@@ -41,22 +41,22 @@ class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
 
   lazy val elemBoundsRDD: RDD[(Option[T], Option[T])] = {
     rdd
-      .mapPartitionsWithIndex((idx, it) => {
+      .mapPartitionsWithIndex((idx, it) ⇒ {
         if (it.hasNext) {
           val firstElem = it.next()
           if (idx > 0)
-            Iterator((idx, false) -> firstElem, (idx - 1, true) -> firstElem)
+            Iterator((idx, false) → firstElem, (idx - 1, true) → firstElem)
           else
-            Iterator((idx, false) -> firstElem)
+            Iterator((idx, false) → firstElem)
         } else
           Iterator()
       })
       .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
-      .mapPartitions(it => {
+      .mapPartitions(it ⇒ {
         var lowerBoundOpt: Option[T] = None
         var upperBoundOpt: Option[T] = None
         for {
-          ((idx, isUpper), elem) <- it
+          ((idx, isUpper), elem) ← it
         } {
           if (isUpper)
             upperBoundOpt = Some(elem)

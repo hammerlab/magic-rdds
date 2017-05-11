@@ -13,7 +13,7 @@ class ReverseRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
         .mapPartitionsWithIndex(
           (partitionIdx, it) ⇒
             for {
-              (elem, idx) <- it.zipWithIndex
+              (elem, idx) ← it.zipWithIndex
             } yield
               (numPartitions - 1 - partitionIdx, -idx) → elem
         )

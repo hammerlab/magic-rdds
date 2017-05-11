@@ -19,15 +19,15 @@ package object implicits {
         // total batches generated, do not use sc.defaultParallelism
         val batches = rdd.partitions.sliding(numPartitionsPerBatch, numPartitionsPerBatch)
         // build RDD operations graph, looks like this:
-        // reduce -> map -> map -> map -> map -> mapPartitions -> RDD
+        // reduce → map → map → map → map → mapPartitions → RDD
         var mapRdd: Option[MapRDD[T]] = None
-        for (batch <- batches) {
+        for (batch ← batches) {
           mapRdd = Some(new MapRDD[T](rdd, mapRdd, batch))
         }
         mapRdd match {
-          case Some(mapPart) =>
+          case Some(mapPart) ⇒
             new ReduceRDD(mapPart)
-          case None =>
+          case None ⇒
             throw new IllegalStateException(
               "No batches generated for map-side RDD using " +
               s"$numPartitionsPerBatch partitions per batch")

@@ -36,9 +36,9 @@ class ReduceRDD[T: ClassTag](
     val rddDependencies = this.rdd.getBatchDependencies :+ this.rdd
     // index of original partition index to map-side RDD
     val batchPartitionIndex = new MutableMap[Int, RDD[_]]()
-    rddDependencies.foreach { rdd =>
+    rddDependencies.foreach { rdd ⇒
       rdd.getPartitions.foreach {
-        case bpart: Partition =>
+        case bpart: Partition ⇒
           // batch partition index is not unique, but original partition index is, here we also do
           // some sanity check to make sure that there are no two or more batch partitions that
           // compute the same original partition
@@ -48,7 +48,7 @@ class ReduceRDD[T: ClassTag](
               "implies that batch map was evaluated more than once for original partition")
           }
           batchPartitionIndex.put(bpart.parent.index, rdd)
-        case other =>
+        case other ⇒
           sys.error(s"Unexpected partition $other found that is not batch partition")
       }
     }
@@ -56,16 +56,16 @@ class ReduceRDD[T: ClassTag](
     // build index for shuffle dependencies for RDD deps
     // we also need to add this reduce-side dependency to build full map
     val shuffleIndex = new MutableMap[RDD[_], Dependency[_]]()
-    (rddDependencies :+ this).foreach { rdd =>
+    (rddDependencies :+ this).foreach { rdd ⇒
       rdd.dependencies.foreach {
-        case shuffleDep: ShuffleDependency[_, _, _] =>
+        case shuffleDep: ShuffleDependency[_, _, _] ⇒
           shuffleIndex.put(shuffleDep.rdd, shuffleDep)
-        case otherDep => // no-op for one-to-one or range dependencies
+        case otherDep ⇒ // no-op for one-to-one or range dependencies
       }
     }
 
     // merge two data structures
-    val partitionMap: Map[Int, Dependency[_]] = batchPartitionIndex.map { case (partIndex, rdd) =>
+    val partitionMap: Map[Int, Dependency[_]] = batchPartitionIndex.map { case (partIndex, rdd) ⇒
       // extract shuffle dependency associated with map-side RDD, this is different than looking up
       // dependencies for that RDD, since we are looking for shuffle that has that rdd as dependency
       val shuffleDep = shuffleIndex.getOrElse(rdd, sys.error(s"Failed to find shuffle for " +
@@ -105,9 +105,9 @@ class ReduceRDD[T: ClassTag](
       sys.error(s"Failed to locate rdd for partition $split (${split.index})"))
     var iter: Iterator[T] = Iterator.empty
     // join all iterators for dependencies
-    for (dependency <- dependencies) {
+    for (dependency ← dependencies) {
       iter = iter ++ iteratorForDependency(shuffleDep, split, context).
-        asInstanceOf[Iterator[(Int, T)]].map { case (index, value) => value }
+        asInstanceOf[Iterator[(Int, T)]].map { case (index, value) ⇒ value }
     }
     iter
   }

@@ -63,7 +63,7 @@ object RDDStats {
     var rddIsSorted = true
 
     for {
-      PartitionStats(boundsOpt, count, partitionIsSorted) <- partitionStats
+      PartitionStats(boundsOpt, count, partitionIsSorted) ← partitionStats
     } {
       rddIsSorted =
         rddIsSorted &&
@@ -72,8 +72,8 @@ object RDDStats {
             // If the current partition has a lower bound which is less than the previous partition's upper bound,
             // flag RDD as not-sorted.
             (prevUpperBoundOpt, boundsOpt) match {
-              case (Some(prevUpperBound), Some((curLowerBound, _))) => !ordering.gt(prevUpperBound, curLowerBound)
-              case _ => true
+              case (Some(prevUpperBound), Some((curLowerBound, _))) ⇒ !ordering.gt(prevUpperBound, curLowerBound)
+              case _ ⇒ true
             }
           )
 
@@ -91,7 +91,7 @@ object RDDStats {
   def apply[T: ClassTag](rdd: RDD[T])(implicit ordering: PartialOrdering[T]): RDDStats[T] = {
     val partitionStats: Array[PartitionStats[T]] =
       rdd.mapPartitions(
-        iter => {
+        iter ⇒ {
           if (iter.isEmpty) {
             Iterator(PartitionStats[T](None: Option[(T, T)], 0, isSorted = true))
           } else {
@@ -124,10 +124,10 @@ object RDDStats {
 
     // As an optimization, any time we compute stats for a UnionRDD, cache stats for its dependency-RDDs too.
     rdd match {
-      case unionRDD: UnionRDD[T] =>
+      case unionRDD: UnionRDD[T] ⇒
         var partitionRangeStart = 0
         for {
-          dependencyRDD <- unionRDD.rdds
+          dependencyRDD ← unionRDD.rdds
           partitionRangeEnd = partitionRangeStart + dependencyRDD.getNumPartitions
         } {
           rddMap.getOrElseUpdate(
@@ -136,7 +136,7 @@ object RDDStats {
           )
           partitionRangeStart = partitionRangeEnd
         }
-      case _ =>
+      case _ ⇒
     }
 
     RDDStats(partitionStats)

@@ -15,7 +15,7 @@ class UnsplittableSequenceFileInputFormat[K, V] extends SequenceFileInputFormat[
    * Ensure that partitions are read back in in the same order they were written.
    */
   override def listStatus(job: JobConf): Array[FileStatus] = {
-    super.listStatus(job).sortBy(file => {
+    super.listStatus(job).sortBy(file ⇒ {
       val basename = file.getPath.getName
       if (!basename.startsWith("part-")) {
         throw new IOException(s"Bad partition file: $basename")

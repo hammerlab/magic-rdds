@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(T, Long)](rdd) {
   private var startIndices: Array[Long] = _
 
-  val iteratorSize: Iterator[_] => Long = iter => iter.size
+  val iteratorSize: Iterator[_] ⇒ Long = iter ⇒ iter.size
 
   /** The start index of each partition. */
   def getStartIndices(rdd: RDD[_]): Array[Long] = {
@@ -35,7 +35,7 @@ class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(
     if (startIndices == null) {
       startIndices = getStartIndices(rdd)
     }
-    firstParent[T].partitions.map { x =>
+    firstParent[T].partitions.map { x ⇒
       new ZippedWithIndexRDDPartition(x, startIndices(x.index))
     }
   }
@@ -45,7 +45,7 @@ class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(
 
   override def compute(splitIn: Partition, context: TaskContext): Iterator[(T, Long)] = {
     val split = splitIn.asInstanceOf[ZippedWithIndexRDDPartition]
-    firstParent[T].iterator(split.prev, context).zipWithIndex.map { x =>
+    firstParent[T].iterator(split.prev, context).zipWithIndex.map { x ⇒
       (x._1, split.startIndex + x._2)
     }
   }

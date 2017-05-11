@@ -12,7 +12,7 @@ class SortRDD[T : Ordering : ClassTag](rdd: RDD[T]) extends Serializable {
   def sort(numPartitions: Int = rdd.partitions.length,
            ascending: Boolean = true): RDD[T] = {
 
-    val withNulls = rdd.map(_ -> null)
+    val withNulls = rdd.map(_ → null)
     val part = new RangePartitioner(numPartitions, withNulls, ascending)
 
     new ShuffledRDD[T, Null, Null](withNulls, part)

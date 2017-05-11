@@ -58,9 +58,9 @@ class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) exten
   def saveSequenceFile(path: String,
                        codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
-      .mapPartitions { iter =>
+      .mapPartitions { iter ⇒
         val serializer = SparkEnv.get.serializer.newInstance()
-        iter.map(x =>
+        iter.map(x ⇒
           (
             NullWritable.get(),
             new BytesWritable(serializer.serialize(x).array())
@@ -108,9 +108,9 @@ class SequenceFileSparkContext(val sc: SparkContext) {
       else
         unsplittableSequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
 
-    rdd.mapPartitions[T](iter => {
+    rdd.mapPartitions[T](iter ⇒ {
       val serializer = SparkEnv.get.serializer.newInstance()
-      iter.map(x =>
+      iter.map(x ⇒
         serializer.deserialize(ByteBuffer.wrap(x._2.getBytes))
       )
     })

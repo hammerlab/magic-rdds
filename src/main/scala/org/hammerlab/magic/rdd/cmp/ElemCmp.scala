@@ -11,13 +11,13 @@ import scala.reflect.ClassTag
 class ElemCmp[T: ClassTag] private(joined: RDD[(T, (Boolean, Boolean))]) {
   lazy val stats =
     (for {
-      (e, (a, b)) <- joined
+      (e, (a, b)) ← joined
     } yield
       (a, b) match {
-        case (true, true) => ElemCmpStats(both = 1)
-        case (true, false) => ElemCmpStats(onlyA = 1)
-        case (false, true) => ElemCmpStats(onlyB = 1)
-        case (false, false) => throw new Exception(s"Invalid entry: $e")
+        case (true, true) ⇒ ElemCmpStats(both = 1)
+        case (true, false) ⇒ ElemCmpStats(onlyA = 1)
+        case (false, true) ⇒ ElemCmpStats(onlyB = 1)
+        case (false, false) ⇒ throw new Exception(s"Invalid entry: $e")
       }
     ).reduce(_ + _)
 
@@ -26,7 +26,7 @@ class ElemCmp[T: ClassTag] private(joined: RDD[(T, (Boolean, Boolean))]) {
 
   lazy val bothRDD =
     for {
-      (e, (a, b)) <- joined
+      (e, (a, b)) ← joined
       if a && b
     } yield
       e
@@ -36,7 +36,7 @@ class ElemCmp[T: ClassTag] private(joined: RDD[(T, (Boolean, Boolean))]) {
 
   lazy val aRDD =
     for {
-      (e, (a, b)) <- joined
+      (e, (a, b)) ← joined
       if a && !b
     } yield
       e
@@ -46,7 +46,7 @@ class ElemCmp[T: ClassTag] private(joined: RDD[(T, (Boolean, Boolean))]) {
 
   lazy val bRDD =
     for {
-      (e, (a, b)) <- joined
+      (e, (a, b)) ← joined
       if !a && b
     } yield
       e
@@ -59,9 +59,9 @@ object ElemCmp {
   def apply[T: ClassTag](rdd1: RDD[T], rdd2: RDD[T]): ElemCmp[T] =
     new ElemCmp(
       for {
-        (e, (aO, bO)) <- rdd1.map(_ -> null).fullOuterJoin(rdd2.map(_ -> null))
+        (e, (aO, bO)) ← rdd1.map(_ → null).fullOuterJoin(rdd2.map(_ → null))
       } yield {
-        e -> (aO.isDefined, bO.isDefined)
+        e → (aO.isDefined, bO.isDefined)
       }
     )
 }

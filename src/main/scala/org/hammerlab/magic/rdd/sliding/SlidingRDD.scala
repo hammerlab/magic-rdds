@@ -20,7 +20,7 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
         _
           .sliding(2)
           .withPartial(false)
-          .map(l => (l(0), l(1)))
+          .map(l ⇒ (l(0), l(1)))
       )
 
   def sliding3(fill: T): RDD[(T, T, T)] = sliding3(Some(fill))
@@ -31,7 +31,7 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
         _
           .sliding(3)
           .withPartial(false)
-          .map(l => (l(0), l(1), l(2)))
+          .map(l ⇒ (l(0), l(1), l(2)))
       )
 
 
@@ -46,7 +46,7 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
       )
 
   def slideUntil(sentinel: T): RDD[Seq[T]] = {
-    rdd.shiftLeft(it => it.takeWhile(_ != sentinel)).mapPartitions(new TakeUntilIterator(_, sentinel))
+    rdd.shiftLeft(it ⇒ it.takeWhile(_ != sentinel)).mapPartitions(new TakeUntilIterator(_, sentinel))
   }
 
 }

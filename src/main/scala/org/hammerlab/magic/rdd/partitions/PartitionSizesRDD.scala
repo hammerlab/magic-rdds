@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
  */
 class PartitionSizesRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val partitionSizes =
-    rdd.mapPartitionsWithIndex((idx, it) => {
+    rdd.mapPartitionsWithIndex((idx, it) ⇒ {
       Iterator(it.size)
     }).collect()
 }

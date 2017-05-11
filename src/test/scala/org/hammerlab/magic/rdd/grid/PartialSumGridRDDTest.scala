@@ -180,10 +180,10 @@ class SparseGridTest extends PartialSumGridRDDTest(4) {
 
   override val input =
     Vector(
-      3 -> 1 -> 4,
-      2 -> 0 -> 1,
-      1 -> 2 -> 2,
-      0 -> 3 -> 3
+      3 → 1 → 4,
+      2 → 0 → 1,
+      1 → 2 → 2,
+      0 → 3 → 3
     )
 
   override def expectedStr: String =

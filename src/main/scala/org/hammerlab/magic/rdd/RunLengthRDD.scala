@@ -20,7 +20,7 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
     val oneOrFewerElementPartitions =
       SortedSet(
         runLengthPartitions
-          .mapPartitionsWithIndex((idx, it) =>
+          .mapPartitionsWithIndex((idx, it) ⇒
             if (it.hasNext) {
               val n = it.next()
               if (it.hasNext)
@@ -35,17 +35,17 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
 
     val partitionOverrides =
       (for {
-        range <- new RangeAccruingIterator(oneOrFewerElementPartitions.iterator)
+        range ← new RangeAccruingIterator(oneOrFewerElementPartitions.iterator)
         sendTo = math.max(0, range.start - 1)
-        i <- range
+        i ← range
       } yield
-        (i + 1) -> sendTo
+        (i + 1) → sendTo
       )
       .toMap
 
     runLengthPartitions
       .shiftLeft(1, partitionOverrides, allowIncompletePartitions = true)
-      .mapPartitions(it => RunLengthIterator.reencode(it.map(t => t._1 -> t._2.toLong).buffered))
+      .mapPartitions(it ⇒ RunLengthIterator.reencode(it.map(t ⇒ t._1 → t._2.toLong).buffered))
   }
 }
 

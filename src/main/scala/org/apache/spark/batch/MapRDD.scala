@@ -27,26 +27,26 @@ class MapRDD[T: ClassTag](
   // We need to remap original partitions, since Spark checks for valid partition indices, e.g.
   // should start from 0 and cover all splits.
   override def getPartitions: Array[spark.Partition] = {
-    batch.zipWithIndex.map { case (x, index) =>
+    batch.zipWithIndex.map { case (x, index) ⇒
       new Partition(this.id, index, x)
     }
   }
 
   /**
    * Get entire graph of depedencies for this batch RDD, for example
-   * original <- RDD1 <- RDD2 <- RDD3 will result in Seq(RDD1, RDD2) for RDD3 and empty sequence
+   * original ← RDD1 ← RDD2 ← RDD3 will result in Seq(RDD1, RDD2) for RDD3 and empty sequence
    * for RDD1.
    */
   def getBatchDependencies: Seq[MapRDD[T]] = previous match {
-    case Some(batchRdd) => batchRdd.getBatchDependencies ++ Seq(batchRdd)
-    case None => Seq.empty
+    case Some(batchRdd) ⇒ batchRdd.getBatchDependencies ++ Seq(batchRdd)
+    case None ⇒ Seq.empty
   }
 
   // Extract depedencies of map-side RDD, if this is the first batch, it maps directly to parent,
   // otherwise everything is shuffle dependency on its 'previous' RDD. It is important to reuse
   // the same partitioner for each shuffle depedency.
   override def getDependencies: Seq[Dependency[_]] = previous match {
-    case Some(batchRdd) =>
+    case Some(batchRdd) ⇒
       // do not enable sort or map-side aggregation
       // in Spark 1.x serializer is passed as Option, but in Spark 2.x it is just passed directly,
       // when migrating to Spark 2.x just remove Some() wrapper
@@ -55,7 +55,7 @@ class MapRDD[T: ClassTag](
         part,
         SparkEnv.get.serializer
       ) :: Nil
-    case None =>
+    case None ⇒
       new OneToOneDependency(parent) :: Nil
   }
 
@@ -66,7 +66,7 @@ class MapRDD[T: ClassTag](
     val partition = split.asInstanceOf[Partition]
     val splitIndex = partition.parent.index
     val iter = parent.iterator(partition.parent, context)
-    iter.map { x => (splitIndex, x) }
+    iter.map { x ⇒ (splitIndex, x) }
   }
 
   override def clearDependencies(): Unit = {

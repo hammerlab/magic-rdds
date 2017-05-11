@@ -47,7 +47,7 @@ package object size extends MultiRDDCache[Any, Long] {
     // Backfill sizes for UnionRDDs that we didn't compute directly, using the already-computed sizes of their component
     // RDDs.
     for {
-      unionRDD <- nonCachedUnionRDDs
+      unionRDD ← nonCachedUnionRDDs
     } {
       update(unionRDD, unionRDD.rdds.map(rdd ⇒ apply(rdd)).sum)
     }
@@ -76,14 +76,14 @@ package object size extends MultiRDDCache[Any, Long] {
     while (rddQueue.nonEmpty) {
       rddQueue.dequeue() match {
 
-        case cachedRDD: RDD[_] if contains(cachedRDD) =>
+        case cachedRDD: RDD[_] if contains(cachedRDD) ⇒
         // Skip already-computed RDDs.
 
-        case unionRDD: UnionRDD[_] =>
+        case unionRDD: UnionRDD[_] ⇒
           nonCachedUnionRDDs += unionRDD
           unionRDD.rdds.foreach(rddQueue.enqueue(_))
 
-        case rdd: RDD[_] =>
+        case rdd: RDD[_] ⇒
           nonCachedLeafRDDs += rdd
       }
     }
@@ -106,7 +106,7 @@ package object size extends MultiRDDCache[Any, Long] {
       .headOption
       .map(_.sparkContext)
       .foreach {
-        sc =>
+        sc ⇒
 
           val union = new UnionRDD(sc, rdds)
 
@@ -114,28 +114,28 @@ package object size extends MultiRDDCache[Any, Long] {
           val partitionRangesByRDD: Seq[(RDD[_], Range)] =
             rdds
             .scanLeft((null: RDD[Any], 0)) {
-              case ((lastRDD, offset), curRDD) =>
+              case ((lastRDD, offset), curRDD) ⇒
                 val lastRDDPartitions = Option(lastRDD).map(_.getNumPartitions).getOrElse(0)
-                (curRDD: RDD[Any]) -> (offset + lastRDDPartitions)
+                (curRDD: RDD[Any]) → (offset + lastRDDPartitions)
             }
             .drop(1)
             .map {
-              case (rdd, offset) =>
-                rdd -> (offset until offset + rdd.getNumPartitions)
+              case (rdd, offset) ⇒
+                rdd → (offset until offset + rdd.getNumPartitions)
             }
 
           // Compute each partition's size in the UnionRDD.
           val partitionSizes =
             union
             .mapPartitionsWithIndex(
-              (index, iterator) => Iterator(index -> iterator.size),
+              (index, iterator) ⇒ Iterator(index → iterator.size),
               preservesPartitioning = true
             )
             .collectAsMap
 
           // For each RDD, infer its size from the partition-sizes computed above.
           for {
-            (rdd, partitionsRange) <- partitionRangesByRDD
+            (rdd, partitionsRange) ← partitionRangesByRDD
             rddSize = partitionsRange.map(partitionSizes(_)).sum
           } {
             update(rdd, rddSize)
@@ -152,14 +152,14 @@ package object size extends MultiRDDCache[Any, Long] {
 
     def total: Long =
       scOpt match {
-        case Some(sc) => apply(rdds).sum
-        case None => 0
+        case Some(sc) ⇒ apply(rdds).sum
+        case None ⇒ 0
       }
 
     def sizes: Seq[Long] =
       scOpt match {
-        case Some(sc) => apply(rdds)
-        case None => Nil
+        case Some(sc) ⇒ apply(rdds)
+        case None ⇒ Nil
       }
   }
 

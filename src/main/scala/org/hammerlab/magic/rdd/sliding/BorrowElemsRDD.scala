@@ -30,7 +30,7 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
                 allowIncompletePartitions: Boolean = false): RDD[T] = {
     copyN(
       n,
-      (partitionIdx: Int, it: Iterator[T], tail: Iterator[T]) =>
+      (partitionIdx: Int, it: Iterator[T], tail: Iterator[T]) ⇒
         (
           if (partitionIdx == 0)
             it
@@ -51,19 +51,19 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def copyLeft(n: Int, fillOpt: Option[T] = None, partitionOverrides: Map[Int, Int] = Map()): RDD[T] =
     copyN(
       n,
-      (_: Int, it: Iterator[T], tail: Iterator[T]) => it ++ tail,
+      (_: Int, it: Iterator[T], tail: Iterator[T]) ⇒ it ++ tail,
       fillOpt,
       partitionOverrides
     )
 
   def copyN(n: Int,
-            fn: (Int, Iterator[T], Iterator[T]) => Iterator[T],
+            fn: (Int, Iterator[T], Iterator[T]) ⇒ Iterator[T],
             fill: T,
             partitionOverrides: Map[Int, Int]): RDD[T] =
     copyN(n, fn, Some(fill), partitionOverrides)
 
   def copyN(n: Int,
-            fn: (Int, Iterator[T], Iterator[T]) => Iterator[T],
+            fn: (Int, Iterator[T], Iterator[T]) ⇒ Iterator[T],
             fillOpt: Option[T] = None,
             partitionOverrides: Map[Int, Int] = Map(),
             allowIncompletePartitions: Boolean = false): RDD[T] = {
@@ -73,12 +73,12 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
 
     val copiedElemsRDD: RDD[T] =
       rdd
-        .mapPartitionsWithIndex((partitionIdx, iter) =>
+        .mapPartitionsWithIndex((partitionIdx, iter) ⇒
           if (partitionIdx == 0)
             fillOpt
               .toSeq
-              .flatMap(fill =>
-                (0 until n).map(i => (N - 1, 0, i) -> fill)
+              .flatMap(fill ⇒
+                (0 until n).map(i ⇒ (N - 1, 0, i) → fill)
               )
               .toIterator
           else {
@@ -98,7 +98,7 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
             // By default, send elements one partition to "the left".
             val sendToIdx = partitionOverridesBroadcast.value.getOrElse(partitionIdx, partitionIdx - 1)
             for {
-              (elem, idx) <- copiedElems.zipWithIndex
+              (elem, idx) ← copiedElems.zipWithIndex
             } yield
               (sendToIdx, partitionIdx, idx) → elem
           }
@@ -111,33 +111,33 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
     )
   }
 
-  def shiftLeft(fn: Iterator[T] => Iterator[T]): RDD[T] = {
+  def shiftLeft(fn: Iterator[T] ⇒ Iterator[T]): RDD[T] = {
     val shiftedElemsRDD =
       rdd
-        .mapPartitionsWithIndex((partitionIdx, iter) =>
+        .mapPartitionsWithIndex((partitionIdx, iter) ⇒
           if (partitionIdx == 0)
             Iterator()
           else
             for {
-              (elem, idx) <- fn(iter).zipWithIndex
+              (elem, idx) ← fn(iter).zipWithIndex
             } yield
-              (partitionIdx - 1, idx) -> elem
+              (partitionIdx - 1, idx) → elem
         )
         .repartitionAndSortWithinPartitions(KeyPartitioner(rdd))
         .values
 
     val numShiftedElemsRDD =
       rdd
-        .mapPartitionsWithIndex((partitionIdx, iter) =>
+        .mapPartitionsWithIndex((partitionIdx, iter) ⇒
           if (partitionIdx == 0)
             Iterator()
           else
-            Iterator(partitionIdx -> fn(iter).size)
+            Iterator(partitionIdx → fn(iter).size)
         )
         .partitionBy(KeyPartitioner(rdd))
         .values
 
-    rdd.zipPartitions(numShiftedElemsRDD, shiftedElemsRDD)((elems, numToDropIter, newElemsIter) => {
+    rdd.zipPartitions(numShiftedElemsRDD, shiftedElemsRDD)((elems, numToDropIter, newElemsIter) ⇒ {
 
       elems.drop(
         if (numToDropIter.hasNext)
@@ -148,17 +148,17 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
     })
   }
 
-  def copyFirstElems(fn: Iterator[T] => Iterator[T]): RDD[T] = {
+  def copyFirstElems(fn: Iterator[T] ⇒ Iterator[T]): RDD[T] = {
     val firstElemsRDD =
       rdd
-        .mapPartitionsWithIndex((partitionIdx, iter) =>
+        .mapPartitionsWithIndex((partitionIdx, iter) ⇒
           if (partitionIdx == 0)
             Iterator()
           else
             for {
-              (elem, idx) <- fn(iter).zipWithIndex
+              (elem, idx) ← fn(iter).zipWithIndex
             } yield
-              (partitionIdx - 1, idx) -> elem
+              (partitionIdx - 1, idx) → elem
         )
         .repartitionAndSortWithinPartitions(KeyPartitioner(rdd)).values
 
@@ -168,12 +168,12 @@ class BorrowElemsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def shiftPartitions[U: ClassTag]: RDD[T] =
     rdd
       .mapPartitionsWithIndex(
-        (partitionIdx, it) => {
+        (partitionIdx, it) ⇒ {
           if (partitionIdx > 0) {
             for {
-              (elem, idx) <- it.zipWithIndex
+              (elem, idx) ← it.zipWithIndex
             } yield
-              (partitionIdx - 1, idx) -> elem
+              (partitionIdx - 1, idx) → elem
           } else
             Iterator()
         }

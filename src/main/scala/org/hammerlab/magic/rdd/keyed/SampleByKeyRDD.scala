@@ -18,8 +18,8 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
 
   def values: ArrayBuffer[V] = {
     _values match {
-      case Some(v) => v
-      case None =>
+      case Some(v) ⇒ v
+      case None ⇒
         val vals = sample(max)
         _values = Some(vals)
         vals
@@ -31,7 +31,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Ser
       val v = ArrayBuffer[V]()
       val n = vs.length
       var remaining = num
-      (0 until n).foreach(i => {
+      (0 until n).foreach(i ⇒ {
         val eligible = n - i
         if (Random.nextInt(eligible) < remaining) {
           v += vs(i)
@@ -89,9 +89,9 @@ class SampleByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
   def sampleByKey(numPerKey: Int): RDD[(K, ArrayBuffer[V])] =
     rdd
       .combineByKey[KeySamples[V]](
-        (e: V) => new KeySamples(1, ArrayBuffer(e), numPerKey),
-        (v: KeySamples[V], e: V) => v += e,
-        (v1: KeySamples[V], v2: KeySamples[V]) => v1 ++= v2,
+        (e: V) ⇒ new KeySamples(1, ArrayBuffer(e), numPerKey),
+        (v: KeySamples[V], e: V) ⇒ v += e,
+        (v1: KeySamples[V], v2: KeySamples[V]) ⇒ v1 ++= v2,
         rdd.getNumPartitions
       )
       .mapValues(_.values)
