@@ -23,7 +23,7 @@ trait Saveable
   def save(sc: SparkContext, path: Path, overwrite: Boolean): Unit = save(sc.hadoopConfiguration, path, overwrite)
   def save(hc: Configuration, fn: String, overwrite: Boolean): Unit = save(hc, new Path(fn), overwrite)
   def save(hc: Configuration, path: Path, overwrite: Boolean): Unit = {
-    val fs = FileSystem.get(hc)
+    val fs = path.getFileSystem(hc)
     if (!fs.exists(path) || overwrite) {
       val os = fs.create(path)
       save(os)

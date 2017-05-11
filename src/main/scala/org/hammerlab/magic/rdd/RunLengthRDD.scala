@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.{RangeAccruingIterator, RunLengthIterator}
+import org.hammerlab.iterator.RangeAccruingIterator
 import org.hammerlab.iterator.RunLengthIterator._
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
@@ -44,8 +44,19 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
       .toMap
 
     runLengthPartitions
-      .shiftLeft(1, partitionOverrides, allowIncompletePartitions = true)
-      .mapPartitions(it ⇒ RunLengthIterator.reencode(it.map(t ⇒ t._1 → t._2.toLong).buffered))
+      .shiftLeft(
+        1,
+        partitionOverrides,
+        allowIncompletePartitions = true
+      )
+      .mapPartitions(
+        it ⇒
+          reencode(
+            it
+              .map(t ⇒ t._1 → t._2.toLong)
+              .buffered
+          )
+      )
   }
 }
 
