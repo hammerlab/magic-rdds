@@ -1,8 +1,10 @@
 package org.hammerlab.magic.rdd.keyed
 
+import org.hammerlab.magic.rdd.collect.CollectPartitionsRDD._
 import org.hammerlab.magic.rdd.keyed.SplitByKeyRDD._
 import org.hammerlab.spark.test.suite.SparkSuite
 
+import scala.Vector.fill
 import scala.reflect.ClassTag
 
 class SplitByKeyRDDTest extends SparkSuite {
@@ -23,36 +25,44 @@ class SplitByKeyRDDTest extends SparkSuite {
       2, 5, 7, 3, 1, 4, 7, 9, 5, 0
     )
 
-  def check[T: ClassTag](ints: Seq[Int], numPartitions: Int, keyFn: Int ⇒ T)(expected: (T, Vector[Int], Int)*) = {
-    val rdd = sc.parallelize(ints, numPartitions).map(i ⇒ keyFn(i) → i)
+  def check[K: ClassTag](elems: Seq[Int],
+                                      numPartitions: Int,
+                                      keyFn: Int ⇒ K)(expected: (K, Seq[Seq[Int]])*): Unit =
+    check(elems.map(i ⇒ keyFn(i) → i), numPartitions)(expected: _*)
 
-    val perKeyRDDs = rdd.splitByKey()
+  def check[K: ClassTag, V: ClassTag](elems: Seq[(K, V)],
+                                      numPartitions: Int)(
+      expected: (K, Seq[Seq[V]])*
+  ): Unit = {
+    val rdd = sc.parallelize(elems, numPartitions)
 
-    val expectedElems =
-      (for {
-        (k, elems, _) ← expected
-      } yield
-        k → elems
-      ).toMap
+    val perKeyRDDs = rdd.splitByKey
 
-    perKeyRDDs.mapValues(_.collect().toVector.sorted) should ===(expectedElems)
-
-    for {
-      (k, _, keyPartitions) ← expected
-      rdd = perKeyRDDs(k)
-    } {
-      withClue(s"RDD for key $k: ") {
-        rdd.getNumPartitions should ===(keyPartitions)
-      }
-    }
+    perKeyRDDs
+      .mapValues(
+        _
+          .collectParts
+          .map(_.toList)
+          .toList
+      ) should be(
+      expected.toMap
+    )
   }
 
   test("10-4-2") {
     check(
       ints10, 4, _ % 2
     )(
-      (0, Vector(0, 4, 6), 1),
-      (1, Vector(1, 3, 3, 3, 5, 5, 7), 3)
+      0 →
+        Seq(
+          Seq(4, 6, 0)
+        ),
+      1 →
+        Seq(
+          Seq(3, 5, 5),
+          Seq(3, 1, 3),
+          Seq(7)
+        )
     )
   }
 
@@ -60,7 +70,13 @@ class SplitByKeyRDDTest extends SparkSuite {
     check(
       ints10, 4, _ >= 0
     )(
-      (true, Vector(0, 1, 3, 3, 3, 4, 5, 5, 6, 7), 4)
+      true →
+        Seq(
+          Seq(4, 3, 5),
+          Seq(6, 0, 5),
+          Seq(3, 1, 3),
+          Seq(7)
+        )
     )
   }
 
@@ -68,16 +84,33 @@ class SplitByKeyRDDTest extends SparkSuite {
     check(
       ints100, 4, x ⇒ x
     )(
-      (0, Vector.fill(15)(0), 1),
-      (1, Vector.fill(10)(1), 1),
-      (2, Vector.fill( 5)(2), 1),
-      (3, Vector.fill( 8)(3), 1),
-      (4, Vector.fill(10)(4), 1),
-      (5, Vector.fill(13)(5), 1),
-      (6, Vector.fill(11)(6), 1),
-      (7, Vector.fill(11)(7), 1),
-      (8, Vector.fill( 8)(8), 1),
-      (9, Vector.fill( 9)(9), 1)
+      0 → Seq(fill(15)(0)),
+      1 → Seq(fill(10)(1)),
+      2 → Seq(fill( 5)(2)),
+      3 → Seq(fill( 8)(3)),
+      4 → Seq(fill(10)(4)),
+      5 → Seq(fill(13)(5)),
+      6 → Seq(fill(11)(6)),
+      7 → Seq(fill(11)(7)),
+      8 → Seq(fill( 8)(8)),
+      9 → Seq(fill( 9)(9))
+    )
+  }
+
+  test("100-15-10") {
+    check(
+      ints100.zipWithIndex, 15
+    )(
+      0 → Seq(Seq( 4,  7, 11, 28, 37, 40, 44), Seq(45, 58, 65, 67, 69, 70, 79), Seq(99)),
+      1 → Seq(Seq(18, 20, 21, 24, 47, 49, 56), Seq(61, 86, 94)),
+      2 → Seq(Seq(31, 34, 35, 76, 90)),
+      3 → Seq(Seq( 1,  6,  8, 15, 25, 33, 81), Seq(93)),
+      4 → Seq(Seq( 0, 12, 30, 36, 54, 55, 66), Seq(72, 85, 95)),
+      5 → Seq(Seq( 2,  5, 10, 23, 26, 27, 29), Seq(38, 41, 46, 88, 91, 98)),
+      6 → Seq(Seq( 3, 14, 16, 22, 43, 62, 68), Seq(73, 75, 78, 84)),
+      7 → Seq(Seq( 9, 39, 48, 50, 53, 60, 63), Seq(82, 83, 92, 96)),
+      8 → Seq(Seq(13, 19, 32, 51, 52, 71, 74), Seq(89)),
+      9 → Seq(Seq(17, 42, 57, 59, 64, 77, 80), Seq(87, 97))
     )
   }
 }

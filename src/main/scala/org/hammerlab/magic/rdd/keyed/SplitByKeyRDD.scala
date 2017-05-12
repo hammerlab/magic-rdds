@@ -1,31 +1,60 @@
 package org.hammerlab.magic.rdd.keyed
 
-import org.apache.spark.rdd.{PartitionPruningRDD, RDD}
-import org.hammerlab.spark.util.KeyPartitioner
+import org.apache.spark.rdd.RDD
+import org.hammerlab.iterator.CountIteratorByKey._
+import org.hammerlab.iterator.Sliding2Iterator._
+import org.hammerlab.magic.rdd.partitions.PartitionByKeyRDD._
+import org.hammerlab.magic.rdd.partitions.ReducePartitionsRDD._
 import org.hammerlab.magic.rdd.partitions.SlicePartitionsRDD
 import org.hammerlab.spark.PartitionIndex
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
- * Add [[splitByKey]] method to any [[RDD]] of pairs: returns a [[Map]] from each key (type [[K]]) to an [[RDD[V]]] with
- * all the values that had that key in the original [[RDD]] (in arbitrary order).
+ * Add [[splitByKey]] method to any [[RDD]] of pairs: returns a [[Map]] from each key ([[K]]) to an [[RDD[V]]] with
+ * all the values that had that key in the original [[RDD]] (with relative order preserved for each key).
  *
- * The resulting per-key [[RDD]]s have been shuffled to actually be separated from each other on disk, allowing
- * subsequent operations to only have to traverse the values corresponding to a given key (as opposed to a naive
- * approach of calling [[RDD.filter]] on the entire original [[RDD]] once for each key).
-
+ * One shuffle stage on all keys and their values yields an [[RDD]] whose partitions are arranged in disjoint,
+ * contiguous regions corresponding to all the values for each key; this is much more efficient than a naive approach to
+ * separating [[RDD]]s by key: performing an [[RDD.filter]] for each key in the [[RDD]];.
+ *
+ * However, it's worth noting that breaking up an [[RDD]] into a collection of [[RDD]]s in this way is fairly
+ * unidiomatic, and if one finds themselves wanting this it's worth pausing and considering taking different actions
+ * upstream.
+ *
  * @param rdd Paired [[RDD]] to split up by key.
  */
 case class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
 
-  def splitByKey(): Map[K, RDD[V]] = splitByKey(rdd.countByKey().toMap)
+  def splitByKey: Map[K, RDD[V]] = {
 
-  def splitByKey(keyCounts: Map[K, Long]): Map[K, RDD[V]] = {
-    val count = keyCounts.values.sum
+    val cumulativeKeyCounts =
+      rdd
+        .collapsePartitions(_.countByKey)
+        .scanLeft(Map.empty[K, Long])(
+          (soFar, partitionCounts) ⇒
+            soFar ++
+              (for {
+                (key, count) ← partitionCounts
+              } yield
+                key → (count + soFar.getOrElse(key, 0L))
+              )
+        )
+
+    val totalKeyCounts = cumulativeKeyCounts.last
+
+    val count = totalKeyCounts.values.sum
 
     val sc = rdd.sparkContext
     val numPartitions = rdd.getNumPartitions
+
+    val cumulativeKeyCountsRDD =
+      sc
+        .parallelize(
+          cumulativeKeyCounts.dropRight(1),
+          numPartitions
+        )
 
     // Resulting RDDs will be allotted partitions according to the input RDD's average number of elements per partition.
     val elemsPerPartition = math.ceil(count.toDouble / numPartitions).toInt
@@ -36,7 +65,7 @@ case class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
      */
     val (keys, partitionsPerKey) =
       (for {
-        (k, num) ← keyCounts
+        (k, num) ← totalKeyCounts
       } yield
         k → math.ceil(num.toDouble / elemsPerPartition).toInt
       )
@@ -60,17 +89,23 @@ case class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
 
     val partitionRangesByKeyBroadcast = sc.broadcast(partitionRangesByKey)
 
-    val partitionedRDD =
-      (for {
-        (k, v) ← rdd
-        (start, end) = partitionRangesByKeyBroadcast.value(k)
-        numPartitions = end - start
-        partitionIdx = start + (math.abs((k, v).hashCode()) % numPartitions)
-      } yield
-        partitionIdx → v
-      ).partitionBy(KeyPartitioner(newNumPartitions))
-
-    val partitionedValuesRDD = partitionedRDD.values
+    val indexedRDD =
+      rdd
+        .zipPartitions(cumulativeKeyCountsRDD) {
+          (it, prefixSumIter) ⇒
+            val partitionRangesByKey = partitionRangesByKeyBroadcast.value
+            val prefixSum = mutable.Map[K, Long](prefixSumIter.next.toSeq: _*)
+            for {
+              (k, v) ← it
+              idx = prefixSum.getOrElse(k, 0L)
+              (start, _) = partitionRangesByKey(k)
+              newPartition = start + (idx / elemsPerPartition).toInt
+            } yield {
+              prefixSum(k) = idx + 1
+              newPartition → idx → v
+            }
+        }
+        .partitionByKey(newNumPartitions)
 
     for {
       (k, (start, end)) ← partitionRangesByKey
