@@ -8,7 +8,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.Random
 
-class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int) extends Serializable {
+class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
+  extends Serializable {
 
   /**
    * Private buffer in which we accumulate up to 2*max elements. Public accessor @values lazily samples this down to

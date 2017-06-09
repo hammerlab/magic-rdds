@@ -1,21 +1,34 @@
 package org.hammerlab.magic.rdd.sliding
 
+import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.sliding.SlidingRDD._
 import org.hammerlab.spark.test.suite.SparkSuite
+import org.hammerlab.spark.test.rdd.Util.makeRDD
+import org.hammerlab.iterator.Sliding2Iterator._
+import org.hammerlab.iterator.Sliding3Iterator._
 
 class SlidingRDDTest extends SparkSuite {
+
+  def make(sizes: Int*): RDD[Int] =
+    makeRDD(
+      (sizes
+        .scanLeft(0)(_ + _)
+        .sliding2
+        .map {
+          case (start, end) ⇒
+            start until end
+        }
+        .toList
+      ): _*
+    )
 
   def test2N(n: Int): Unit = {
     def lToT(l: IndexedSeq[Int]): (Int, Int) = (l(0), l(1))
     test(s"two:$n") {
       val range = 1 to n
-      var expectedSlid = range.sliding(2).map(lToT).toArray
+      var expectedSlid = range.sliding2.toArray
 
-      sc.parallelize(range).sliding2().collect should ===(expectedSlid)
-
-      expectedSlid ++= Array((n, 0))
-
-      sc.parallelize(range).sliding2(0).collect should ===(expectedSlid)
+      sc.parallelize(range).sliding2.collect() should be(expectedSlid)
     }
   }
 
@@ -26,17 +39,88 @@ class SlidingRDDTest extends SparkSuite {
   test2N(9)
   test2N(8)
 
+  {
+    lazy val rdd =
+      make(
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        1,
+        1,
+        0
+      )
+
+    test("sliding2") {
+      rdd.sliding2.collect() should be((0 until 5).sliding2.toArray)
+      rdd.sliding2Opt.collect() should be((0 until 5).sliding2Opt.toArray)
+    }
+
+    test("sliding3") {
+      rdd.sliding3.collect() should be((0 until 5).sliding3.toArray)
+      rdd.sliding3Opt.collect() should be((0 until 5).sliding3Opt.toArray)
+      rdd.sliding3NextOpts.collect() should be((0 until 5).sliding3NextOpts.toArray)
+    }
+
+    test("sliding4") {
+      rdd.sliding(4).collect() should be((0 until 5).sliding(4).toArray)
+      rdd.sliding(4, includePartial = true).collect() should be(
+        Array(
+          0 to 3,
+          1 to 4,
+          2 to 4,
+          3 to 4,
+          4 to 4
+        )
+      )
+
+      rdd.window(numPrev = 0, numNext = 3).collect() should be(
+        Array(
+          Window(Nil, 0, 1 to 3),
+          Window(Nil, 1, 2 to 4),
+          Window(Nil, 2, 3 to 4),
+          Window(Nil, 3, 4 to 4),
+          Window(Nil, 4, Nil)
+        )
+      )
+    }
+
+    test("sliding5") {
+      rdd.sliding(5).collect() should be(Array(0 to 4))
+      rdd.sliding(5, includePartial = true).collect() should be(
+        Array(
+          0 to 4,
+          1 to 4,
+          2 to 4,
+          3 to 4,
+          4 to 4
+        )
+      )
+    }
+
+    test("sliding6") {
+      rdd.sliding(6).collect() should be(Array())
+      rdd.sliding(6, includePartial = true).collect() should be(
+        Array(
+          0 to 4,
+          1 to 4,
+          2 to 4,
+          3 to 4,
+          4 to 4
+        )
+      )
+    }
+  }
+
   def test3N(n: Int): Unit = {
     def lToT(l: IndexedSeq[Int]): (Int, Int, Int) = (l(0), l(1), l(2))
     test(s"three:$n") {
       val range = 1 to n
       var expectedSlid = range.sliding(3).map(lToT).toArray
 
-      sc.parallelize(range).sliding3().collect should ===(expectedSlid)
-
-      expectedSlid ++= Array((n - 1, n, 0), (n, 0, 0))
-
-      sc.parallelize(range).sliding3(0).collect should ===(expectedSlid)
+      sc.parallelize(range).sliding3.collect should ===(expectedSlid)
     }
   }
 
@@ -57,11 +141,6 @@ class SlidingRDDTest extends SparkSuite {
       {
         val actual = sc.parallelize(range).sliding(n).collect.map(_.toArray)
         val expected = range.sliding(n).map(_.toArray).toSeq
-        str(actual) should ===(str(expected))
-      }
-      {
-        val actual = sc.parallelize(range).sliding(n, 0).collect.map(_.toArray)
-        val expected = paddedRange.sliding(n).map(_.toArray).toSeq
         str(actual) should ===(str(expected))
       }
     }
@@ -98,56 +177,11 @@ class SlidingRDDTest extends SparkSuite {
   testN(4, 12)
 
   def getExpected(s: String): Seq[String] =
-    s.indices.map(i ⇒ {
+    s.indices.map { i ⇒
       var j = s.indexOf('$', i)
       if (j < 0) {
         j = s.length
       }
       s.substring(i, j)
-    })
-
-  def testSlideUntil(in: String): Unit = {
-    val s = in.stripMargin.trim.split("\n").mkString("")
-    val actual = sc.parallelize(s).slideUntil('$').map(_.mkString("")).collect.toList
-    val expected = getExpected(s)
-    actual should ===(expected)
-  }
-
-  test("until:1:1") {
-    testSlideUntil(
-      """
-        |$AA$$GG$ATG$TGAGACGCTCGC$
-        |$$G$$AGCT$GGGTGAAC$$CGCTA
-        |$G$TTCGGAGTGGC$CTTGTG$$AC
-        |GT$AGAAAGTGG$TTT$TGC$ATAC
-        |"""
-    )
-  }
-
-  test("until:2:1") {
-    testSlideUntil(
-      """
-        |ACCGC$GAC$TA$CATCTGGTCCCT
-        |GTGAAGAG$AGTTGCCCCTTAGG$$
-        |GTCGT$$GTGTT$CTGACG$$GCCA
-        |CGGCTAT$TCGCGTGGTTCA$CCGC
-        |"""
-    )
-  }
-
-  test("until:1:2") {
-    testSlideUntil(
-      """
-        |TT$TA$AATCGGAG$$GG$T$GA$G
-        |TAAC$G$GG$$CCTGGTT$$TGGG$
-        |CA$CC$$$$G$TA$CA$TGCCAAGC
-        |$$T$$T$$G$$GG$CTCCC$CAA$$
-      """
-    )
-  }
-
-  test("small") {
-    testSlideUntil("$AC$AAA$AAA$")
-  }
-
+    }
 }

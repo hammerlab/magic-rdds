@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.grid
 
 import org.hammerlab.spark.test.suite.SparkSuite
 
-import scala.math.ceil
+import org.hammerlab.math.ceil
 
 abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
   /**
@@ -51,8 +51,8 @@ abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
 
     val partitioner = gridRDD.partitioner.get.asInstanceOf[GridPartitioner]
 
-    val pRows = ceil(n * 1.0 / rHeight).toInt
-    val pCols = ceil(n * 1.0 / cWidth).toInt
+    val pRows = ceil(n, rHeight)
+    val pCols = ceil(n, cWidth)
 
     partitioner.numPartitionRows should ===(pRows)
     partitioner.numPartitionCols should ===(pCols)

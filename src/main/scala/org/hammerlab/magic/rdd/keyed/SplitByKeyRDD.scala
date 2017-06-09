@@ -9,6 +9,7 @@ import org.hammerlab.magic.rdd.partitions.SlicePartitionsRDD
 import org.hammerlab.spark.PartitionIndex
 
 import scala.collection.mutable
+import scala.math.ceil
 import scala.reflect.ClassTag
 
 /**
@@ -67,7 +68,7 @@ case class SplitByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
       (for {
         (k, num) ← totalKeyCounts
       } yield
-        k → math.ceil(num.toDouble / elemsPerPartition).toInt
+        k → ceil(num.toDouble / elemsPerPartition).toInt
       )
       .toVector
       .unzip

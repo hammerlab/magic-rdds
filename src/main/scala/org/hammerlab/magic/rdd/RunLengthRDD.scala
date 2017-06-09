@@ -8,11 +8,12 @@ import org.hammerlab.magic.rdd.partitions.FilterPartitionIdxs._
 import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
 import scala.reflect.ClassTag
+import math.max
 
 /**
  * Helper for run-length encoding an [[RDD]].
  */
-class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
+case class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
   lazy val runLengthEncode: RDD[(T, Long)] = {
     val runLengthPartitions =
       rdd.mapPartitions(_.runLengthEncode())
@@ -24,7 +25,7 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
     val partitionOverrides =
       (for {
         range ← new RangeAccruingIterator(oneOrFewerElementPartitions.iterator)
-        sendTo = math.max(0, range.start - 1)
+        sendTo = max(0, range.start - 1)
         i ← range
       } yield
         (i + 1) → sendTo
@@ -34,15 +35,13 @@ class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
     runLengthPartitions
       .shiftLeft(
         1,
-        partitionOverrides,
-        allowIncompletePartitions = true
+        partitionOverrides
       )
       .mapPartitions(
         it ⇒
           reencode(
             it
               .map(t ⇒ t._1 → t._2.toLong)
-              .buffered
           )
       )
   }
@@ -54,5 +53,5 @@ object RunLengthRDD {
     kryo.register(classOf[Array[Int]])
   }
 
-  implicit def rddToRunLengthRDD[T: ClassTag](rdd: RDD[T]): RunLengthRDD[T] = new RunLengthRDD(rdd)
+  implicit def ooRunLengthRDD[T: ClassTag](rdd: RDD[T]): RunLengthRDD[T] = RunLengthRDD(rdd)
 }

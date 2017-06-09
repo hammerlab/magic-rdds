@@ -3,11 +3,11 @@ package org.hammerlab.magic.rdd.serde
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.compress.{BZip2Codec, CompressionCodec}
-import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.hadoop.io.compress.{ BZip2Codec, CompressionCodec }
+import org.apache.hadoop.io.{ BytesWritable, NullWritable }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkContext, SparkEnv}
-import org.hammerlab.magic.hadoop.UnsplittableSequenceFileInputFormat
+import org.apache.spark.{ SparkContext, SparkEnv }
+import org.hammerlab.hadoop.UnsplittableSequenceFileInputFormat
 
 import scala.reflect.ClassTag
 
