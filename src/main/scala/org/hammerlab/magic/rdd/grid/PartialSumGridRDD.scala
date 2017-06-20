@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.grid.PartialSumGridRDD.{Col, Row}
 import spire.algebra.Monoid
 
-import scala.collection.mutable.{ArrayBuffer, Map => MMap}
+import scala.collection.mutable.{ArrayBuffer, Map ⇒ MMap}
 import scala.reflect.ClassTag
 
 /**
@@ -216,9 +216,9 @@ object PartialSumGridRDD {
 
     val partitioner =
       partitionDimensionsOpt match {
-        case Some((rHeight, cWidth)) =>
+        case Some((rHeight, cWidth)) ⇒
           GridPartitioner(maxR, maxC, rHeight, cWidth)
-        case None =>
+        case None ⇒
           GridPartitioner(maxR, maxC)
       }
 

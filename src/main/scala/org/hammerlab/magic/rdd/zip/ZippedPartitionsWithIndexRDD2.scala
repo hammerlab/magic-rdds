@@ -8,7 +8,7 @@ import scala.reflect.ClassTag
 
 class ZippedPartitionsWithIndexRDD2[A: ClassTag, B: ClassTag, V: ClassTag](
     sc: SparkContext,
-    var f: (Int, Iterator[A], Iterator[B]) => Iterator[V],
+    var f: (Int, Iterator[A], Iterator[B]) ⇒ Iterator[V],
     var rdd1: RDD[A],
     var rdd2: RDD[B],
     preservesPartitioning: Boolean = false)

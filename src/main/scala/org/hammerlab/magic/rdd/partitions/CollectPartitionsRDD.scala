@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
  * of per-partition [[Array]]s.
  */
 class CollectPartitionsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
-  def collectPartitions(): Array[Array[T]] = rdd.mapPartitions(it => Iterator(it.toArray)).collect()
+  def collectPartitions(): Array[Array[T]] = rdd.mapPartitions(it ⇒ Iterator(it.toArray)).collect()
 }
 
 object CollectPartitionsRDD {

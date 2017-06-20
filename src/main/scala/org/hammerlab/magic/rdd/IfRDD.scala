@@ -7,8 +7,8 @@ import scala.reflect.ClassTag
 /**
  * Hang an `iff` method off of [[RDD]]s, as a small bit of syntactic sugar.
  */
-class IfRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
-  def iff(b: Boolean, ifFn: (RDD[T]) => RDD[T]): RDD[T] =
+case class IfRDD[T: ClassTag](@transient rdd: RDD[T]) {
+  def iff(b: Boolean, ifFn: (RDD[T]) ⇒ RDD[T]): RDD[T] =
     if (b)
       ifFn(rdd)
     else
@@ -16,5 +16,5 @@ class IfRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
 }
 
 object IfRDD {
-  implicit def toIfRDD[T: ClassTag](rdd: RDD[T]): IfRDD[T] = new IfRDD(rdd)
+  implicit def makeIfRDD[T: ClassTag](rdd: RDD[T]): IfRDD[T] = IfRDD(rdd)
 }

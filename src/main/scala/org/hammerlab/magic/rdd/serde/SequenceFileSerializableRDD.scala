@@ -3,11 +3,11 @@ package org.hammerlab.magic.rdd.serde
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.compress.{BZip2Codec, CompressionCodec}
-import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.hadoop.io.compress.{ BZip2Codec, CompressionCodec }
+import org.apache.hadoop.io.{ BytesWritable, NullWritable }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkContext, SparkEnv}
-import org.hammerlab.magic.hadoop.UnsplittableSequenceFileInputFormat
+import org.apache.spark.{ SparkContext, SparkEnv }
+import org.hammerlab.hadoop.UnsplittableSequenceFileInputFormat
 
 import scala.reflect.ClassTag
 
@@ -58,9 +58,9 @@ class SequenceFileSerializableRDD[T: ClassTag](@transient val rdd: RDD[T]) exten
   def saveSequenceFile(path: String,
                        codec: Option[Class[_ <: CompressionCodec]] = None): RDD[T] = {
     rdd
-      .mapPartitions { iter =>
+      .mapPartitions { iter ⇒
         val serializer = SparkEnv.get.serializer.newInstance()
-        iter.map(x =>
+        iter.map(x ⇒
           (
             NullWritable.get(),
             new BytesWritable(serializer.serialize(x).array())
@@ -108,9 +108,9 @@ class SequenceFileSparkContext(val sc: SparkContext) {
       else
         unsplittableSequenceFile(path, classOf[NullWritable], classOf[BytesWritable], 1)
 
-    rdd.mapPartitions[T](iter => {
+    rdd.mapPartitions[T](iter ⇒ {
       val serializer = SparkEnv.get.serializer.newInstance()
-      iter.map(x =>
+      iter.map(x ⇒
         serializer.deserialize(ByteBuffer.wrap(x._2.getBytes))
       )
     })

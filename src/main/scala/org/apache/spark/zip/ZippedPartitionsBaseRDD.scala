@@ -24,7 +24,7 @@ abstract class ZippedPartitionsBaseRDD[V: ClassTag](sc: SparkContext,
   // Replace Spark's ZippedPartitionsPartitions with ours.
   override def getPartitions: Array[Partition] =
     for {
-      (partition, idx) <- super.getPartitions.zipWithIndex
+      (partition, idx) ← super.getPartitions.zipWithIndex
     } yield
       new ZippedPartitionsPartition(
         idx,

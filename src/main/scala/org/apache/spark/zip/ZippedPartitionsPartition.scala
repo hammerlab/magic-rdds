@@ -1,6 +1,6 @@
 package org.apache.spark.zip
 
-import org.apache.spark.rdd.{RDD, ZippedPartitionsPartition => SparkZippedPartitionsPartition}
+import org.apache.spark.rdd.{RDD, ZippedPartitionsPartition ⇒ SparkZippedPartitionsPartition}
 
 /**
  * Package-cheat to expose [[org.apache.spark.rdd.ZippedPartitionsPartition]].

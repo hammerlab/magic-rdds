@@ -15,8 +15,8 @@ class Partition(
   override def hashCode: Int = (41 * (41 + rddId) + slice).toInt
 
   override def equals(other: Any): Boolean = other match {
-    case that: Partition => this.rddId == that.rddId && this.slice == that.slice
-    case _ => false
+    case that: Partition ⇒ this.rddId == that.rddId && this.slice == that.slice
+    case _ ⇒ false
   }
 
   override def index: Int = slice

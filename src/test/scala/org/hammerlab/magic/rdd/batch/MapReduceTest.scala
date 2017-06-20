@@ -106,7 +106,7 @@ class MapReduceTest extends SparkSuite {
   }
 
   test("compute correctness test - one-parent int RDD") {
-    val rdd = sc.parallelize(0 until 100, 10).map { x => x * x }.filter { _ % 2 == 0 }
+    val rdd = sc.parallelize(0 until 100, 10).map { x ⇒ x * x }.filter { _ % 2 == 0 }
     val res = rdd.batch(7)
     res.glom.collect should be (rdd.glom.collect)
   }

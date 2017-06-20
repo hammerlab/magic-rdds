@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 class ZippedPartitionsWithIndexRDD3
   [A: ClassTag, B: ClassTag, C: ClassTag, V: ClassTag](
     sc: SparkContext,
-    var f: (Int, Iterator[A], Iterator[B], Iterator[C]) => Iterator[V],
+    var f: (Int, Iterator[A], Iterator[B], Iterator[C]) ⇒ Iterator[V],
     var rdd1: RDD[A],
     var rdd2: RDD[B],
     var rdd3: RDD[C],

@@ -28,7 +28,7 @@ class RDDSizeTest
 
     rdd1.size
 
-    getCache should be(Map(rdd1.id -> 4))
+    getCache should be(Map(rdd1.id → 4))
 
     numJobs should be(1)
 
@@ -40,9 +40,9 @@ class RDDSizeTest
 
     getCache should be(
       Map(
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1
       )
     )
 
@@ -75,10 +75,10 @@ class RDDSizeTest
     rddList.sizes should be(List(8, 4, 2, 1))
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1
       )
     )
 
@@ -89,10 +89,10 @@ class RDDSizeTest
     rddList2.sizes should be(List(8, 4, 2, 1))
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1
       )
     )
 
@@ -102,11 +102,11 @@ class RDDSizeTest
     unionedRDDs.size should be(15)
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1,
-        unionedRDDs.id -> 15
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1,
+        unionedRDDs.id → 15
       )
     )
 
@@ -117,11 +117,11 @@ class RDDSizeTest
     rddList3.sizes should be(List(8, 4, 2, 1))
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1,
-        unionedRDDs.id -> 15
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1,
+        unionedRDDs.id → 15
       )
     )
 
@@ -142,13 +142,13 @@ class RDDSizeTest
     rdd01_23.size should be(15)
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1,
-        rdd01.id -> 12,
-        rdd23.id -> 3,
-        rdd01_23.id -> 15
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1,
+        rdd01.id → 12,
+        rdd23.id → 3,
+        rdd01_23.id → 15
       )
     )
 
@@ -162,16 +162,16 @@ class RDDSizeTest
     rdd02_13.size should be(15)
     getCache should be(
       Map(
-        rdd0.id -> 8,
-        rdd1.id -> 4,
-        rdd2.id -> 2,
-        rdd3.id -> 1,
-        rdd01.id -> 12,
-        rdd23.id -> 3,
-        rdd01_23.id -> 15,
-        rdd02.id -> 10,
-        rdd13.id -> 5,
-        rdd02_13.id -> 15
+        rdd0.id → 8,
+        rdd1.id → 4,
+        rdd2.id → 2,
+        rdd3.id → 1,
+        rdd01.id → 12,
+        rdd23.id → 3,
+        rdd01_23.id → 15,
+        rdd02.id → 10,
+        rdd13.id → 5,
+        rdd02_13.id → 15
       )
     )
 

@@ -4,7 +4,7 @@ import org.hammerlab.magic.rdd.serde.util.{ Foo, Foos }
 import org.hammerlab.spark.test.rdd.RDDSerialization
 
 trait SerdeRDDTest {
-  self: RDDSerialization =>
+  self: RDDSerialization ⇒
 
   def testSmallInts(ps: Int*): Unit = {
     test("rdd small ints") {

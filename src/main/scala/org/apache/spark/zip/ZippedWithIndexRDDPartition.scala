@@ -1,7 +1,7 @@
 package org.apache.spark.zip
 
 import org.apache.spark.Partition
-import org.apache.spark.rdd.{ZippedWithIndexRDDPartition => SparkZippedWithIndexRDDPartition}
+import org.apache.spark.rdd.{ZippedWithIndexRDDPartition ⇒ SparkZippedWithIndexRDDPartition}
 
 /**
  * Package-cheat to expose [[org.apache.spark.rdd.ZippedWithIndexRDDPartition]].

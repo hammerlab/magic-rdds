@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 
 class CollectPartitionsRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def collectParts: Array[Array[T]] =
-    rdd.sparkContext.runJob(rdd, (iter: Iterator[T]) => iter.toArray)
+    rdd.sparkContext.runJob(rdd, (iter: Iterator[T]) ⇒ iter.toArray)
 }
 
 object CollectPartitionsRDD {

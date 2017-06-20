@@ -11,7 +11,7 @@ class RunLengthRDDTest extends SparkSuite {
 
     val str =
       (for {
-        (ch, num) <- rle
+        (ch, num) ← rle
       } yield
         s"$num*$ch"
         ).mkString(" ")

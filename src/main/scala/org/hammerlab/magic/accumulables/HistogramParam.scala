@@ -27,7 +27,7 @@ class HistogramParam[T, N: Numeric] extends AccumulableParam[HashMap[T, N], T] {
    */
   override def addInPlace(first: HashMap[T, N], second: HashMap[T, N]): HashMap[T, N] = {
     for {
-      (k, v) <- second
+      (k, v) ← second
     } {
       if (first.contains(k))
         first(k) += v
