@@ -8,7 +8,7 @@
 Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
 
 ```scala
-$ spark-shell --packages org.hammerlab:magic-rdds_2.11:1.3.2
+$ spark-shell --packages org.hammerlab:magic-rdds_2.11:1.4.3
 …
 scala> import org.hammerlab.magic.rdd.RunLengthRDD._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -23,16 +23,14 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 <dependency>
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds_2.11</artifactId>
-  <version>1.3.2</version>
+  <version>1.4.3</version>
 </dependency>
 ```
-
-`magic-rdds_2.10:1.3.2` is also available.
 
 In SBT, use:
 
 ```
-"org.hammerlab" %% "magic-rdds" % "1.3.2"
+"org.hammerlab" %% "magic-rdds" % "1.4.3"
 ```
 
 ## Overview
