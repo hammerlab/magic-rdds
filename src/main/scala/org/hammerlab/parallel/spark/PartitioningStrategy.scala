@@ -10,10 +10,6 @@ trait PartitioningStrategy {
   def numPartitions(numElems: Int): Int
 }
 
-object PartitioningStrategy {
-  implicit val default = ElemsPerPartition(1)
-}
-
 case class NumPartitions(n: Int)
   extends PartitioningStrategy {
   override def numPartitions(numElems: Int): Int = n

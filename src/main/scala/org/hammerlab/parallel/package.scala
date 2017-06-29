@@ -1,5 +1,8 @@
 package org.hammerlab
 
+import org.apache.spark.SparkContext
+import org.hammerlab.parallel.spark.PartitioningStrategy
+
 import scala.reflect.ClassTag
 
 /**
@@ -40,4 +43,17 @@ package object parallel {
       config: Config
   ): Parallelizer[T] =
     config.make[T, Input](input)
+
+  def Threads(numThreads: Int) = threads.Config(numThreads)
+
+  def Spark(strategy: PartitioningStrategy)(
+      implicit sc: SparkContext
+  ): spark.Config =
+    spark.Config()(sc, strategy)
+
+  def Spark(implicit
+            sc: SparkContext,
+            strategy: PartitioningStrategy
+           ): spark.Config =
+    spark.Config()(sc, strategy)
 }

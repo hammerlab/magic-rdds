@@ -7,7 +7,9 @@ class ParallelizerTest
   extends SparkSuite
     with parallel.ParallelizerTest {
 
+  implicit val partitioningStrategy = ElemsPerPartition(2)
   implicit lazy val config = Config()
+
   import parallel.makeParallelizer
 
   override def make(arr: Array[Int]): Array[String] =

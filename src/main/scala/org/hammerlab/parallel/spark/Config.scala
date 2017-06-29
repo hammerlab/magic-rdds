@@ -8,8 +8,9 @@ import scala.reflect.ClassTag
 /**
  * Configuration for parallel-mapping over collections using Spark.
  */
-class Config(val sc: SparkContext,
-             val partitioningStrategy: PartitioningStrategy)
+case class Config(implicit
+                  sc: SparkContext,
+                  partitioningStrategy: PartitioningStrategy)
   extends parallel.Config {
   override def make[T: ClassTag, From](before: From)(
       implicit toIterable: From ⇒ Iterable[T]
@@ -21,13 +22,3 @@ class Config(val sc: SparkContext,
       this
     )
 }
-
-object Config {
-  def apply()(
-      implicit
-      sc: SparkContext,
-      strategy: PartitioningStrategy
-  ): Config =
-    new Config(sc, strategy)
-}
-

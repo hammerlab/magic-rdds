@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd.sliding
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.DropRightIterator._
-import org.hammerlab.iterator.SlidingIterator._
+import org.hammerlab.iterator.sliding.SlidingIterator._
 import org.hammerlab.iterator.{ NextOptionIterator, SimpleBufferedIterator }
 import org.hammerlab.magic.rdd.partitions.PartitionByKeyRDD._
 import org.hammerlab.magic.rdd.sliding.SlidingRDD.Window
