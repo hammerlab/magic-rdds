@@ -1,30 +1,12 @@
-package org.hammerlab.hadoop
+package org.hammerlab.hadoop.splits
 
 import org.apache.hadoop.mapreduce
 import org.apache.hadoop.mapreduce.lib.input
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat.{ SPLIT_MAXSIZE, setInputPaths }
 import org.apache.hadoop.mapreduce.{ InputSplit, Job, TaskAttemptContext }
+import org.hammerlab.hadoop.{ Configuration, Path }
 
 import scala.collection.JavaConverters._
-
-case class MaxSplitSize(size: Long)
-
-object MaxSplitSize {
-  implicit def makeMaxSplitSize(size: Long): MaxSplitSize = MaxSplitSize(size)
-  implicit def unmakeMaxSplitSize(size: MaxSplitSize): Long = size.size
-
-  val DEFAULT_MAX_SPLIT_SIZE = 32 * 1024 * 1024L
-
-  def apply(size: Option[Long] = None)(implicit conf: Configuration): MaxSplitSize =
-    MaxSplitSize(
-      size.getOrElse(
-        conf.getLong(
-          SPLIT_MAXSIZE,
-          DEFAULT_MAX_SPLIT_SIZE
-        )
-      )
-    )
-}
 
 object FileSplits {
 
@@ -47,9 +29,10 @@ object FileSplits {
   private case class ConfigImpl(maxSplitSize: MaxSplitSize)
     extends Config
 
-  def apply(path: Path,
-            conf: Configuration)(
-      implicit config: Config
+  def apply(path: Path)(
+      implicit
+      config: Config,
+      conf: Configuration
   ): Seq[FileSplit] = {
 
     val job = Job.getInstance(conf, s"$path:file-splits")

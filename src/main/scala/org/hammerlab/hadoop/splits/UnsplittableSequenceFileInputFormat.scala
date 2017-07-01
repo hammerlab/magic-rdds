@@ -1,4 +1,4 @@
-package org.hammerlab.hadoop
+package org.hammerlab.hadoop.splits
 
 import java.io.IOException
 

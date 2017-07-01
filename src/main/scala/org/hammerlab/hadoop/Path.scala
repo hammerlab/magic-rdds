@@ -5,22 +5,37 @@ import java.net.URI
 import org.apache.hadoop.fs
 import org.apache.hadoop.fs.{ FSDataInputStream, FSDataOutputStream, FileSystem }
 
-case class Path(uri: URI) {
+/**
+ * Attempt at a serializable and otherwise-embellished wrapper for [[fs.Path]].
+ *
+ * Pretty clumsy in its current state due to the requirement of a [[Configuration]] in order to get at path-metadata via
+ * a [[FileSystem]].
+ *
+ * In particular, serialization carries the whole [[Configuration]] along with it which leads to silly amounts of data
+ * being transmitted.
+ */
+case class Path(path: fs.Path)(implicit conf: Configuration) {
+
+  def uri: URI = path.toUri
+
+  def fullyQualifiedURI: URI =
+    filesystem.makeQualified(path).toUri
+
   override def toString: String = uri.toString
 
-  def inputStream(implicit conf: Configuration): FSDataInputStream =
+  def inputStream: FSDataInputStream =
     filesystem.open(this)
 
-  def outputStream(implicit conf: Configuration): FSDataOutputStream =
+  def outputStream: FSDataOutputStream =
     filesystem.create(this)
 
-  def filesystem(implicit conf: Configuration): FileSystem =
-    FileSystem.get(uri, conf)
+  private lazy val filesystem: FileSystem =
+    path.getFileSystem(conf)
 
-  def length(implicit conf: Configuration): Long =
+  def length: Long =
     filesystem.getFileStatus(this).getLen
 
-  def exists(implicit conf: Configuration): Boolean =
+  def exists: Boolean =
     filesystem.exists(this)
 }
 
@@ -29,10 +44,11 @@ object Path {
   // Turn off checksums for the local filesystem, by default
   disableLocalFSChecksums
 
-  def apply(uriStr: String): Path = Path(new URI(uriStr))
+  def apply(uri: URI)(implicit conf: Configuration): Path = Path(new fs.Path(uri))
+  def apply(uriStr: String)(implicit conf: Configuration): Path = Path(new fs.Path(uriStr))
 
-  implicit def fromHadoopPath(path: fs.Path): Path = Path(path.toUri)
-  implicit def toHadoopPath(path: Path): fs.Path = new fs.Path(path.uri)
+  implicit def fromHadoopPath(path: fs.Path)(implicit conf: Configuration): Path = Path(path)
+  implicit def toHadoopPath(path: Path): fs.Path = path.path
   implicit def readPath(path: Path)(implicit conf: Configuration): FSDataInputStream = path.inputStream
   implicit def writePath(path: Path)(implicit conf: Configuration): FSDataOutputStream = path.outputStream
 }

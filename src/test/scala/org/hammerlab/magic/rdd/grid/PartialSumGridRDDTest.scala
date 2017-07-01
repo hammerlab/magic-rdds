@@ -4,7 +4,9 @@ import org.hammerlab.spark.test.suite.SparkSuite
 
 import org.hammerlab.math.ceil
 
-abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
+abstract class PartialSumGridRDDTest(n: Int)
+  extends SparkSuite {
+
   /**
    * Build an n-by-n grid of the integers in [0, n*n).
    *
@@ -69,7 +71,8 @@ abstract class PartialSumGridRDDTest(n: Int) extends SparkSuite {
 
 }
 
-class GridCDFRDDTest4x4 extends PartialSumGridRDDTest(4) {
+class GridCDFRDDTest4x4
+  extends PartialSumGridRDDTest(4) {
 
   def expectedStr =
     """

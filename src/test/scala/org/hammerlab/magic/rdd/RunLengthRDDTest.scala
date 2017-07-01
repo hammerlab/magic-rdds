@@ -4,7 +4,8 @@ import RunLengthRDD._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 
-class RunLengthRDDTest extends SparkSuite {
+class RunLengthRDDTest
+  extends SparkSuite {
 
   def check(partitionStrs: Iterable[Char]*)(expected: String) = {
     val rle = makeRDD(partitionStrs: _*).runLengthEncode.collect
