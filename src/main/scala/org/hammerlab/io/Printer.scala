@@ -2,7 +2,7 @@ package org.hammerlab.io
 
 import java.io.PrintStream
 
-import org.hammerlab.hadoop.Path
+import org.hammerlab.paths.Path
 
 case class Printer(ps: PrintStream) {
   def print(os: Object*): Unit =
@@ -19,17 +19,17 @@ case class Printer(ps: PrintStream) {
                       sampleSize: SampleSize
                   ): Unit = {
     sampleSize match {
+      case SampleSize(Some(0)) ⇒
+        // No-op
       case SampleSize(Some(size))
-        if size < populationSize ⇒
+        if size + 1 < populationSize ⇒
         print(
           truncatedHeader(size),
           samples
             .take(size)
             .mkString(indent, s"\n$indent", ""),
-          "…"
+          s"$indent…"
         )
-      case SampleSize(Some(0)) ⇒
-        // No-op
       case _ ⇒
         print(
           header,
@@ -51,6 +51,8 @@ case class Printer(ps: PrintStream) {
       truncatedHeader,
       indent
     )
+
+  def close(): Unit = ps.close()
 }
 
 object Printer {
@@ -58,24 +60,29 @@ object Printer {
   implicit def makePrinter(ps: PrintStream): Printer = Printer(ps)
   implicit def unmakePrinter(p: Printer): PrintStream = p.ps
 
-  def apply(file: Option[Path]): Printer =
-    file match {
-      case Some(file) ⇒
-        new PrintStream(file.outputStream)
+  def apply(path: Path): Printer = apply(Some(path))
+
+  def apply(path: Option[Path]): Printer =
+    path match {
+      case Some(path) ⇒
+        new PrintStream(path.outputStream)
       case None ⇒
         System.out
     }
 
-  def print(os: Object*)(
+  /**
+   * Named to avoid overloading [[Predef.print]]
+   */
+  def echo(os: Object*)(
       implicit printer: Printer
   ): Unit =
     printer.print(os: _*)
 
-  def printSamples(samples: Seq[_],
-                   populationSize: Long,
-                   header: String,
-                   truncatedHeader: Int ⇒ String,
-                   indent: String = "\t")(
+  def print(samples: Seq[_],
+            populationSize: Long,
+            header: String,
+            truncatedHeader: Int ⇒ String,
+            indent: String = "\t")(
       implicit
       printer: Printer,
       sampleSize: SampleSize
@@ -88,10 +95,24 @@ object Printer {
       indent
     )
 
-  def printList(list: Seq[_],
-                header: String,
-                truncatedHeader: Int ⇒ String,
-                indent: String = "\t")(
+  def print(list: Seq[_],
+            header: String,
+            truncatedHeader: Int ⇒ String)(
+      implicit
+      printer: Printer,
+      sampleSize: SampleSize
+  ): Unit =
+    print(
+      list,
+      header,
+      truncatedHeader,
+      indent = "\t"
+    )
+
+  def print(list: Seq[_],
+            header: String,
+            truncatedHeader: Int ⇒ String,
+            indent: String)(
       implicit
       printer: Printer,
       sampleSize: SampleSize

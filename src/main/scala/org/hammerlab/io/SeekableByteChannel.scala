@@ -5,6 +5,14 @@ import java.nio.channels.FileChannel
 import java.nio.{ ByteBuffer, channels }
 
 import org.hammerlab.paths
+import java.io.{ IOException, InputStream }
+import java.nio.file.Files.newByteChannel
+import java.nio.{ ByteBuffer, channels }
+
+import org.apache.hadoop.fs.Seekable
+import org.hammerlab.hadoop.Configuration
+import org.hammerlab.io.ByteChannel.InputStreamByteChannel
+import org.hammerlab.{ hadoop, paths }
 
 trait SeekableByteChannel
   extends ByteChannel {
@@ -25,7 +33,7 @@ object SeekableByteChannel {
   case class ChannelByteChannel(ch: channels.SeekableByteChannel)
     extends SeekableByteChannel {
 
-    override def _read(dst: ByteBuffer): Unit = {
+    override protected def _read(dst: ByteBuffer): Unit = {
       val n = dst.remaining()
       var read = ch.read(dst)
 
@@ -48,10 +56,11 @@ object SeekableByteChannel {
   implicit def makeChannelByteChannel(ch: channels.SeekableByteChannel): ChannelByteChannel =
     ChannelByteChannel(ch)
 
-  implicit def makeChannelByteChannel(path: paths.Path): ChannelByteChannel =
+  implicit def apply(path: paths.Path): ChannelByteChannel =
     ChannelByteChannel(
-      FileChannel.open(
+      newByteChannel(
         path
       )
     )
 }
+

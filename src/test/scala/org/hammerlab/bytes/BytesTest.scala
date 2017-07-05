@@ -1,14 +1,14 @@
-package org.hammerlab.io
+package org.hammerlab.bytes
 
 import org.hammerlab.test.Suite
 
-class SizeTest
+class BytesTest
   extends Suite {
 
   def check(inputStr: String,
             expectedStr: String,
             expectedBytes: Long): Unit = {
-    val size = Size(inputStr)
+    val size = Bytes(inputStr)
     size.toString should be(expectedStr)
     size.bytes should be(expectedBytes)
   }
@@ -43,19 +43,18 @@ class SizeTest
     check("2e", "2EB", 2L << 60)
 
     // 2^63 bytes: Long.MAX_VALUE + 1
-    intercept[SizeOverflowException] { Size("8eb") }
-    intercept[SizeOverflowException] { Size("8192pb") }
-    intercept[SizeOverflowException] { Size("8388608tb") }
-    intercept[NumberFormatException] { Size("8589934592gb") }
+    intercept[BytesOverflowException] {Bytes("8eb") }
+    intercept[BytesOverflowException] {Bytes("8192pb") }
+    intercept[BytesOverflowException] {Bytes("8388608tb") }
+    intercept[NumberFormatException] {Bytes("8589934592gb") }
 
-    intercept[BadSizeString] { Size("") }
-    intercept[BadSizeString] { Size("1fb") }
-    intercept[BadSizeString] { Size("gb") }
-    intercept[BadSizeString] { Size("gb") }
+    intercept[BadBytesString] {Bytes("") }
+    intercept[BadBytesString] {Bytes("1fb") }
+    intercept[BadBytesString] {Bytes("gb") }
+    intercept[BadBytesString] {Bytes("gb") }
   }
 
   test("wrappers") {
-    import Size._
     32.B  should be( B(32))
     32.KB should be(KB(32))
     32.MB should be(MB(32))

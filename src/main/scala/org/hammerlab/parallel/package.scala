@@ -1,5 +1,7 @@
 package org.hammerlab
 
+import java.lang.Runtime.getRuntime
+
 import org.apache.spark.SparkContext
 import org.hammerlab.parallel.spark.PartitioningStrategy
 
@@ -44,7 +46,11 @@ package object parallel {
   ): Parallelizer[T] =
     config.make[T, Input](input)
 
-  def Threads(numThreads: Int) = threads.Config(numThreads)
+  def defaultNumThreads: Int =
+    getRuntime().availableProcessors() * 4
+
+  def Threads(numThreads: Int = defaultNumThreads) =
+    threads.Config(numThreads)
 
   def Spark(strategy: PartitioningStrategy)(
       implicit sc: SparkContext

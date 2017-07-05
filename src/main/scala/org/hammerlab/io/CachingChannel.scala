@@ -4,6 +4,8 @@ import java.io.{ EOFException, IOException }
 import java.nio.ByteBuffer
 import java.util
 
+import org.hammerlab.bytes._
+import grizzled.slf4j.Logging
 import org.hammerlab.io.CachingChannel.Config
 import org.hammerlab.math.ceil
 
@@ -18,7 +20,8 @@ import scala.math.{ max, min }
 case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
     implicit config: Config
 )
-  extends SeekableByteChannel {
+  extends SeekableByteChannel
+    with Logging {
 
   val Config(blockSize, maxReadAttempts, maximumSize) = config
   val maxNumBlocks = ceil(maximumSize, blockSize).toInt
@@ -31,12 +34,17 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
       0.7f,
       true
     ) {
-      override def removeEldestEntry(eldest: util.Map.Entry[Long, ByteBuffer]): Boolean =
-        size() > maxNumBlocks
+      override def removeEldestEntry(eldest: util.Map.Entry[Long, ByteBuffer]): Boolean = {
+        if (size() > maxNumBlocks) {
+          debug(s"Size ${size()} > max num blocks $maxNumBlocks (total size $maximumSize)")
+          true
+        } else
+          false
+      }
     }
 
   def getBlock(idx: Long): ByteBuffer =
-    if (!blocks.containsValue(idx)) {
+    if (!blocks.containsKey(idx)) {
       _buffer.clear()
       val start = idx * blockSize
       channel.seek(start)
@@ -46,6 +54,7 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
       val bytesToRead = _buffer.remaining()
       var attempts = 0
       val end = start + bytesToRead
+      debug(s"Fetching block $idx: [$start,$end)")
       while (channel.position() < end && attempts < maxReadAttempts) {
         channel.read(_buffer)
         attempts += 1
@@ -61,6 +70,7 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
       _buffer.position(0)
       dupe.put(_buffer)
       blocks.put(idx, dupe)
+      debug(s"Fetched block $idx: [$start,$end)")
       dupe
     } else
       blocks.get(idx)
@@ -118,9 +128,9 @@ object CachingChannel {
    *                        this many attempts, or they will throw an [[IOException]].
    * @param maximumSize evict blocks from cache to avoid growing beyond this size
    */
-  case class Config(blockSize: Int = KB(64).toInt,
+  case class Config(blockSize: Int = 64.KB.toInt,
                     maxReadAttempts: Int = 2,
-                    maximumSize: Long = MB(64))
+                    maximumSize: Long = 64.MB)
 
   object Config {
     implicit val default = Config()

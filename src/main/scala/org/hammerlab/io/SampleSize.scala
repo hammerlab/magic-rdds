@@ -9,6 +9,8 @@ case class SampleSize(size: Option[Int]) {
 }
 
 object SampleSize {
+  def apply(size: Int): SampleSize = SampleSize(Some(size))
+
   implicit val parser: ArgParser[SampleSize] =
     instance("sample size") {
       str ⇒

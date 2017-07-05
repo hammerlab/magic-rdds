@@ -10,36 +10,21 @@ import scala.collection.JavaConverters._
 
 object FileSplits {
 
-  trait Config {
-    def maxSplitSize: MaxSplitSize
-  }
-
-  object Config {
-    def apply(maxSplitSize: Long): Config = ConfigImpl(maxSplitSize)
-    def apply(maxSplitSize: Option[Long] = None)(implicit conf: Configuration): Config =
-      ConfigImpl(
-        MaxSplitSize(
-          maxSplitSize
-        )
-      )
-
-    implicit def default(implicit conf: Configuration) = apply()
-  }
-
-  private case class ConfigImpl(maxSplitSize: MaxSplitSize)
-    extends Config
-
   def apply(path: Path)(
       implicit
-      config: Config,
       conf: Configuration
+  ): Seq[FileSplit] =
+    apply(path, MaxSplitSize())
+
+  def apply(path: Path, maxSplitSize: MaxSplitSize)(
+      implicit conf: Configuration
   ): Seq[FileSplit] = {
 
     val job = Job.getInstance(conf, s"$path:file-splits")
 
     val jobConf = job.getConfiguration
 
-    jobConf.setLong(SPLIT_MAXSIZE, config.maxSplitSize)
+    jobConf.setLong(SPLIT_MAXSIZE, maxSplitSize)
 
     setInputPaths(job, path)
 

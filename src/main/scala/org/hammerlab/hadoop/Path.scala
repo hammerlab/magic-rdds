@@ -1,5 +1,6 @@
 package org.hammerlab.hadoop
 
+import java.io.ObjectStreamException
 import java.net.URI
 
 import org.apache.hadoop.fs
@@ -29,7 +30,7 @@ case class Path(path: fs.Path)(implicit conf: Configuration) {
   def outputStream: FSDataOutputStream =
     filesystem.create(this)
 
-  private lazy val filesystem: FileSystem =
+  @transient private lazy val filesystem: FileSystem =
     path.getFileSystem(conf)
 
   def length: Long =
@@ -37,6 +38,14 @@ case class Path(path: fs.Path)(implicit conf: Configuration) {
 
   def exists: Boolean =
     filesystem.exists(this)
+
+  @throws[ObjectStreamException]
+  def writeReplace: Object = {
+    val sp = new SerializablePath
+    sp.str = toString
+    sp.conf = conf
+    sp
+  }
 }
 
 object Path {
