@@ -1,7 +1,8 @@
 package org.hammerlab.hadoop.splits
 
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input
-import org.hammerlab.hadoop.{ Configuration, Path }
+import org.hammerlab.hadoop.Configuration
 
 /**
  * Case-class sugar over Hadoop [[input.FileSplit]]

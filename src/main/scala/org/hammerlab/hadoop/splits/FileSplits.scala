@@ -1,20 +1,15 @@
 package org.hammerlab.hadoop.splits
 
-import org.apache.hadoop.mapreduce
 import org.apache.hadoop.mapreduce.lib.input
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat.{ SPLIT_MAXSIZE, setInputPaths }
 import org.apache.hadoop.mapreduce.{ InputSplit, Job, TaskAttemptContext }
-import org.hammerlab.hadoop.{ Configuration, Path }
+import org.apache.hadoop.{ fs, mapreduce }
+import org.hammerlab.hadoop.Configuration
+import org.hammerlab.paths.Path
 
 import scala.collection.JavaConverters._
 
 object FileSplits {
-
-  def apply(path: Path)(
-      implicit
-      conf: Configuration
-  ): Seq[FileSplit] =
-    apply(path, MaxSplitSize())
 
   def apply(path: Path, maxSplitSize: MaxSplitSize)(
       implicit conf: Configuration
@@ -26,7 +21,7 @@ object FileSplits {
 
     jobConf.setLong(SPLIT_MAXSIZE, maxSplitSize)
 
-    setInputPaths(job, path)
+    setInputPaths(job, new fs.Path(path.uri))
 
     val fif =
       new input.FileInputFormat[Any, Any] {
