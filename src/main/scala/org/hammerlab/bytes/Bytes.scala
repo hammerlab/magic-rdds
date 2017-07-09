@@ -23,13 +23,13 @@ case class EB(value: Int) extends Bytes(1L << 60)
 
 object Bytes {
 
-  val re = """^(\d+)([KMGTPE]?)B?$""".r
+  val bytesStrRegex = """^(\d+)([KMGTPE]?)B?$""".r
 
   def apply(bytesStr: String): Bytes = {
-    re.findFirstMatchIn(bytesStr.toUpperCase) match {
-      case Some(m) ⇒
-        val num = m.group(1).toInt
-        Option(m.group(2)) match {
+    bytesStr.toUpperCase() match {
+      case bytesStrRegex(numStr, suffix) ⇒
+        val num = numStr.toInt
+        Option(suffix) match {
           case Some("K") ⇒ KB(num)
           case Some("M") ⇒ MB(num)
           case Some("G") ⇒ GB(num)
@@ -49,8 +49,11 @@ object Bytes {
             else
               throw BytesOverflowException(bytesStr)
           case Some("") | None ⇒ B(num)
+          case _ ⇒
+            // can't happen, just here to make compiler not warn
+            throw new Exception(s"bug in Bytes regex parsing…")
         }
-      case None ⇒
+      case _ ⇒
         throw BadBytesString(bytesStr)
     }
   }

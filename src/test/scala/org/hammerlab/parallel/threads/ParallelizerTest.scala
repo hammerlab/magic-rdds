@@ -1,7 +1,7 @@
 package org.hammerlab.parallel.threads
 
 import org.hammerlab.parallel
-import parallel.makeParallelizer
+import org.hammerlab.parallel.makeParallelizer
 
 class ParallelizerTest
   extends parallel.ParallelizerTest {

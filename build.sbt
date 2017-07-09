@@ -9,6 +9,7 @@ testUtilsVersion := "1.2.4-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   "com.github.alexarchambault" %% "case-app" % "1.2.0-M3",
+  libs.value('args4s),
   libs.value('iterators).copy(revision = "1.3.0-SNAPSHOT"),
   libs.value('paths).copy(revision = "1.1.1-SNAPSHOT"),
   libs.value('slf4j),

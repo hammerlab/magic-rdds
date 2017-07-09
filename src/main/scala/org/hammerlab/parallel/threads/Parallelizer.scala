@@ -1,7 +1,9 @@
 package org.hammerlab.parallel.threads
 
+import java.lang.Thread.currentThread
 import java.util.concurrent.ConcurrentLinkedDeque
 
+import scala.collection.JavaConverters._
 import org.hammerlab.parallel
 
 import scala.collection.concurrent.TrieMap
@@ -16,6 +18,15 @@ case class Parallelizer[T](input: Iterable[T])(
 ) extends parallel.Parallelizer[T] {
   def pmap[U: ClassTag](fn: T ⇒ U): Array[U] = {
 
+    val numThreads =
+      config.numThreads match {
+        case n if n > 0 ⇒ n
+        case n ⇒
+          throw new IllegalArgumentException(
+            s"Invalid number of threads: $n"
+          )
+      }
+
     /** Input queue: elements to process. */
     val queue = new ConcurrentLinkedDeque[(T, Int)]()
 
@@ -27,13 +38,25 @@ case class Parallelizer[T](input: Iterable[T])(
       .zipWithIndex
       .foreach(queue.add)
 
+    val exceptions = new ConcurrentLinkedDeque[ParallelWorkerException[T]]()
+
     def pollQueue(): Unit = {
       while (true) {
         Option(queue.poll()) match {
           case Some((elem, idx)) ⇒
-
-            val result = fn(elem)
-            results(idx) = result
+            try {
+              val result = fn(elem)
+              results(idx) = result
+            } catch {
+              case e: Throwable ⇒
+                exceptions.add(
+                  ParallelWorkerException(
+                    elem,
+                    idx,
+                    e
+                  )
+                )
+            }
           case _ ⇒
             return
         }
@@ -43,7 +66,7 @@ case class Parallelizer[T](input: Iterable[T])(
     /** Fork `n-1` worker threads; the current thread will be used as the `n`-th one. */
     val threads =
       for {
-        _ ← 0 until (config.numThreads - 1)
+        idx ← 0 until (numThreads - 1)
       } yield {
         val thread =
           new Thread() {
@@ -51,14 +74,30 @@ case class Parallelizer[T](input: Iterable[T])(
               pollQueue()
           }
 
+        thread.setName(s"Worker $idx")
         thread.start()
         thread
       }
 
     /** Use the current thread as the nth worker. */
+
+    val previousName = currentThread().getName
+    currentThread().setName(s"Worker $numThreads")
+
     pollQueue()
 
+    currentThread().setName(previousName)
+
     threads.foreach(_.join())
+
+    if (!exceptions.isEmpty)
+      throw ParallelWorkerExceptions[T](
+        exceptions
+          .iterator()
+          .asScala
+          .toVector
+          .sortBy(_.idx)
+      )
 
     results
       .toArray
