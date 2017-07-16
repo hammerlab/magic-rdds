@@ -1,5 +1,6 @@
 package org.hammerlab.io
 
+import java.io.EOFException
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 
@@ -7,14 +8,14 @@ import org.hammerlab.io.CachingChannel._
 import org.hammerlab.io.SeekableByteChannel.ChannelByteChannel
 import org.hammerlab.paths.Path
 import org.hammerlab.test.Suite
-import org.hammerlab.bytes._
+import org.hammerlab.test.resources.File
 
 import scala.collection.mutable.ArrayBuffer
 
 class MockChannel(path: Path)
   extends ChannelByteChannel(FileChannel.open(path)) {
   val reads = ArrayBuffer[(Long, Int)]()
-  override protected def _read(dst: ByteBuffer): Unit = {
+  override def _read(dst: ByteBuffer): Int = {
     reads += position() → dst.remaining()
     super._read(dst)
   }
@@ -23,28 +24,72 @@ class MockChannel(path: Path)
 class CachingChannelTest
   extends Suite {
   test("cache") {
-    val ch = new MockChannel(Path("/Users/ryan/c/hl/spark-bam/src/test/resources/1.2203053-2211029.bam"))
-    val buf = Buffer(128)
-    val cc = ch.cache
+    val ch = new MockChannel(File("log4j.properties"))
+    val buf = Buffer(40)
+    val cc = ch.cache(blockSize = 64)
 
     ch.reads should be(Nil)
 
-    cc.read(buf)
+    def seekCheck(pos: Int,
+                  expectedBytes: String,
+                  expectedBlocks: Int,
+                  expectedReads: (Int, Int)*): Unit = {
+      cc.seek(pos)
+      check(
+        expectedBytes,
+        expectedBlocks,
+        expectedReads: _*
+      )
+    }
 
-    // One read from underlying channel
-    ch.reads should be(Seq(0 → 65536))
+    def check(expectedBytes: String,
+              expectedBlocks: Int,
+              expectedReads: (Int, Int)*): Unit = {
+      buf.clear()
 
-    cc.blocks.size() should be(1)
-    buf.array().slice(0, 4) should be(Array(31, -117, 8, 4))
+      cc.readFully(buf)
 
-    buf.clear()
+      buf
+        .array()
+        .slice(0, 4)
+        .map(_.toChar)
+        .mkString("") should be(
+          expectedBytes
+        )
 
-    cc.seek(1)
-    cc.read(buf)
+      // Still just one read from underlying channel
+      ch.reads should be(expectedReads)
+    }
 
-    buf.array().slice(0, 4) should be(Array(-117, 8, 4, 0))
+        check(     "log4", 1, 0 → 64)
+    seekCheck(  1, "og4j", 1, 0 → 64)
+    seekCheck(  1, "og4j", 1, 0 → 64)
+    seekCheck(  0, "log4", 1, 0 → 64)
+    seekCheck(  7, "ootC", 1, 0 → 64)
+    seekCheck( 48, "cons", 2, 0 → 64, 64 → 64)
+    seekCheck( 48, "cons", 2, 0 → 64, 64 → 64)
+    seekCheck( 47, ".con", 2, 0 → 64, 64 → 64)
+    seekCheck(  2, "g4j.", 2, 0 → 64, 64 → 64)
+    seekCheck(217, "out.", 4, 0 → 64, 64 → 64, 192 → 64, 256 → 20)
 
-    // Still just one read from underlying channel
-    ch.reads should be(Seq(0 → 65536))
+    intercept[EOFException] {
+      cc.seek(237)
+      buf.clear
+      cc.readFully(buf)
+    }
+
+    // Test a partial read
+    cc.seek(237)
+    buf.clear
+    cc.read(buf) should be(39)
+    buf
+      .array()
+      .slice(0, 4)
+      .map(_.toChar)
+      .mkString("") should be(
+        "n=%d"
+      )
+
+    ch.reads should be(Seq(0 → 64, 64 → 64, 192 → 64, 256 → 20))
   }
 }

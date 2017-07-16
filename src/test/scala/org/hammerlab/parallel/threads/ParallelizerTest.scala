@@ -9,7 +9,7 @@ class ParallelizerTest
   implicit val config = Config(4)
 
   override def make(arr: Array[Int]): Array[String] =
-    arr.pmap[String](_.toString)
+    arr.parallel(_.toString)
 }
 
 class SingleThreadParallelizerTest

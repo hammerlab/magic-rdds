@@ -1,12 +1,24 @@
 package org.hammerlab.parallel.threads
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.hammerlab.parallel.makeParallelizer
 import org.hammerlab.test.matchers.lines.Line._
 import org.hammerlab.test.matchers.lines.LineNumber
 import org.hammerlab.test.{ Suite, linesMatch }
 
-abstract class ExceptionTest(implicit config: Config)
+abstract class ExceptionTest(numWorkers: Int)
   extends Suite {
+
+  implicit val config = Config(numWorkers)
+
+  var numOpens: AtomicInteger = _
+  var numCloses: AtomicInteger = _
+
+  before {
+    numOpens = new AtomicInteger(0)
+    numCloses = new AtomicInteger(0)
+  }
 
   /**
    * Parallelize some ints, and throw exceptions on indices 1 and 3
@@ -14,14 +26,18 @@ abstract class ExceptionTest(implicit config: Config)
   def make(arr: Array[Int]): Array[String] =
     arr
       .zipWithIndex
-      .pmap[String] {
-        case (_, 1) ⇒
-          throw Index1Exception
-        case (elem, 3) ⇒
-          throw Index3Exception(elem)
-        case (elem, _) ⇒
-          elem.toString
-      }
+      .parallel(
+        numOpens.incrementAndGet(),
+        {
+          case (_, 1) ⇒
+            throw Index1Exception
+          case (elem, 3) ⇒
+            throw Index3Exception(elem)
+          case (elem, _) ⇒
+            elem.toString
+        },
+        numCloses.incrementAndGet()
+      )
 
   test("except") {
     val exception =
@@ -36,6 +52,9 @@ abstract class ExceptionTest(implicit config: Config)
           ParallelWorkerException((4, 3), 3, Index3Exception(4))
         )
       )
+
+    numOpens.get() should be(numWorkers)
+    numCloses.get() should be(numWorkers)
 
     // Convenience iterator for stepping through lines of the exception's string-representation
     val lines =
@@ -64,9 +83,9 @@ abstract class ExceptionTest(implicit config: Config)
         "org.hammerlab.parallel.threads.ParallelWorkerExceptions: 2 uncaught exceptions thrown in parallel worker threads:",
         "	org.hammerlab.parallel.threads.Index1Exception$: foo",
         "		at org.hammerlab.parallel.threads.Index1Exception$.<clinit>(ExceptionTest.scala:-1)",
-        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$2.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
-        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$2.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
-        "		at org.hammerlab.parallel.threads.Parallelizer.org$hammerlab$parallel$threads$Parallelizer$$pollQueue$1(Parallelizer.scala:" ++ LineNumber ++ ")"
+        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$4.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
+        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$4.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
+        "		at org.hammerlab.parallel.package$Parallelizer$$anonfun$parallel$4.apply(package.scala:" ++ LineNumber ++ ")"
       )
 
     while (lines.hasNext && lines.head.startsWith("\t\t"))
@@ -76,9 +95,9 @@ abstract class ExceptionTest(implicit config: Config)
       .take(4)
       .mkString("\n") should linesMatch(
         "	org.hammerlab.parallel.threads.Index3Exception: bar-4",
-        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$2.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
-        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$2.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
-        "		at org.hammerlab.parallel.threads.Parallelizer.org$hammerlab$parallel$threads$Parallelizer$$pollQueue$1(Parallelizer.scala:" ++ LineNumber ++ ")"
+        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$4.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
+        "		at org.hammerlab.parallel.threads.ExceptionTest$$anonfun$make$4.apply(ExceptionTest.scala:" ++ LineNumber ++ ")",
+        "		at org.hammerlab.parallel.package$Parallelizer$$anonfun$parallel$4.apply(package.scala:" ++ LineNumber ++ ")"
       )
 
     while (lines.hasNext && lines.head.startsWith("\t\t"))
@@ -89,10 +108,10 @@ abstract class ExceptionTest(implicit config: Config)
 }
 
 class OneThreadException
-  extends ExceptionTest()(Config(1))
+  extends ExceptionTest(1)
 
 class TwoThreadsException
-  extends ExceptionTest()(Config(2))
+  extends ExceptionTest(2)
 
 case object Index1Exception
   extends Exception("foo")

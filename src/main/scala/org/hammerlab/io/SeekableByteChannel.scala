@@ -1,18 +1,9 @@
 package org.hammerlab.io
 
-import java.io.IOException
-import java.nio.channels.FileChannel
-import java.nio.{ ByteBuffer, channels }
-
-import org.hammerlab.paths
-import java.io.{ IOException, InputStream }
 import java.nio.file.Files.newByteChannel
 import java.nio.{ ByteBuffer, channels }
 
-import org.apache.hadoop.fs.Seekable
-import org.hammerlab.hadoop.Configuration
-import org.hammerlab.io.ByteChannel.InputStreamByteChannel
-import org.hammerlab.{ hadoop, paths }
+import org.hammerlab.paths
 
 trait SeekableByteChannel
   extends ByteChannel {
@@ -31,22 +22,13 @@ trait SeekableByteChannel
 
 object SeekableByteChannel {
   case class ChannelByteChannel(ch: channels.SeekableByteChannel)
-    extends SeekableByteChannel {
+    extends SeekableByteChannel
+  with BufferByteChannel {
 
-    override protected def _read(dst: ByteBuffer): Unit = {
-      val n = dst.remaining()
-      var read = ch.read(dst)
+    override protected def _read(dst: ByteBuffer): Int = ch.read(dst)
 
-      if (read < n)
-        read += ch.read(dst)
-
-      if (read < n)
-        throw new IOException(
-          s"Only read $read of $n bytes in 2 tries from position ${position()}"
-        )
-    }
     override def size: Long = ch.size
-    override def close(): Unit = ch.close()
+    override def _close(): Unit = ch.close()
     override def position(): Long = ch.position()
 
     override def _skip(n: Int): Unit = ch.position(ch.position() + n)

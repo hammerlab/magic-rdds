@@ -21,6 +21,7 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
     implicit config: Config
 )
   extends SeekableByteChannel
+    with BufferByteChannel
     with Logging {
 
   val Config(blockSize, maxReadAttempts, maximumSize) = config
@@ -75,27 +76,22 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
     } else
       blocks.get(idx)
 
-  def ensureBlocks(from: Long, to: Long): Unit =
-    for {
-      idx ← from to to
-    } {
-      getBlock(idx)
-    }
-
   override def size: Long = channel.size
 
-  override def _seek(newPos: Long): Unit = channel._seek(newPos)
+  override def _seek(newPos: Long): Unit = channel.seek(newPos)
 
-  override protected def _read(dst: ByteBuffer): Unit = {
+  override def _read(dst: ByteBuffer): Int = {
     val start = position()
-    val end = start + dst.remaining()
-    if (end > channel.size)
-      throw new EOFException
+    if (start == size)
+      return -1
+
+    val end = min(size, start + dst.remaining())
 
     val startBlock = start / blockSize
     val endBlock = end / blockSize
 
-    ensureBlocks(startBlock, endBlock)
+    var bytesIdx = dst.position()
+    var numRead = 0
 
     for {
       idx ← startBlock to endBlock
@@ -103,19 +99,19 @@ case class CachingChannel[Channel <: SeekableByteChannel](channel: Channel)(
       blockEnd = (idx + 1) * blockSize
       from = max((start - blockStart).toInt, 0)
       to = (min(end, blockEnd) - blockStart).toInt
-      blockBuffer = blocks.get(idx)
+      blockBuffer = getBlock(idx)
     } {
-      blockBuffer.position(from)
       blockBuffer.limit(to)
+      blockBuffer.position(from)
       dst.put(blockBuffer)
-      blockBuffer.clear()
+      numRead += to - from
     }
+
+    numRead
   }
 
-  override def close(): Unit = {
-    super.close()
+  override def _close(): Unit =
     channel.close()
-  }
 }
 
 object CachingChannel {
@@ -144,5 +140,18 @@ object CachingChannel {
   implicit class AddCaching[Channel <: SeekableByteChannel](channel: Channel) {
     def cache(implicit config: Config): CachingChannel[Channel] =
       makeCachingChannel(channel)
+
+    def cache(blockSize: Int = 64.KB.toInt,
+              maxReadAttempts: Int = 2,
+              maximumSize: Long = 64.MB): CachingChannel[Channel] =
+      makeCachingChannel(
+        channel
+      )(
+        Config(
+          blockSize,
+          maxReadAttempts,
+          maximumSize
+        )
+      )
   }
 }

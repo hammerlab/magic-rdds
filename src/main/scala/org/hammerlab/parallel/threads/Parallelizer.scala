@@ -16,8 +16,10 @@ case class Parallelizer[T](input: Iterable[T])(
     implicit
     config: Config
 ) extends parallel.Parallelizer[T] {
-  def pmap[U: ClassTag](fn: T ⇒ U): Array[U] = {
 
+  override def parallelMap[Ctx, U: ClassTag](init: ⇒ Ctx,
+                                             fn: (Ctx, T) ⇒ U,
+                                             finish: (Ctx) ⇒ Unit): Array[U] = {
     val numThreads =
       config.numThreads match {
         case n if n > 0 ⇒ n
@@ -41,11 +43,12 @@ case class Parallelizer[T](input: Iterable[T])(
     val exceptions = new ConcurrentLinkedDeque[ParallelWorkerException[T]]()
 
     def pollQueue(): Unit = {
+      val ctx = init
       while (true) {
         Option(queue.poll()) match {
           case Some((elem, idx)) ⇒
             try {
-              val result = fn(elem)
+              val result = fn(ctx, elem)
               results(idx) = result
             } catch {
               case e: Throwable ⇒
@@ -58,6 +61,7 @@ case class Parallelizer[T](input: Iterable[T])(
                 )
             }
           case _ ⇒
+            finish(ctx)
             return
         }
       }

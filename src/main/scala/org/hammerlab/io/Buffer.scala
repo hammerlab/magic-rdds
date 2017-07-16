@@ -11,4 +11,13 @@ object Buffer {
     ByteBuffer
       .allocate(capacity)
       .order(LITTLE_ENDIAN)
+
+  def apply(bytes: Array[Byte]): ByteBuffer = ByteBuffer.wrap(bytes)
+
+  def apply(bytes: Array[Byte], offset: Int, length: Int): ByteBuffer = {
+    val buffer = apply(bytes)
+    buffer.position(offset)
+    buffer.limit(offset + length)
+    buffer
+  }
 }

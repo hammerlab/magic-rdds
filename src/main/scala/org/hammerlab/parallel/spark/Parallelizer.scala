@@ -1,6 +1,7 @@
 package org.hammerlab.parallel.spark
 
 import org.hammerlab.parallel
+import org.hammerlab.iterator.FinishingIterator._
 
 import scala.reflect.ClassTag
 
@@ -12,7 +13,10 @@ case class Parallelizer[T: ClassTag](input: Iterable[T])(
     config: Config
 ) extends parallel.Parallelizer[T] {
 
-  def pmap[U: ClassTag](fn: T ⇒ U): Array[U] =
+
+  override def parallelMap[Ctx, U: ClassTag](init: ⇒ Ctx,
+                                             fn: (Ctx, T) ⇒ U,
+                                             finish: (Ctx) ⇒ Unit): Array[U] = {
     if (input.isEmpty)
       Array()
     else
@@ -21,10 +25,24 @@ case class Parallelizer[T: ClassTag](input: Iterable[T])(
         .parallelize(
           input.toSeq,
           config
-          .partitioningStrategy
-          .numPartitions(input.size)
+            .partitioningStrategy
+            .numPartitions(input.size)
         )
-        .map(fn)
+        .mapPartitions {
+          elems ⇒
+            val ctx = init
+            elems
+              .map(
+                elem ⇒
+                  fn(ctx, elem)
+              )
+              .finish(
+                finish(ctx)
+              )
+        }
         .collect()
+
+  }
+
 }
 
