@@ -2,7 +2,6 @@ package org.hammerlab.hadoop.splits
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input
-import org.hammerlab.hadoop.Configuration
 
 /**
  * Case-class sugar over Hadoop [[input.FileSplit]]
@@ -10,13 +9,12 @@ import org.hammerlab.hadoop.Configuration
 case class FileSplit(path: Path,
                      start: Long,
                      length: Long,
-                     locations: Array[String])
-  extends input.FileSplit {
+                     locations: Array[String]) {
   def end = start + length
 }
 
 object FileSplit {
-  def apply(split: input.FileSplit)(implicit conf: Configuration): FileSplit =
+  implicit def apply(split: input.FileSplit): FileSplit =
     FileSplit(
       split.getPath,
       split.getStart,
@@ -24,6 +22,11 @@ object FileSplit {
       split.getLocations
     )
 
-  implicit def conv(split: input.FileSplit)(implicit conf: Configuration): FileSplit =
-    apply(split)
+  implicit def apply(split: FileSplit): input.FileSplit =
+    new input.FileSplit(
+      split.path,
+      split.start,
+      split.length,
+      split.locations
+    )
 }

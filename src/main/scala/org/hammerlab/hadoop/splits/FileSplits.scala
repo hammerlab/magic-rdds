@@ -11,9 +11,9 @@ import scala.collection.JavaConverters._
 
 object FileSplits {
 
-  def apply(path: Path, maxSplitSize: MaxSplitSize)(
+  def asJava(path: Path, maxSplitSize: MaxSplitSize)(
       implicit conf: Configuration
-  ): Seq[FileSplit] = {
+  ): java.util.List[InputSplit] = {
 
     val job = Job.getInstance(conf, s"$path:file-splits")
 
@@ -31,8 +31,14 @@ object FileSplits {
           ???
       }
 
-    fif
-      .getSplits(job)
+    fif.getSplits(job)
+  }
+
+  def apply(path: Path,
+            maxSplitSize: MaxSplitSize)(
+      implicit conf: Configuration
+  ): Seq[FileSplit] = {
+    asJava(path, maxSplitSize)
       .asScala
       .map(_.asInstanceOf[input.FileSplit]: FileSplit)
   }
