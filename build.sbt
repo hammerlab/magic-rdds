@@ -9,7 +9,7 @@ testUtilsVersion := "1.2.4-SNAPSHOT"
 
 deps ++= Seq(
   case_app,
-  args4s % "1.2.3",
+  args4s % "1.2.4-SNAPSHOT",
   iterators % "1.3.0-SNAPSHOT",
   paths % "1.1.1-SNAPSHOT",
   slf4j,

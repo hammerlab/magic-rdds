@@ -4,7 +4,7 @@ import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.executor.InputMetrics
 
 object Util {
-  def getFSBytesReadOnThreadCallback: Option[() => Long] =
+  def getFSBytesReadOnThreadCallback: () => Long =
     SparkHadoopUtil.get.getFSBytesReadOnThreadCallback()
 
   def setBytesRead(bytesRead: Long)(implicit inputMetrics: InputMetrics): Unit =

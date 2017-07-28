@@ -2,6 +2,8 @@ package org.hammerlab.bytes
 
 import caseapp.core.ArgParser
 
+import scala.math.{ ceil, floor, round }
+
 /**
  * Wrapper for representation of a number of bytes
  */
@@ -69,6 +71,50 @@ object Bytes {
           )
         )
     }
+
+  def format(bytes: Bytes): String = format(bytes.bytes)
+  def format(bytes: Long): String = {
+    var bs = bytes
+    var scale = 0
+    var exact = true
+    while (bs > (1 << 20)) {
+      if (bs % (1 << 10) != 0)
+        exact = false
+      bs /= (1 << 10)
+      scale += 1
+    }
+
+    var b = bs.toDouble
+    while (b >= (1 << 10)) {
+      b /= (1 << 10)
+      scale += 1
+    }
+
+    val digits = (round(b * 10) / 10).toInt.toString
+
+    val numDigits = digits.length
+
+    val suffix =
+      scale match {
+        case 0 ⇒  "B"
+        case 1 ⇒ "KB"
+        case 2 ⇒ "MB"
+        case 3 ⇒ "GB"
+        case 4 ⇒ "TB"
+        case 5 ⇒ "PB"
+        case 6 ⇒ "EB"
+      }
+
+    val fmt =
+      if (b < 99.95 && (!exact || floor(b) != ceil(b)))
+        "%.1f"
+      else
+        "%.0f"
+
+    val number = fmt.format(b)
+
+    s"$number$suffix"
+  }
 }
 
 case class BadBytesString(str: String)

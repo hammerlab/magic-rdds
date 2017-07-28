@@ -11,8 +11,7 @@ import scala.reflect.ClassTag
  */
 case class OrderedRepartitionRDD[T: ClassTag](@transient rdd: RDD[T]) {
   def orderedRepartition(n: Int): RDD[T] =
-    rdd
-      .zipRepartition(n)
+    zipRepartition(n)
       .values
 
   def zipRepartition(n: Int): RDD[((PartitionIndex, Int), T)] =
