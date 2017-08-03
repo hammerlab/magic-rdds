@@ -2,10 +2,22 @@ package org.hammerlab.io
 
 import java.io.PrintStream
 
+import cats.Show
+import cats.Show.{ Shown ⇒ CatsShown }
 import org.hammerlab.paths.Path
 
+/**
+ * Wrapper around [[cats.Show.Shown]] that wraps [[String]]s by default
+ */
+final case class Shown(override val toString: String) extends AnyVal
+object Shown {
+  implicit def mat[A](x: A)(implicit z: Show[A]): Shown = Shown(z show x)
+  implicit def fromCats(shown: CatsShown): Shown = Shown(shown.toString)
+  implicit def fromString(str: String): Shown = Shown(str)
+}
+
 case class Printer(ps: PrintStream) {
-  def print(os: Object*): Unit =
+  def print(os: Shown*): Unit =
     for { o ← os } {
       ps.println(o)
     }
@@ -73,7 +85,7 @@ object Printer {
   /**
    * Named to avoid overloading [[Predef.print]]
    */
-  def echo(os: Object*)(
+  def echo(os: Shown*)(
       implicit printer: Printer
   ): Unit =
     printer.print(os: _*)

@@ -1,6 +1,8 @@
 package org.hammerlab.bytes
 
 import caseapp.core.ArgParser
+import cats.Show
+import cats.Show.show
 
 import scala.math.{ ceil, floor, round }
 
@@ -72,13 +74,20 @@ object Bytes {
         )
     }
 
+  def unapply(bytes: Bytes): Option[Long] = Some(bytes.bytes)
+
+  object format {
+    implicit val showBytes: Show[Long] = show(format(_))
+  }
+
   def format(bytes: Bytes): String = format(bytes.bytes)
-  def format(bytes: Long): String = {
+  def format(bytes: Bytes, includeB: Boolean): String = format(bytes.bytes, includeB)
+  def format(bytes: Long, includeB: Boolean = false): String = {
     var bs = bytes
     var scale = 0
     var exact = true
     while (bs > (1 << 20)) {
-      if (bs % (1 << 10) != 0)
+      if (exact && bs % (1 << 10) != 0)
         exact = false
       bs /= (1 << 10)
       scale += 1
@@ -95,15 +104,16 @@ object Bytes {
     val numDigits = digits.length
 
     val suffix =
-      scale match {
-        case 0 ⇒  "B"
-        case 1 ⇒ "KB"
-        case 2 ⇒ "MB"
-        case 3 ⇒ "GB"
-        case 4 ⇒ "TB"
-        case 5 ⇒ "PB"
-        case 6 ⇒ "EB"
-      }
+      (scale match {
+        case 0 ⇒  ""
+        case 1 ⇒ "K"
+        case 2 ⇒ "M"
+        case 3 ⇒ "G"
+        case 4 ⇒ "T"
+        case 5 ⇒ "P"
+        case 6 ⇒ "E"
+      }) +
+      (if (includeB) "B" else "")
 
     val fmt =
       if (b < 99.95 && (!exact || floor(b) != ceil(b)))

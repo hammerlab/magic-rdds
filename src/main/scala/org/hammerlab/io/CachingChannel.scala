@@ -1,11 +1,11 @@
 package org.hammerlab.io
 
-import java.io.{ EOFException, IOException }
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.util
 
-import org.hammerlab.bytes._
 import grizzled.slf4j.Logging
+import org.hammerlab.bytes._
 import org.hammerlab.io.CachingChannel.Config
 import org.hammerlab.math.ceil
 
