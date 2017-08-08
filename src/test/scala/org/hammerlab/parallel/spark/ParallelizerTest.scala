@@ -3,7 +3,7 @@ package org.hammerlab.parallel.spark
 import org.hammerlab.math.ceil
 import org.hammerlab.parallel
 import org.hammerlab.parallel.spark.SerdeBuffer.{ numCloses, numOpens }
-import org.hammerlab.spark.LongAccumulator
+import org.hammerlab.spark.AtomicLongAccumulator
 import org.hammerlab.spark.test.suite.SparkSuite
 
 class ParallelizerTest
@@ -46,6 +46,6 @@ class ParallelizerTest
  * serializable due to (arguably) a scalatest bug, so they can't be fields of [[ParallelizerTest]].
  */
 object SerdeBuffer {
-  lazy val numOpens = LongAccumulator()
-  lazy val numCloses = LongAccumulator()
+  lazy val numOpens = AtomicLongAccumulator()
+  lazy val numCloses = AtomicLongAccumulator()
 }
