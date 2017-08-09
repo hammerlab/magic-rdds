@@ -81,12 +81,12 @@ class KryoBzippedSequenceFileFooRDDTest
     with BZippedSequenceFileRDDTest
     with SerdeRDDTest {
 
-  testSmallInts(463, 456, 447, 445)
+  testSmallInts( 463, 456, 447, 445)
   testMediumInts(443, 446, 447, 444)
-  testLongs(461, 462, 460, 461)
+  testLongs(     461, 462, 460, 461)
 
-  testSomeFoos(   1,  301)
-  testSomeFoos(  10,  353,  361,  360,  359)
-  testSomeFoos( 100,  716,  729,  706,  722)
-  testSomeFoos(1000, 1985, 1714, 1674, 1665)
+  testSomeFoos(   1,  303)
+  testSomeFoos(  10,  355,  358,  360,  361)
+  testSomeFoos( 100,  701,  731,  708,  724)
+  testSomeFoos(1000, 1974, 1722, 1686, 1665)
 }

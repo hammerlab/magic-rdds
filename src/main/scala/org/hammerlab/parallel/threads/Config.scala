@@ -1,5 +1,7 @@
 package org.hammerlab.parallel.threads
 
+import java.lang.Runtime.getRuntime
+
 import org.hammerlab.parallel
 
 import scala.reflect.ClassTag
@@ -13,6 +15,10 @@ case class Config(numThreads: Int)
 }
 
 object Config {
-  implicit val default = Config(8)
+  implicit def default =
+    Config(
+      getRuntime()
+        .availableProcessors() * 4
+    )
 }
 

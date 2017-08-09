@@ -34,5 +34,6 @@ case class AppendEmptyPartition[T: ClassTag](@transient rdd: RDD[T]) {
 }
 
 object AppendEmptyPartitionRDD {
-  implicit def makeAppendEmptyPartitionRDD[T: ClassTag](rdd: RDD[T]): AppendEmptyPartition[T] = AppendEmptyPartition(rdd)
+  implicit def makeAppendEmptyPartitionRDD[T: ClassTag](rdd: RDD[T]): AppendEmptyPartition[T] =
+    AppendEmptyPartition(rdd)
 }

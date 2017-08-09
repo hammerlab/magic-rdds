@@ -2,6 +2,7 @@ package org.hammerlab.magic.rdd.partitions
 
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.partitions.OrderedRepartitionRDD._
+import org.hammerlab.spark.PartitionIndex
 
 import scala.reflect.ClassTag
 
@@ -10,14 +11,20 @@ import scala.reflect.ClassTag
  */
 case class OrderedRepartitionRDD[T: ClassTag](@transient rdd: RDD[T]) {
   def orderedRepartition(n: Int): RDD[T] =
-    rdd
-      .zipRepartition(n)
+    zipRepartition(n)
       .values
 
-  def zipRepartition(n: Int): RDD[(Long, T)] =
+  def zipRepartition(n: Int): RDD[((PartitionIndex, Int), T)] =
     rdd
-      .zipWithIndex
-      .map(_.swap)
+      .mapPartitionsWithIndex {
+        case (partitionIdx, elems) ⇒
+          elems
+            .zipWithIndex
+            .map {
+              case (elem, idx) ⇒
+                partitionIdx → idx → elem
+            }
+      }
       .sortByKey(numPartitions = n)
 }
 

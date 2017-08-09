@@ -1,5 +1,6 @@
-package org.hammerlab.hadoop
+package org.hammerlab.hadoop.splits
 
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input
 
 /**
@@ -8,13 +9,12 @@ import org.apache.hadoop.mapreduce.lib.input
 case class FileSplit(path: Path,
                      start: Long,
                      length: Long,
-                     locations: Array[String])
-  extends input.FileSplit {
+                     locations: Array[String]) {
   def end = start + length
 }
 
 object FileSplit {
-  def apply(split: input.FileSplit): FileSplit =
+  implicit def apply(split: input.FileSplit): FileSplit =
     FileSplit(
       split.getPath,
       split.getStart,
@@ -22,6 +22,11 @@ object FileSplit {
       split.getLocations
     )
 
-  implicit def conv(split: input.FileSplit): FileSplit =
-    apply(split)
+  implicit def apply(split: FileSplit): input.FileSplit =
+    new input.FileSplit(
+      split.path,
+      split.start,
+      split.length,
+      split.locations
+    )
 }

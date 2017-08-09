@@ -7,7 +7,7 @@ import org.apache.hadoop.io.compress.{ BZip2Codec, CompressionCodec }
 import org.apache.hadoop.io.{ BytesWritable, NullWritable }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, SparkEnv }
-import org.hammerlab.hadoop.UnsplittableSequenceFileInputFormat
+import org.hammerlab.hadoop.splits.UnsplittableSequenceFileInputFormat
 
 import scala.reflect.ClassTag
 

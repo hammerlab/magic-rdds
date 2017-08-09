@@ -4,14 +4,16 @@ import org.hammerlab.magic.rdd.keyed.CappedGroupByKeyRDD._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 
-class CappedGroupByKeyRDDTest extends SparkSuite {
+class CappedGroupByKeyRDDTest
+  extends SparkSuite {
+
   // 4 partitions, each with 20 random ints from [0, 20).
   lazy val rdd =
     makeRDD(
-      Vector( 9, 12, 15,  7,  5, 11, 11, 16, 17,  9, 14,  0,  2, 12,  1,  5,  5,  0, 16, 12),
-      Vector(13,  2, 19, 10, 18, 16,  7, 17,  3, 13, 11,  5,  0,  1, 18,  9, 11, 10, 11,  3),
-      Vector( 4, 17,  1,  5,  8,  4, 14, 13,  2,  1, 11,  8,  1,  1, 13, 15,  7, 14,  1, 14),
-      Vector( 0,  2, 15,  2, 16, 10, 17, 19,  6,  4,  1,  7,  8, 14,  5,  7, 16, 16, 18, 12)
+      Seq( 9, 12, 15,  7,  5, 11, 11, 16, 17,  9, 14,  0,  2, 12,  1,  5,  5,  0, 16, 12),
+      Seq(13,  2, 19, 10, 18, 16,  7, 17,  3, 13, 11,  5,  0,  1, 18,  9, 11, 10, 11,  3),
+      Seq( 4, 17,  1,  5,  8,  4, 14, 13,  2,  1, 11,  8,  1,  1, 13, 15,  7, 14,  1, 14),
+      Seq( 0,  2, 15,  2, 16, 10, 17, 19,  6,  4,  1,  7,  8, 14,  5,  7, 16, 16, 18, 12)
     )
     .keyBy(_ % 4)
 

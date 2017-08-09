@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.keyed
 
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.CountIteratorByKey._
-import org.hammerlab.iterator.Sliding2Iterator._
+import org.hammerlab.iterator.sliding.Sliding2Iterator._
 import org.hammerlab.magic.rdd.partitions.PartitionByKeyRDD._
 import org.hammerlab.magic.rdd.partitions.ReducePartitionsRDD._
 import org.hammerlab.magic.rdd.partitions.SlicePartitionsRDD
