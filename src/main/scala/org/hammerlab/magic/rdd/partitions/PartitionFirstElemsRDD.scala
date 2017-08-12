@@ -5,6 +5,7 @@ import org.hammerlab.spark.KeyPartitioner
 
 import scala.collection.immutable.SortedMap
 import scala.reflect.ClassTag
+import org.hammerlab.iterator.NextOptionIterator
 
 /**
  * Helpers for fetching the first element from each partition of an [[RDD]].
@@ -22,6 +23,14 @@ class PartitionFirstElemsRDD[T: ClassTag](rdd: RDD[T]) {
         )
         .collect(): _*
     )
+
+  lazy val firstElemsOpt: Array[Option[T]] =
+    rdd
+      .mapPartitions(
+        it ⇒
+          Iterator(it.nextOption)
+      )
+      .collect()
 
   def firstElemsMap[U: ClassTag](fn: T ⇒ U): scala.collection.Map[Int, U] =
     rdd
