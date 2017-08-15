@@ -6,17 +6,11 @@ import org.hammerlab.magic.rdd.size._
 
 import scala.reflect.ClassTag
 
-object SampleRDD {
+case class SampleRDD[T: ClassTag](@transient rdd: RDD[T]) {
+  def sample(implicit sampleSize: SampleSize): Array[T] =
+    sample(rdd.size)
 
-  def sample[T: ClassTag](rdd: RDD[T])(
-      implicit sampleSize: SampleSize
-  ): Array[T] =
-    sample(rdd, rdd.size)
-
-  def sample[T: ClassTag](rdd: RDD[T],
-                          size: Long)(
-      implicit sampleSize: SampleSize
-  ): Array[T] =
+  def sample(size: Long)(implicit sampleSize: SampleSize): Array[T] =
     sampleSize match {
       case SampleSize(Some(ss))
         if size > ss ⇒
@@ -26,4 +20,9 @@ object SampleRDD {
       case _ ⇒
         rdd.collect()
     }
+}
+
+object SampleRDD {
+  implicit def makeSampleRDD[T: ClassTag](rdd: RDD[T]): SampleRDD[T] =
+    SampleRDD(rdd)
 }
