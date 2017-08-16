@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
-import org.hammerlab.magic.rdd.scan.ScanRightByKeyRDD._
+import org.hammerlab.magic.rdd.scan.ScanRightValuesRDD._
 import org.hammerlab.magic.rdd.scan.ScanRightRDD._
 
 import scala.reflect.ClassTag
@@ -32,7 +32,7 @@ class ScanRightRDDTest
     val actual =
       sc
         .parallelize(seq)
-        .scanRightByKey(useRDDReversal)
+        .scanRightValues(useRDDReversal)
         .collect()
 
     actual should be(
