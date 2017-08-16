@@ -1,10 +1,13 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.implicits.catsKernelStdGroupForInt
+import cats.kernel.Monoid
 import org.hammerlab.spark.test.suite.SparkSuite
 
 import scala.reflect.ClassTag
 
-trait ScanRDDTest extends SparkSuite {
+trait ScanRDDTest
+  extends SparkSuite {
 
   test( "0") { check(1 to  0) }
   test( "1") { check(1 to  1) }
@@ -18,21 +21,19 @@ trait ScanRDDTest extends SparkSuite {
   test( "9") { check(1 to  9) }
   test("10") { check(1 to 10) }
 
-  def check(input: Iterable[Int]): Unit =
-    check[Int](0, input, (a: Int, b: Int) ⇒ a + b)
+  def check[T: ClassTag](input: Iterable[T],
+                         expected: Seq[T])(
+      implicit
+      m: Monoid[T]
+  ): Unit =
+    check(
+      input,
+      Some(expected)
+    )
 
-  def check[T: ClassTag](identity: T,
-                         input: Iterable[T],
-                         expected: Seq[T])(implicit op: (T, T) ⇒ T): Unit =
-    check(identity, input, op, Some(expected))
-
-  def check[T: ClassTag](identity: T,
-                         input: Iterable[T],
-                         op: (T, T) ⇒ T,
-                         expectedOpt: Option[Seq[T]] = None): Unit
-}
-
-object Ops {
-  // This needs to live outside of a Suite because it gets serialized, and Suites are not Serializable.
-  implicit def add(a: String, b: String): String = a + b
+  def check[T: ClassTag](input: Iterable[T],
+                         expectedOpt: Option[Seq[T]] = None)(
+                            implicit
+                            m: Monoid[T]
+                        ): Unit
 }

@@ -1,25 +1,30 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
+import cats.kernel.Monoid
 import org.hammerlab.magic.rdd.scan.ScanLeftByKeyRDD._
 import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
 
 import scala.reflect.ClassTag
 
-class ScanLeftRDDTest extends ScanRDDTest {
+class ScanLeftRDDTest
+  extends ScanRDDTest {
 
-  import Ops._
-
-  def check[T: ClassTag](identity: T, input: Iterable[T], op: (T, T) ⇒ T, expectedOpt: Option[Seq[T]] = None): Unit = {
+  override def check[T: ClassTag](input: Iterable[T],
+                                  expectedOpt: Option[Seq[T]] = None)(
+      implicit
+      m: Monoid[T]
+  ): Unit = {
     val actualArr =
       sc
         .parallelize(input.toSeq)
-        .scanLeft(identity)(op)
+        .scanLeft
         .collect()
 
     val expectedArr =
       expectedOpt.getOrElse(
         input
-          .scanLeft(identity)(op)
+          .scanLeft(m.empty)(m.combine)
           .drop(1)
           .toArray
       )
@@ -28,8 +33,7 @@ class ScanLeftRDDTest extends ScanRDDTest {
   }
 
   test("strings") {
-    check[String](
-      "",
+    check(
       Seq("a", "bc", "", "def"),
       Seq("a", "abc", "abc", "abcdef")
     )
@@ -48,7 +52,7 @@ class ScanLeftRDDTest extends ScanRDDTest {
     val actual =
       sc
         .parallelize(seq)
-        .scanLeftByKey(0)(_ + _)
+        .scanLeftByKey
         .collect()
 
     actual should be(

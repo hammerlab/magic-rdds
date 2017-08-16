@@ -1,16 +1,36 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.Monoid
 import org.apache.spark.rdd.RDD
-
-import scala.reflect.ClassTag
 import org.hammerlab.iterator.DropRightIterator._
 import org.hammerlab.magic.rdd.rev.ReverseRDD._
-import ScanLeftRDD._
+import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
+
+import scala.reflect.ClassTag
 
 /**
  * RDD wrapper supporting methods that compute partial-sums (from right to left) across the RDD.
  */
-class ScanRightRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
+case class ScanRightRDD[T: ClassTag](@transient rdd: RDD[T]) {
+
+  def scanRight[U: ClassTag](aggregate: (T, U) ⇒ U)(
+      implicit m: Monoid[U]
+  ): RDD[U] =
+    scanRight(
+      aggregate,
+      useRDDReversal = true
+    )
+
+  def scanRight[U: ClassTag](aggregate: (T, U) ⇒ U,
+                             useRDDReversal: Boolean)(
+      implicit m: Monoid[U]
+  ): RDD[U] =
+    scanRight(
+      m.empty,
+      aggregate,
+      m.combine,
+      useRDDReversal
+    )
 
   /**
    *
@@ -30,7 +50,11 @@ class ScanRightRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable
     if (useRDDReversal)
       rdd
         .reverse()
-        .scanLeft[U](identity, (u, t) ⇒ aggregate(t, u), (u1, u2) ⇒ combine(u2, u1))
+        .scanLeft[U](
+          identity,
+          (u, t) ⇒ aggregate(t, u),
+          (u1, u2) ⇒ combine(u2, u1)
+        )
         .reverse()
     else {
       val numPartitions = rdd.getNumPartitions
@@ -58,23 +82,45 @@ class ScanRightRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable
           .parallelize(partitionSums, numPartitions)
 
       rdd.zipPartitions(partitionSumsRDD)(
-        (it, sumIter) ⇒ {
+        (it, sumIter) ⇒
           it
             .scanRight(sumIter.next)(aggregate)
             .dropRight(1)
-        }
       )
     }
 
   def scanRight[U: ClassTag](identity: U,
                              aggregate: (T, U) ⇒ U,
                              combine: (U, U) ⇒ U): RDD[U] =
-    scanRight(identity, aggregate, combine, useRDDReversal = false)
+    scanRight(
+      identity,
+      aggregate,
+      combine,
+      useRDDReversal = false
+    )
 
-  def scanRight(identity: T, useRDDReversal: Boolean = false)(combine: (T, T) ⇒ T): RDD[T] =
-    scanRight(identity, combine, combine, useRDDReversal)
+  def scanRight(useRDDReversal: Boolean = true)(
+      implicit m: Monoid[T]
+  ): RDD[T] =
+    scanRight(
+      m.empty,
+      useRDDReversal
+    )(
+      m.combine
+    )
+
+  def scanRight(identity: T,
+                useRDDReversal: Boolean)(
+      combine: (T, T) ⇒ T
+  ): RDD[T] =
+    scanRight(
+      identity,
+      combine,
+      combine,
+      useRDDReversal
+    )
 }
 
 object ScanRightRDD {
-  implicit def toScanRightRDD[T: ClassTag](rdd: RDD[T]): ScanRightRDD[T] = new ScanRightRDD(rdd)
+  implicit def toScanRightRDD[T: ClassTag](rdd: RDD[T]): ScanRightRDD[T] = ScanRightRDD(rdd)
 }

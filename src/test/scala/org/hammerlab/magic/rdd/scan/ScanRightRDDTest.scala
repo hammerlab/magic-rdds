@@ -1,31 +1,72 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.Monoid
+import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
+import org.hammerlab.magic.rdd.scan.ScanRightByKeyRDD._
 import org.hammerlab.magic.rdd.scan.ScanRightRDD._
 
 import scala.reflect.ClassTag
 
-class ScanRightRDDTest extends ScanRightRDDTestI {
+class ScanRightRDDTest
+  extends ScanRDDTest {
 
-  def check[T: ClassTag](identity: T,
-                         input: Iterable[T],
-                         op: (T, T) ⇒ T,
-                         expectedOpt: Option[Seq[T]] = None): Unit = {
+  def useRDDReversal: Boolean = false
+
+  test("strings") {
+    check(
+      Seq("a", "bc", "", "def"),
+      Seq("abcdef", "bcdef", "def", "def")
+    )
+  }
+
+  test("by-key") {
+    val seq =
+      Seq(
+        "a" → 1,
+        "b" → 2,
+        "c" → 3,
+        "d" → 4,
+        "e" → 5
+      )
+
+    val actual =
+      sc
+        .parallelize(seq)
+        .scanRightByKey(useRDDReversal)
+        .collect()
+
+    actual should be(
+      Array(
+        "a" → 15,
+        "b" → 14,
+        "c" → 12,
+        "d" →  9,
+        "e" →  5
+      )
+    )
+  }
+
+  def check[T: ClassTag](input: Iterable[T],
+                         expectedOpt: Option[Seq[T]] = None)(
+      implicit m: Monoid[T]
+  ): Unit = {
 
     val rdd = sc.parallelize(input.toSeq)
 
     val actualArr =
       rdd
-        .scanRight(identity)(op)
+        .scanRight(useRDDReversal)
         .collect()
 
     val expectedArr =
       expectedOpt.getOrElse(
         input
-          .scanRight(identity)(op)
+          .scanRight(m.empty)(m.combine)
           .dropRight(1)
           .toArray
       )
 
     actualArr should ===(expectedArr)
   }
+
 }

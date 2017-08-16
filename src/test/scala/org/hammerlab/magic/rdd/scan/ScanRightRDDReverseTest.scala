@@ -1,31 +1,10 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.kernel.Monoid
+import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.scan.ScanRightRDD._
 
-import scala.reflect.ClassTag
-
-class ScanRightRDDReverseTest extends ScanRightRDDTestI {
-
-  def check[T: ClassTag](identity: T,
-                         input: Iterable[T],
-                         op: (T, T) ⇒ T,
-                         expectedOpt: Option[Seq[T]] = None): Unit = {
-
-    val rdd = sc.parallelize(input.toSeq)
-
-    val actualArr =
-      rdd
-        .scanRight(identity, useRDDReversal = true)(op)
-        .collect()
-
-    val expectedArr =
-      expectedOpt.getOrElse(
-        input
-          .scanRight(identity)(op)
-          .dropRight(1)
-          .toArray
-      )
-
-    actualArr should ===(expectedArr)
-  }
+class ScanRightRDDReverseTest
+  extends ScanRightRDDTest {
+  override def useRDDReversal = true
 }
