@@ -8,6 +8,11 @@ import scala.reflect.ClassTag
 
 object ScanRightValuesRDD {
 
+  /**
+   * Expose methods on paired-RDDs for performing a scan-right over the values.
+   *
+   * See [[ScanRightRDD]] / [[ScanValuesRDD]] for more discussion.
+   */
   implicit class ScanRightValuesRDDOps[K, V: ClassTag](rdd: RDD[(K, V)]) {
     // Dummy key value, not exposed in returned RDD
     private var k: K = _

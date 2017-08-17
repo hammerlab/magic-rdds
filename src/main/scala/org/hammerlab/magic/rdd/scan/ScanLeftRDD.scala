@@ -9,6 +9,8 @@ object ScanLeftRDD {
 
   /**
    * RDD wrapper supporting methods that compute partial-sums across the RDD.
+   *
+   * See [[ScanRDD]] for some discussion of the return value's semantics.
    */
   implicit class ScanLeftRDDOps[T: ClassTag](rdd: RDD[T]) {
     def scanLeft(implicit m: Monoid[T]): ScanRDD[T] = scanLeft(m.empty)(m.combine)

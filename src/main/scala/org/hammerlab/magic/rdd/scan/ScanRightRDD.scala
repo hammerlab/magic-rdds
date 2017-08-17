@@ -12,6 +12,12 @@ import scala.reflect.ClassTag
 
 /**
  * RDD wrapper supporting methods that compute partial-sums (from right to left) across the RDD.
+ *
+ * Callers should be aware of one implementation detail: by default, scan-rights proceed by reversing the RDD,
+ * performing a scan-left, then reversing the result, which involves 3 Spark jobs.
+ *
+ * An alternative implementation delegates to [[scala.collection.Iterator.scanRight]], which is likely less expensive,
+ * but materializes whole partitions into memory, which is generally a severe anti-pattern in Spark computations.
  */
 object ScanRightRDD {
 
@@ -43,8 +49,8 @@ object ScanRightRDD {
      * @param combine combine two "sums"
      * @param useRDDReversal when set, reverse the RDD, do a `scanLeft` (see [[ScanLeftRDD]], and then reverse it back.
      *                       Usually this will be more work than the default implementation, but the latter materializes
-     *                       whole partitions into memory as part of calling [[Iterator.scanRight]], which may be
-     *                       prohibitively memory-expensive in some cases.
+     *                       whole partitions into memory as part of calling [[scala.collection.Iterator.scanRight]],
+     *                       which may be prohibitively memory-expensive in some cases.
      * @return
      */
     def scanRight[U: ClassTag](identity: U,
