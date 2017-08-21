@@ -17,39 +17,84 @@ object ScanRightValuesRDD {
     // Dummy key value, not exposed in returned RDD
     private var k: K = _
 
-    def scanRightValues(useRDDReversal: Boolean = false)(implicit m: Monoid[V]): ScanValuesRDD[K, V] =
+    def scanRightValues(includeCurrentValue: Boolean = false,
+                        useRDDReversal: Boolean = false
+                       )(
+        implicit m: Monoid[V]
+    ): ScanValuesRDD[K, V] =
       scanRightValues(
         m.empty,
-        useRDDReversal
+        useRDDReversal,
+        includeCurrentValue
       )(
         m.combine
       )
 
     def scanRightValues(identity: V,
-                        useRDDReversal: Boolean)(
-        combine: (V, V) ⇒ V
-    ): ScanValuesRDD[K, V] = {
+                        useRDDReversal: Boolean,
+                        includeCurrentValue: Boolean)(
+                           combine: (V, V) ⇒ V
+                       ): ScanValuesRDD[K, V] =
+      scanRightValues(
+        identity,
+        combine,
+        combine,
+        useRDDReversal,
+        includeCurrentValue
+      )
+
+    def scanRightValues[W: ClassTag](identity: W,
+                                     aggregate: (V, W) ⇒ W,
+                                     combine: (W, W) ⇒ W,
+                                     useRDDReversal: Boolean,
+                                     includeCurrentValue: Boolean): ScanValuesRDD[K, W] = {
+
+      val ag: ((K, V), (K, W, W)) ⇒ (K, W, W) =
+      {
+        case ((k, v), (_, _, prevW2)) ⇒
+          (
+            k,
+            prevW2,
+            aggregate(v, prevW2)
+          )
+      }
+
+      val comb: ((K, W, W), (K, W, W)) ⇒ (K, W, W) =
+      {
+        case ((k, exclusiveW, inclusiveW), (_, _, prevW)) ⇒
+          (
+            k,
+            combine(exclusiveW, prevW),
+            combine(inclusiveW, prevW)
+          )
+      }
+
       val ScanRDD(scanRDD, bounds, total) =
         rdd
-          .scanRight(
-            (k, identity),
-            useRDDReversal
-          ) {
-            case (
-              (k, v),
-              (_, sum)
-            ) ⇒
-              k →
-                combine(
-                  v,
-                  sum
-                )
-          }
+          .scanRight[(K, W, W)](
+            (k, identity, identity),
+            ag,
+            comb,
+            includeCurrentValue = true,
+            useRDDReversal = useRDDReversal
+          )
+
+      val project: ((K, W, W)) ⇒ (K, W) =
+      {
+        case (k, exclusiveW, inclusiveW) ⇒
+          k →
+            (
+              if (includeCurrentValue)
+                inclusiveW
+              else
+                exclusiveW
+              )
+      }
 
       ScanValuesRDD(
-        scanRDD,
-        bounds.map(_._2),
-        total._2
+        scanRDD.map(project),
+        bounds.map(project(_)._2),
+        project(total)._2
       )
     }
   }

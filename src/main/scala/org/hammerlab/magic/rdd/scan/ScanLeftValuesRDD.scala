@@ -17,34 +17,70 @@ object ScanLeftValuesRDD {
     // Dummy key "identity" value, not exposed in returned RDD
     private var k: K = _
 
-    def scanLeftValues(implicit m: Monoid[V]): ScanValuesRDD[K, V] =
+    def scanLeftValues(includeCurrentValue: Boolean = false)(implicit m: Monoid[V]): ScanValuesRDD[K, V] =
       scanLeftValues(
-        m.empty
+        m.empty,
+        includeCurrentValue
       )(
         m.combine
       )
 
-    def scanLeftValues(identity: V)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = {
+    def scanLeftValues(identity: V,
+                       includeCurrentValue: Boolean
+                      )(
+        combine: (V, V) ⇒ V
+    ): ScanValuesRDD[K, V] =
+      scanLeftValues[V](
+        identity,
+        combine,
+        combine,
+        includeCurrentValue
+      )
+
+    def scanLeftValues[W: ClassTag](identity: W,
+                                    aggregate: (W, V) ⇒ W,
+                                    combine: (W, W) ⇒ W,
+                                    includeCurrentValue: Boolean
+    ): ScanValuesRDD[K, W] = {
       val ScanRDD(scanRDD, bounds, total) =
         rdd
-          .scanLeft(
-            (k, identity)
-          ) {
-            case (
-              (_, sum),
-              (k, v)
-            ) ⇒
-              k →
-                combine(
-                  sum,
-                  v
+          .scanLeft[(K, W, W)](
+            (k, identity, identity),
+            {
+              case ((_, _, prevW2), (k, v)) ⇒
+                (
+                  k,
+                  prevW2,
+                  aggregate(prevW2, v)
                 )
-          }
+            },
+            {
+              case ((_, _, prevW), (k, w1, w2)) ⇒
+                (
+                  k,
+                  combine(prevW, w1),
+                  combine(prevW, w2)
+                )
+            },
+            includeCurrentValue = true
+          )
+
+      val project: ((K, W, W)) ⇒ (K, W) =
+        {
+          case (k, exclusiveW, inclusiveW) ⇒
+            k →
+              (
+                if (includeCurrentValue)
+                  inclusiveW
+                else
+                  exclusiveW
+              )
+        }
 
       ScanValuesRDD(
-        scanRDD,
-        bounds.map(_._2),
-        total._2
+        scanRDD.map(project),
+        bounds.map(project(_)._2),
+        project(total)._2
       )
     }
   }

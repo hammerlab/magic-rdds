@@ -9,6 +9,10 @@ import scala.reflect.ClassTag
 trait ScanRDDTest
   extends SparkSuite {
 
+  def getExpected[T](expected: Iterable[T])(implicit m: Monoid[T]): Seq[T]
+
+  def numPartitions: Int
+
   test( "0") { check(1 to  0) }
   test( "1") { check(1 to  1) }
   test( "2") { check(1 to  2) }

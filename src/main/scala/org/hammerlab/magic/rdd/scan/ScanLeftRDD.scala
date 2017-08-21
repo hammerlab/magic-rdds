@@ -2,6 +2,7 @@ package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
 import org.apache.spark.rdd.RDD
+import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
@@ -13,16 +14,40 @@ object ScanLeftRDD {
    * See [[ScanRDD]] for some discussion of the return value's semantics.
    */
   implicit class ScanLeftRDDOps[T: ClassTag](rdd: RDD[T]) {
-    def scanLeft(implicit m: Monoid[T]): ScanRDD[T] = scanLeft(m.empty)(m.combine)
+    def scanLeft(includeCurrentValue: Boolean = false)(
+        implicit m: Monoid[T]
+    ): ScanRDD[T] =
+      scanLeft(
+        m.empty,
+        includeCurrentValue
+      )(
+        m.combine
+      )
 
-    def scanLeft(identity: T)(combine: (T, T) ⇒ T): ScanRDD[T] =
-      scanLeft(identity, combine, combine)
+    def scanLeft(implicit m: Monoid[T]): ScanRDD[T] =
+      scanLeft(includeCurrentValue = false)
+
+    def scanLeftInclusive(implicit m: Monoid[T]): ScanRDD[T] =
+      scanLeft(includeCurrentValue = true)
+
+    def scanLeft(identity: T,
+                 includeCurrentValue: Boolean
+    )(
+        combine: (T, T) ⇒ T
+    ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        combine,
+        combine,
+        includeCurrentValue
+      )
 
     def scanLeft[U: ClassTag](identity: U,
                               aggregate: (U, T) ⇒ U,
-                              combine: (U, U) ⇒ U): ScanRDD[U] = {
+                              combine: (U, U) ⇒ U,
+                              includeCurrentValue: Boolean): ScanRDD[U] = {
       val numPartitions = rdd.getNumPartitions
-      val (partitionSums, total) = {
+      val (partitionPrefixes, total) = {
         val sums =
           rdd
             .mapPartitionsWithIndex(
@@ -41,23 +66,32 @@ object ScanLeftRDD {
         (sums.dropRight(1), total)
       }
 
-      val partitionSumsRDD =
+      val partitionPrefixesRDD =
         rdd
           .sparkContext
           .parallelize(
-            partitionSums,
+            partitionPrefixes,
             numPartitions
           )
 
       ScanRDD(
         rdd
-          .zipPartitions(partitionSumsRDD) {
-            (it, sumIter) ⇒
-              it
-              .scanLeft(sumIter.next)(aggregate)
-              .drop(1)
+          .zipPartitions(partitionPrefixesRDD) {
+            (it, prefixIter) ⇒
+              val scanned =
+                it
+                  .scanLeft(
+                    prefixIter.next
+                  )(
+                    aggregate
+                  )
+
+              if (includeCurrentValue)
+                scanned.drop(1)
+              else
+                scanned.dropRight(1)
           },
-        partitionSums,
+        partitionPrefixes,
         total
       )
     }
