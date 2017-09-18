@@ -5,7 +5,6 @@ import org.apache.spark.{ NarrowDependency, Partition, TaskContext }
 import org.hammerlab.magic.rdd.partitions.SortedRDD.Bounds
 import org.hammerlab.spark.{ NumPartitions, PartitionIndex }
 
-import scala.collection.immutable.SortedMap
 import scala.reflect.ClassTag
 
 case class RangePartition(index: PartitionIndex,
@@ -13,13 +12,13 @@ case class RangePartition(index: PartitionIndex,
   extends Partition
 
 case class RangePartitionRDD[T: Ordering: ClassTag](parentRDD: RDD[T],
-                                                    partitionParentsMap: SortedMap[PartitionIndex, Seq[PartitionIndex]],
+                                                    partitionParentsMap: IndexedSeq[Option[Seq[PartitionIndex]]],
                                                     bounds: Bounds[T])
   extends RDD[T](
     parentRDD.sparkContext,
     new NarrowDependency[T](parentRDD) {
       override def getParents(partitionId: Int): Seq[Int] =
-        partitionParentsMap.getOrElse(partitionId, Nil)
+        partitionParentsMap(partitionId).getOrElse(Nil)
     } :: Nil
   )
     with SortedRDD[T] {
@@ -29,7 +28,7 @@ case class RangePartitionRDD[T: Ordering: ClassTag](parentRDD: RDD[T],
 
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
     val RangePartition(index, parents) = split.asInstanceOf[RangePartition]
-    bounds.get(index) match {
+    bounds(index) match {
       case Some((start, end)) ⇒
         parents
           .iterator
@@ -59,8 +58,8 @@ case class RangePartitionRDD[T: Ordering: ClassTag](parentRDD: RDD[T],
         idx ⇒
           RangePartition(
             idx,
-            partitionParentsMap
-              .getOrElse(idx, Nil)
+            partitionParentsMap(idx)
+              .getOrElse(Nil)
               .map(parentPartitions(_))
           )
       )
@@ -74,17 +73,18 @@ trait SortedRDD[T] {
 }
 
 
-import PartitionFirstElemsRDD._
 import org.hammerlab.iterator.sliding.Sliding2Iterator._
+import org.hammerlab.magic.rdd.partitions.PartitionFirstElemsRDD._
 
 object SortedRDD {
 
-  case class Bounds[T](numPartitions: NumPartitions,
-                       map: SortedMap[PartitionIndex, (T, Option[T])])
+  case class Bounds[T](partitions: IndexedSeq[Option[(T, Option[T])]]) {
+    def numPartitions: NumPartitions = partitions.length
+  }
 
   object Bounds {
-    implicit def boundsToMap[T](bounds: Bounds[T]): SortedMap[PartitionIndex, (T, Option[T])] =
-      bounds.map
+    implicit def boundsToMap[T](bounds: Bounds[T]): IndexedSeq[Option[(T, Option[T])]] =
+      bounds.partitions
   }
 
   def unapply[T](sr: SortedRDD[T]): Option[(RDD[T], Bounds[T])] = Some(sr.rdd, sr.bounds)
@@ -101,18 +101,20 @@ object SortedRDD {
 
   def bounds[T: ClassTag](rdd: RDD[T]): Bounds[T] =
     Bounds(
-      rdd.getNumPartitions,
-      SortedMap(
-        rdd
-          .firstElems
-          .iterator
-          .sliding2Opt
-          .map {
-            case ((idx, first), nextOpt) ⇒
-              idx → (first, nextOpt.map(_._2))
-          }
-          .toArray: _*
-      )
+      {
+        val map =
+          rdd
+            .firstElems
+            .iterator
+            .sliding2Opt
+            .map {
+              case ((idx, first), nextOpt) ⇒
+                idx → (first, nextOpt.map(_._2))
+            }
+            .toMap
+
+        (0 until rdd.getNumPartitions).map(i ⇒ map.get(i))
+      }
     )
 
   def apply[T: Ordering: ClassTag](rdd: RDD[T]): SortedRDD[T] =
@@ -122,8 +124,8 @@ object SortedRDD {
     )
 }
 
-import org.hammerlab.iterator.bulk.BufferedBulkIterator._
 import org.hammerlab.iterator.HeadOptionIterator
+import org.hammerlab.iterator.bulk.BufferedBulkIterator._
 
 object RangePartitionRDD {
   implicit class RangePartitionRDDOps[T: ClassTag](before: SortedRDD[T]) {
@@ -139,47 +141,54 @@ object RangePartitionRDD {
             before
               .bounds
               .iterator
+              .zipWithIndex
+              .map(_.swap)
+              .flatMap {
+                case (idx, boundOpt) ⇒
+                  boundOpt.map {
+                    case (start, endOpt) ⇒
+                      idx -> (start, endOpt)
+                  }
+              }
               .buffered
 
           val ord = before.ord
 
           newBounds
-            .map
             .map {
-              case (idx, (start, endOpt)) ⇒
-                idx →
-                  {
-                    bounds
-                      .dropwhile {
-                        case (_, (_, endOpt)) ⇒
-                          endOpt.exists(ord.lteq(_, start))
-                      }
-
-                    val endsBefore =
-                      bounds
-                        .collectwhile {
-                          case (parentIdx, (_, parentEndOpt))
-                            if endOpt.forall(
-                              end ⇒
-                                parentEndOpt.exists(
-                                  ord.lteq(_, end)
-                                )
-                            ) ⇒
-                            parentIdx
-                        }
-                        .toVector
-
-                    bounds
-                      .headOption match {
-                        case Some((parentIdx, (parentStart, _)))
-                          if endOpt.forall(
-                            ord.lteq(parentStart, _)
-                          ) ⇒
-                          endsBefore :+ parentIdx
-                        case _ ⇒
-                          endsBefore
+              _.map {
+                case (start, endOpt) ⇒
+                  bounds
+                    .dropwhile {
+                      case (_, (_, endOpt)) ⇒
+                        endOpt.exists(ord.lteq(_, start))
                     }
+
+                  val endsBefore =
+                    bounds
+                      .collectwhile {
+                        case (parentIdx, (_, parentEndOpt))
+                          if endOpt.forall(
+                            end ⇒
+                              parentEndOpt.exists(
+                                ord.lteq(_, end)
+                              )
+                          ) ⇒
+                          parentIdx
+                      }
+                      .toVector
+
+                  bounds
+                    .headOption match {
+                      case Some((parentIdx, (parentStart, _)))
+                        if endOpt.forall(
+                          ord.lteq(parentStart, _)
+                        ) ⇒
+                        endsBefore :+ parentIdx
+                      case _ ⇒
+                        endsBefore
                   }
+              }
             }
         },
         newBounds

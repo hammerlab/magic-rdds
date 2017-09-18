@@ -19,9 +19,12 @@ class ReverseRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
         )
 
     if (preservePartitioning)
-      keyedRDD.partitionByKey(numPartitions)
+      keyedRDD
+        .partitionByKey(numPartitions)
     else
-      keyedRDD.sortByKey().values
+      keyedRDD
+        .sortByKey()
+        .values
   }
 }
 

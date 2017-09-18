@@ -31,13 +31,13 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd1.sortedRepartition(rdd2)
 
-      bounds.toArray should be(
+      bounds.partitions should be(
         Array(
-          0 → ( 1, Some( 6)),
-          1 → ( 6, Some(20)),
-          2 → (20, Some(30)),
-          3 → (30, Some(40)),
-          4 → (40, None)
+          Some( 1, Some( 6)),
+          Some( 6, Some(20)),
+          Some(20, Some(30)),
+          Some(30, Some(40)),
+          Some(40, None)
         )
       )
 
@@ -55,11 +55,11 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd2.sortedRepartition(rdd1)
 
-      bounds.toArray should be(
+      bounds.partitions should be(
         Array(
-          0 → (1, Some(11)),
-          1 → (11, Some(41)),
-          2 → (41, None)
+          Some(1, Some(11)),
+          Some(11, Some(41)),
+          Some(41, None)
         )
       )
 
@@ -106,14 +106,19 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd1.sortedRepartition(rdd2)
 
-      bounds.toArray should be(
+      bounds.partitions should be(
         Array(
-          1 → ( 1, Some( 5)),
-          2 → ( 5, Some( 7)),
-          4 → ( 7, Some(20)),
-          7 → (20, Some(30)),
-          8 → (30, Some(40)),
-          9 → (40, None)
+          None,
+          Some( 1, Some( 5)),
+          Some( 5, Some( 7)),
+          None,
+          Some( 7, Some(20)),
+          None,
+          None,
+          Some(20, Some(30)),
+          Some(30, Some(40)),
+          Some(40, None),
+          None
         )
       )
 
@@ -139,9 +144,12 @@ class RangePartitionRDDTest
 
       bounds.toArray should be(
         Array(
-          1 → (10, Some(25)),
-          4 → (25, Some(70)),
-          5 → (70, None)
+          None,
+          Some(10, Some(25)),
+          None,
+          None,
+          Some(25, Some(70)),
+          Some(70, None)
         )
       )
 

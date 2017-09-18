@@ -36,6 +36,7 @@ object MaxSplitSize {
         Right(
           MaxSplitSize(
             Bytes(bytesStr)
-          ))
+          )
+        )
     }
 }

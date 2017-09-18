@@ -1,48 +1,99 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.Monoid
 import org.apache.spark.rdd.RDD
+import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
-/**
- * RDD wrapper supporting methods that compute partial-sums across the RDD.
- */
-class ScanLeftRDD[T: ClassTag](@transient val rdd: RDD[T]) extends Serializable {
-
-  def scanLeft(identity: T)(combine: (T, T) ⇒ T): RDD[T] =
-    scanLeft(identity, combine, combine)
-
-  def scanLeft[U: ClassTag](identity: U, aggregate: (U, T) ⇒ U, combine: (U, U) ⇒ U): RDD[U] = {
-    val numPartitions = rdd.getNumPartitions
-    val partitionSums =
-      rdd
-        .mapPartitionsWithIndex(
-          (idx, it) ⇒
-            if (idx + 1 == numPartitions)
-              Iterator()
-            else
-              Iterator(
-                it.foldLeft(identity)(aggregate)
-              )
-        )
-        .collect()
-        .scanLeft(identity)(combine)
-
-    val partitionSumsRDD =
-      rdd
-        .sparkContext
-        .parallelize(partitionSums, numPartitions)
-
-    rdd.zipPartitions(partitionSumsRDD)(
-      (it, sumIter) ⇒ {
-        it
-          .scanLeft(sumIter.next)(aggregate)
-          .drop(1)
-      }
-    )
-  }
-}
-
 object ScanLeftRDD {
-  implicit def toScanLeftRDD[T: ClassTag](rdd: RDD[T]): ScanLeftRDD[T] = new ScanLeftRDD(rdd)
+
+  /**
+   * RDD wrapper supporting methods that compute partial-sums across the RDD.
+   *
+   * See [[ScanRDD]] for some discussion of the return value's semantics.
+   */
+  implicit class ScanLeftRDDOps[T: ClassTag](rdd: RDD[T]) {
+    def scanLeft(includeCurrentValue: Boolean = false)(
+        implicit m: Monoid[T]
+    ): ScanRDD[T] =
+      scanLeft(
+        m.empty,
+        includeCurrentValue
+      )(
+        m.combine
+      )
+
+    def scanLeft(implicit m: Monoid[T]): ScanRDD[T] =
+      scanLeft(includeCurrentValue = false)
+
+    def scanLeftInclusive(implicit m: Monoid[T]): ScanRDD[T] =
+      scanLeft(includeCurrentValue = true)
+
+    def scanLeft(identity: T,
+                 includeCurrentValue: Boolean
+    )(
+        combine: (T, T) ⇒ T
+    ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        combine,
+        combine,
+        includeCurrentValue
+      )
+
+    def scanLeft[U: ClassTag](identity: U,
+                              aggregate: (U, T) ⇒ U,
+                              combine: (U, U) ⇒ U,
+                              includeCurrentValue: Boolean): ScanRDD[U] = {
+      val numPartitions = rdd.getNumPartitions
+      val (partitionPrefixes, total) = {
+        val sums =
+          rdd
+            .mapPartitionsWithIndex(
+              (idx, it) ⇒
+                Iterator(
+                  idx →
+                    it.foldLeft(identity)(aggregate)
+                )
+            )
+            .collect()
+            .map(_._2)
+            .scanLeft(identity)(combine)
+
+        val total = sums(numPartitions)
+
+        (sums.dropRight(1), total)
+      }
+
+      val partitionPrefixesRDD =
+        rdd
+          .sparkContext
+          .parallelize(
+            partitionPrefixes,
+            numPartitions
+          )
+
+      ScanRDD(
+        rdd
+          .zipPartitions(partitionPrefixesRDD) {
+            (it, prefixIter) ⇒
+              val scanned =
+                it
+                  .scanLeft(
+                    prefixIter.next
+                  )(
+                    aggregate
+                  )
+
+              if (includeCurrentValue)
+                scanned.drop(1)
+              else
+                scanned.dropRight(1)
+          },
+        partitionPrefixes,
+        total
+      )
+    }
+  }
 }
