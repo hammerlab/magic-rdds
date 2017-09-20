@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-version := "3.1.0-SNAPSHOT"
+version := "3.1.0"
 
 addSparkDeps
 
