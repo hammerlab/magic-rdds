@@ -48,6 +48,12 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
   def sliding2(pad: T): RDD[(T, T)] =
     sliding2Opt.mapValues(_.getOrElse(pad))
 
+  def sliding2Prev: RDD[(Option[T], T)] =
+    window(1, 0).map {
+      case Window(prev, elem, _) ⇒
+        prev.headOption → elem
+    }
+
   /**
    * For each input element, emit a triple that includes its two successors.
    *
@@ -166,7 +172,11 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
                 sendToPartition -= 1
               }
 
-              val prefix = it.take(n - 1).zipWithIndex.buffered
+              val prefix =
+                it
+                  .take(n - 1)
+                  .zipWithIndex
+                  .buffered
 
               new SimpleBufferedIterator[((PartitionIndex, (PartitionIndex, Int)), T)] {
 
@@ -190,7 +200,9 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
                               for {
                                 (partition, _) ← partitionCutoffs
                               } yield
-                                partition → (partitionIdx → idx) → elem
+                                partition →
+                                  (partitionIdx → idx) →
+                                  elem
 
                             if (nextElems.isEmpty)
                               None
@@ -207,16 +219,14 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
         )
         .partitionByKey(N)
 
-    val tooSmallNonEmptyPartitions =
-      tooShortPartitions
-        .filter(_._2 > 0)
-        .keys
-
     val prependElemsPartition =
-      if (tooSmallNonEmptyPartitions.isEmpty)
-        0
-      else
-        tooSmallNonEmptyPartitions.min
+      (0 until N)
+        .find(
+          !tooShortPartitions
+            .get(_)
+            .exists(_ == 0)
+        )
+        .getOrElse(N)
 
     rdd
       .zipPartitionsWithIndex(shiftedElems) {
@@ -260,7 +270,6 @@ class SlidingRDD[T: ClassTag](rdd: RDD[T]) extends Serializable {
                   .nextOption
                   .flatMap {
                     next ⇒
-                      //println(s"$idx: emitting from ${next.mkString(",")}")
                       val prev = next.take(numPrev)
                       val rest = next.drop(numPrev)
                       rest

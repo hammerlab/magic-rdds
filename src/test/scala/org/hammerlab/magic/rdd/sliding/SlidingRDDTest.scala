@@ -9,6 +9,9 @@ import org.hammerlab.iterator.sliding.Sliding3Iterator._
 
 class SlidingRDDTest extends SparkSuite {
 
+  /**
+   * Make an RDD of auto-incrementing integers starting from 0 and with partition-sizes given by `sizes`
+   */
   def make(sizes: Int*): RDD[Int] =
     makeRDD(
       (sizes
@@ -56,6 +59,7 @@ class SlidingRDDTest extends SparkSuite {
     test("sliding2") {
       rdd.sliding2.collect() should be((0 until 5).sliding2.toArray)
       rdd.sliding2Opt.collect() should be((0 until 5).sliding2Opt.toArray)
+      rdd.sliding2Prev.collect() should be((0 until 5).sliding2Prev.toArray)
     }
 
     test("sliding3") {
