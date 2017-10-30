@@ -3,7 +3,7 @@ package org.hammerlab.parallel.spark
 import org.hammerlab.math.ceil
 import org.hammerlab.parallel
 import org.hammerlab.parallel.spark.SerdeBuffer.{ numCloses, numOpens }
-import org.hammerlab.spark.AtomicLongAccumulator
+import org.hammerlab.spark.test.AtomicLongAccumulator
 import org.hammerlab.spark.test.suite.SparkSuite
 
 class ParallelizerTest

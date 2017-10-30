@@ -47,7 +47,7 @@ abstract class PartialSumGridRDDTest(n: Int)
   def testFn(rHeight: Int, cWidth: Int): Unit = {
     val rdd = sc.parallelize(input)
 
-    import org.hammerlab.magic.rdd.grid.Monoids._
+    import cats.implicits.catsKernelStdGroupForInt
 
     val (gridRDD, partialSumsRDD, maxR, maxC) = PartialSumGridRDD(rdd, rHeight, cWidth)
 

@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
-import cats.kernel.Monoid
+import cats.Monoid
 import org.hammerlab.magic.rdd.scan.ScanLeftValuesRDD._
 import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
 

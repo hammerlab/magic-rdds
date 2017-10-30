@@ -1,13 +1,14 @@
 package org.hammerlab.magic.rdd.sliding
 
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.rdd.sliding.SlidingRDD._
+import magic_rdds.sliding._
 import org.hammerlab.spark.test.suite.SparkSuite
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.iterator.sliding.Sliding2Iterator._
 import org.hammerlab.iterator.sliding.Sliding3Iterator._
 
-class SlidingRDDTest extends SparkSuite {
+class SlidingRDDTest
+  extends SparkSuite {
 
   /**
    * Make an RDD of auto-incrementing integers starting from 0 and with partition-sizes given by `sizes`

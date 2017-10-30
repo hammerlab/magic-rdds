@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.keyed
 
-import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
+import org.hammerlab.kryo._
 import org.hammerlab.math.HypergeometricDistribution
 
 import scala.collection.mutable.ArrayBuffer
@@ -80,11 +80,10 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
   }
 }
 
-object KeySamples {
-  def register(kryo: Kryo): Unit = {
-    kryo.register(classOf[KeySamples[_]])
-  }
-}
+object KeySamples
+  extends spark.Registrar(
+    cls[KeySamples[_]]
+  )
 
 class SampleByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
   def sampleByKey(numPerKey: Int): RDD[(K, ArrayBuffer[V])] =

@@ -1,11 +1,11 @@
 package org.hammerlab.magic.rdd.grid
 
-import com.esotericsoftware.kryo.Kryo
+import cats.Monoid
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.rdd.grid.PartialSumGridRDD.{Col, Row}
-import spire.algebra.Monoid
+import org.hammerlab.kryo._
+import org.hammerlab.magic.rdd.grid.PartialSumGridRDD.{ Col, Row }
 
-import scala.collection.mutable.{ArrayBuffer, Map ⇒ MMap}
+import scala.collection.mutable.{ ArrayBuffer, Map ⇒ MMap }
 import scala.reflect.ClassTag
 
 /**
@@ -180,7 +180,8 @@ class PartialSumGridRDD[V: ClassTag] private(@transient val rdd: RDD[((Row, Col)
   }
 }
 
-object PartialSumGridRDD {
+object PartialSumGridRDD
+  extends Registrar {
 
   type Row = Int
   type Col = Int
@@ -222,9 +223,9 @@ object PartialSumGridRDD {
           GridPartitioner(maxR, maxC)
       }
 
-    val pdf = rdd.reduceByKey(partitioner, m.op(_, _))
+    val pdf = rdd.reduceByKey(partitioner, m.combine(_, _))
 
-    val partialSums = new PartialSumGridRDD[V](pdf, m.op, m.id).partialSums2D
+    val partialSums = new PartialSumGridRDD[V](pdf, m.combine, m.empty).partialSums2D
 
     (
       pdf,
@@ -243,9 +244,9 @@ object PartialSumGridRDD {
   ): (RDD[((Row, Col), V)], RDD[((Row, Col), V)], Int, Int) =
     apply(rdd, Some((rHeight, cWidth)))
 
-  def register(kryo: Kryo): Unit = {
-    kryo.register(classOf[BottomLeftElem[_]])
-    kryo.register(classOf[BottomRow[_]])
-    kryo.register(classOf[LeftCol[_]])
-  }
+  register(
+    cls[BottomLeftElem[_]],
+    cls[BottomRow[_]],
+    cls[LeftCol[_]]
+  )
 }

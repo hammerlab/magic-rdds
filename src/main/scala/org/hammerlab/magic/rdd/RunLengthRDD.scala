@@ -1,14 +1,13 @@
 package org.hammerlab.magic.rdd
 
-import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.RangeAccruingIterator
 import org.hammerlab.iterator.RunLengthIterator._
+import org.hammerlab.kryo.spark.Registrar
 import org.hammerlab.magic.rdd.partitions.FilterPartitionIdxs._
-import org.hammerlab.magic.rdd.sliding.BorrowElemsRDD._
 
+import scala.math.max
 import scala.reflect.ClassTag
-import math.max
 
 /**
  * Helper for run-length encoding an [[RDD]].
@@ -47,11 +46,9 @@ case class RunLengthRDD[T: ClassTag](rdd: RDD[T]) {
   }
 }
 
-object RunLengthRDD {
-
-  def register(kryo: Kryo): Unit = {
-    kryo.register(classOf[Array[Int]])
-  }
-
+object RunLengthRDD
+  extends Registrar(
+    classOf[Array[Int]]
+  ) {
   implicit def ooRunLengthRDD[T: ClassTag](rdd: RDD[T]): RunLengthRDD[T] = RunLengthRDD(rdd)
 }
