@@ -2,8 +2,7 @@ package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
-import org.hammerlab.magic.rdd.scan.ScanRightValuesRDD._
-import org.hammerlab.magic.rdd.scan.ScanRightRDD._
+import magic_rdds.scan._
 
 import scala.reflect.ClassTag
 

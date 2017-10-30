@@ -2,11 +2,11 @@ package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
+import magic_rdds.scan._
 
 import scala.reflect.ClassTag
 
-object ScanLeftValuesRDD {
+trait ScanLeftValuesRDD {
 
   /**
    * Expose methods on paired-RDDs for performing a scan-left over the values.

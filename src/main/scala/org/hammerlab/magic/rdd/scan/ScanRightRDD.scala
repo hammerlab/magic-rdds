@@ -1,10 +1,10 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
+import magic_rdds.scan._
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.DropRightIterator._
 import org.hammerlab.magic.rdd.rev.ReverseRDD._
-import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
 import org.hammerlab.magic.rdd.zip.ZipPartitionsRDD._
 
 import scala.reflect.ClassTag
@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
  * An alternative implementation delegates to [[scala.collection.Iterator.scanRight]], which is likely less expensive,
  * but materializes whole partitions into memory, which is generally a severe anti-pattern in Spark computations.
  */
-object ScanRightRDD {
+trait ScanRightRDD {
 
   implicit class ScanRightRDDOps[T: ClassTag](rdd: RDD[T]) {
 

@@ -6,7 +6,7 @@ import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
-object ScanLeftRDD {
+trait ScanLeftRDD {
 
   /**
    * RDD wrapper supporting methods that compute partial-sums across the RDD.
