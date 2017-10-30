@@ -1,11 +1,11 @@
 package org.hammerlab.magic.rdd.sliding
 
+import magic_rdds._
 import org.apache.spark.rdd.RDD
-import magic_rdds.sliding._
-import org.hammerlab.spark.test.suite.SparkSuite
-import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.iterator.sliding.Sliding2Iterator._
 import org.hammerlab.iterator.sliding.Sliding3Iterator._
+import org.hammerlab.spark.test.rdd.Util.makeRDD
+import org.hammerlab.spark.test.suite.SparkSuite
 
 class SlidingRDDTest
   extends SparkSuite {
