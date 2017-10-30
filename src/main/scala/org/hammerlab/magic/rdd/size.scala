@@ -1,4 +1,4 @@
-package org.hammerlab.magic.rdd.size
+package org.hammerlab.magic.rdd
 
 import org.apache.spark.rdd.{ RDD, UnionRDD }
 import org.hammerlab.magic.rdd.cache.MultiRDDCache
@@ -31,7 +31,7 @@ import scala.collection.mutable.ArrayBuffer
  * rdd2.size           // 2; runs no jobs
  * }}}
  */
-trait Size extends MultiRDDCache[Any, Long] {
+trait size extends MultiRDDCache[Any, Long] {
 
   /**
    * Compute multiple [[RDD]]s' sizes with a single Spark job; cache and return these sizes separately.

@@ -74,5 +74,3 @@ trait BorrowElems {
 
   type PartitionOverrides = Map[PartitionIndex, PartitionIndex]
 }
-
-object BorrowElems extends BorrowElems

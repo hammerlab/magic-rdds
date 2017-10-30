@@ -1,11 +1,11 @@
-package org.hammerlab.magic.rdd.sort
+package org.hammerlab.magic.rdd
 
 import org.apache.spark.RangePartitioner
-import org.apache.spark.rdd.{RDD, ShuffledRDD}
+import org.apache.spark.rdd.{ RDD, ShuffledRDD }
 
 import scala.reflect.ClassTag
 
-trait ops {
+trait sort {
   implicit class SortRDDOps[T : Ordering : ClassTag](rdd: RDD[T]) {
 
     val ordering = implicitly[Ordering[T]]

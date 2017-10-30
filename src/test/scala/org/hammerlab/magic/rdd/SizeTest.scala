@@ -1,10 +1,11 @@
-package org.hammerlab.magic.rdd.size
+package org.hammerlab.magic.rdd
 
+import magic_rdds.size._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.test.NumJobsUtil
 import org.hammerlab.spark.test.suite.PerCaseSuite
 
-class RDDSizeTest
+class SizeTest
   extends PerCaseSuite
     with NumJobsUtil {
 

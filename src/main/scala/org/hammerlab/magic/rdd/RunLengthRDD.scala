@@ -1,5 +1,6 @@
 package org.hammerlab.magic.rdd
 
+import magic_rdds.sliding._
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.RangeAccruingIterator
 import org.hammerlab.iterator.RunLengthIterator._
