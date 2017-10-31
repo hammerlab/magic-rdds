@@ -10,7 +10,7 @@ import org.hammerlab.kryo._
 import scala.math.max
 import scala.reflect.ClassTag
 
-trait RunLength {
+trait run_length {
   /**
    * Helper for run-length encoding an [[RDD]].
    */
@@ -49,7 +49,7 @@ trait RunLength {
   }
 }
 
-object RunLength
+object run_length
   extends spark.Registrar(
     arr[Int]
   )
