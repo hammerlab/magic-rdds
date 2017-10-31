@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd.scan
 
-import cats.implicits.catsKernelStdGroupForInt
-import cats.kernel.Monoid
+import cats.Monoid
+import cats.instances.int.catsKernelStdGroupForInt
 import org.hammerlab.spark.test.suite.SparkSuite
 
 import scala.reflect.ClassTag

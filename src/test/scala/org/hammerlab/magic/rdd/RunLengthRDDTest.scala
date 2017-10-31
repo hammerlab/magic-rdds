@@ -1,6 +1,6 @@
 package org.hammerlab.magic.rdd
 
-import RunLengthRDD._
+import magic_rdds.run_length._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 

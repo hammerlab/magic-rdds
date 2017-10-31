@@ -1,9 +1,9 @@
 package org.hammerlab.magic.rdd.partitions
 
-import org.hammerlab.spark.test.suite.SparkSuite
+import magic_rdds.collect._
+import magic_rdds.partitions._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
-import RangePartitionRDD._
-import CollectPartitionsRDD._
+import org.hammerlab.spark.test.suite.SparkSuite
 
 class RangePartitionRDDTest
   extends SparkSuite {

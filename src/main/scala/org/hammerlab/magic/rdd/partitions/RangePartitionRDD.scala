@@ -74,7 +74,7 @@ trait SortedRDD[T] {
 
 
 import org.hammerlab.iterator.sliding.Sliding2Iterator._
-import org.hammerlab.magic.rdd.partitions.PartitionFirstElemsRDD._
+import magic_rdds.partitions._
 
 object SortedRDD {
 
@@ -127,8 +127,8 @@ object SortedRDD {
 import org.hammerlab.iterator.HeadOptionIterator
 import org.hammerlab.iterator.bulk.BufferedBulkIterator._
 
-object RangePartitionRDD {
-  implicit class RangePartitionRDDOps[T: ClassTag](before: SortedRDD[T]) {
+trait CanRangePartition {
+  implicit class RangePartitionOps[T: ClassTag](before: SortedRDD[T]) extends Serializable {
 
     private implicit val ord = before.ord
 

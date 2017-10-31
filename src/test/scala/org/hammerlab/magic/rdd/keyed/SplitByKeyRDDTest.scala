@@ -1,6 +1,6 @@
 package org.hammerlab.magic.rdd.keyed
 
-import org.hammerlab.magic.rdd.collect.CollectPartitionsRDD._
+import magic_rdds.collect._
 import org.hammerlab.magic.rdd.keyed.SplitByKeyRDD._
 import org.hammerlab.spark.test.suite.SparkSuite
 

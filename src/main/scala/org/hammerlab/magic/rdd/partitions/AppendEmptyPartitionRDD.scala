@@ -29,11 +29,8 @@ case class AppendEmptyPartitionRDD[T: ClassTag](rdd: RDD[T])
       }
 }
 
-case class AppendEmptyPartition[T: ClassTag](@transient rdd: RDD[T]) {
-  def appendEmptyPartition: AppendEmptyPartitionRDD[T] = AppendEmptyPartitionRDD(rdd)
-}
-
-object AppendEmptyPartitionRDD {
-  implicit def makeAppendEmptyPartitionRDD[T: ClassTag](rdd: RDD[T]): AppendEmptyPartition[T] =
-    AppendEmptyPartition(rdd)
+trait AppendEmptyPartition {
+  implicit class AppendEmptyPartitionOps[T: ClassTag](rdd: RDD[T]) extends Serializable {
+    def appendEmptyPartition: AppendEmptyPartitionRDD[T] = AppendEmptyPartitionRDD(rdd)
+  }
 }

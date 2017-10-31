@@ -1,7 +1,7 @@
 package org.hammerlab.magic.rdd
 
+import magic_rdds.collect._
 import magic_rdds.rev._
-import org.hammerlab.magic.rdd.collect.CollectPartitionsRDD._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 

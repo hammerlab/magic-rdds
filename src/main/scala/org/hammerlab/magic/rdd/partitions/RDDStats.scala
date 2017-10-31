@@ -39,15 +39,13 @@ object RDDStats extends Registrar {
   )
 
   private val rddMap = mutable.Map[(SparkContext, Int), RDDStats[_]]()
-  implicit def rddToPartitionBoundsRDD[T: ClassTag](
-    rdd: RDD[T]
-  )(
-    implicit ordering: PartialOrdering[T]
-  ): RDDStats[T] =
-    rddMap.getOrElseUpdate(
-      (rdd.sparkContext, rdd.id),
-      RDDStats[T](rdd)
-    ).asInstanceOf[RDDStats[T]]
+  implicit def rddToPartitionBoundsRDD[T: ClassTag: PartialOrdering](rdd: RDD[T]): RDDStats[T] =
+    rddMap
+      .getOrElseUpdate(
+        (rdd.sparkContext, rdd.id),
+        RDDStats[T](rdd)
+      )
+      .asInstanceOf[RDDStats[T]]
 
   private def apply[T: ClassTag](
     partitionStats: Iterable[PartitionStats[T]]
