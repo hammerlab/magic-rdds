@@ -1,11 +1,11 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
+import magic_rdds.rev._
 import magic_rdds.scan._
+import magic_rdds.zip._
 import org.apache.spark.rdd.RDD
 import org.hammerlab.iterator.DropRightIterator._
-import org.hammerlab.magic.rdd.rev.ReverseRDD._
-import org.hammerlab.magic.rdd.zip.ZipPartitionsRDD._
 
 import scala.reflect.ClassTag
 

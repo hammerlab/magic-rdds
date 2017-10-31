@@ -1,6 +1,6 @@
 package org.hammerlab.magic.rdd.zip
 
-import org.hammerlab.magic.rdd.zip.ZipPartitionsWithIndexRDD._
+import magic_rdds.zip._
 import org.hammerlab.spark.test.suite.SparkSuite
 
 class ZipPartitionsWithIndexRDDTest extends SparkSuite {

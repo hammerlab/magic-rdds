@@ -1,11 +1,11 @@
-package org.hammerlab.magic.rdd.rev
+package org.hammerlab.magic.rdd
 
-import org.hammerlab.magic.rdd.rev.ReverseRDD._
+import magic_rdds.rev._
+import org.hammerlab.magic.rdd.collect.CollectPartitionsRDD._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
-import org.hammerlab.magic.rdd.collect.CollectPartitionsRDD._
 
-class ReverseRDDTest extends SparkSuite {
+class ReverseTest extends SparkSuite {
   test("foo") {
     val elems =
       Seq(
