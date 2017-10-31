@@ -7,6 +7,24 @@ trait collect extends rdd.collect
 case object collect extends collect
 
 
+import rdd.keyed._
+
+trait keyed
+  extends CappedGroupByKey
+    with FilterKeys
+    with ReduceByKey
+    with SampleByKey
+    with SplitByKey
+
+object keyed extends keyed
+
+
+import rdd.ordered.SortedRepartition
+
+trait ordered extends SortedRepartition
+object ordered extends ordered
+
+
 import rdd.partitions._
 
 trait partitions
@@ -16,7 +34,6 @@ trait partitions
      with PartitionFirstElems
      with PartitionSizes
      with PrependOrderedIDs
-     with CanRangePartition
      with ReducePartitions
 
 object partitions extends partitions

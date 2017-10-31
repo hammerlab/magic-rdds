@@ -1,13 +1,14 @@
 package org.hammerlab.magic.rdd.keyed
 
 import magic_rdds.collect._
-import org.hammerlab.magic.rdd.keyed.SplitByKeyRDD._
+import magic_rdds.keyed._
 import org.hammerlab.spark.test.suite.SparkSuite
 
 import scala.Vector.fill
 import scala.reflect.ClassTag
 
-class SplitByKeyRDDTest extends SparkSuite {
+class SplitByKeyTest
+  extends SparkSuite {
 
   val ints10 = Vector(4, 3, 5, 6, 0, 5, 3, 1, 3, 7)
 

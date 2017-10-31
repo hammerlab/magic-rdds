@@ -1,7 +1,7 @@
-package org.hammerlab.magic.rdd.partitions
+package org.hammerlab.magic.rdd.ordered
 
 import magic_rdds.collect._
-import magic_rdds.partitions._
+import magic_rdds.ordered._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 

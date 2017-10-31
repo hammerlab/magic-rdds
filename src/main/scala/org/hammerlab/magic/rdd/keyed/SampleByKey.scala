@@ -85,19 +85,16 @@ object KeySamples
     cls[KeySamples[_]]
   )
 
-class SampleByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
-  def sampleByKey(numPerKey: Int): RDD[(K, ArrayBuffer[V])] =
-    rdd
-      .combineByKey[KeySamples[V]](
-        (e: V) ⇒ new KeySamples(1, ArrayBuffer(e), numPerKey),
-        (v: KeySamples[V], e: V) ⇒ v += e,
-        (v1: KeySamples[V], v2: KeySamples[V]) ⇒ v1 ++= v2,
-        rdd.getNumPartitions
-      )
-      .mapValues(_.values)
-}
-
-object SampleByKeyRDD{
-  implicit def rddToSampleByKeyRDD[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]): SampleByKeyRDD[K, V] =
-    new SampleByKeyRDD(rdd)
+trait SampleByKey {
+  implicit class SampleByKeyOps[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) extends Serializable {
+    def sampleByKey(numPerKey: Int): RDD[(K, ArrayBuffer[V])] =
+      rdd
+        .combineByKey[KeySamples[V]](
+          (e: V) ⇒ new KeySamples(1, ArrayBuffer(e), numPerKey),
+          (v: KeySamples[V], e: V) ⇒ v += e,
+          (v1: KeySamples[V], v2: KeySamples[V]) ⇒ v1 ++= v2,
+          rdd.getNumPartitions
+        )
+        .mapValues(_.values)
+  }
 }
