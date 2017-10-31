@@ -1,11 +1,11 @@
-package org.hammerlab.magic.rdd.batch
+package org.hammerlab.magic.rdd
+
+import org.apache.spark.batch.{ MapRDD, ReduceRDD }
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.batch._
-
-package object implicits {
+trait batch {
   implicit class BatchedRDDFunctions[T : ClassTag](rdd: RDD[T]) {
     def batch(numPartitionsPerBatch: Int): RDD[T] = {
       require(numPartitionsPerBatch > 0,
@@ -30,7 +30,7 @@ package object implicits {
           case None ⇒
             throw new IllegalStateException(
               "No batches generated for map-side RDD using " +
-              s"$numPartitionsPerBatch partitions per batch")
+                s"$numPartitionsPerBatch partitions per batch")
         }
       }
     }

@@ -1,11 +1,12 @@
-package org.hammerlab.magic.rdd.batch
+package org.hammerlab.magic.rdd
 
+import magic_rdds.batch._
 import org.apache.spark.HashPartitioner
 import org.apache.spark.batch.{ MapRDD, ReduceRDD }
-import org.hammerlab.magic.rdd.batch.implicits._
 import org.hammerlab.spark.test.suite.SparkSuite
 
-class MapReduceTest extends SparkSuite {
+class BatchTest
+  extends SparkSuite {
 
   test("invalid batch size <= 0") {
     val rdd = sc.parallelize(0 until 10, 8)
