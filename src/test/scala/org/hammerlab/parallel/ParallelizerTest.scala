@@ -1,6 +1,5 @@
 package org.hammerlab.parallel
 
-import org.hammerlab.collection.canBuildArray
 import org.hammerlab.test.Suite
 import org.scalatest.Matchers
 

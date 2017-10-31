@@ -1,6 +1,7 @@
 package org.hammerlab.magic.rdd.partitions
 
 import org.apache.spark.rdd.RDD
+import org.hammerlab.kryo._
 
 import scala.reflect.ClassTag
 
@@ -18,3 +19,8 @@ trait PartitionSizes {
         .collect()
   }
 }
+
+object PartitionSizes
+  extends spark.Registrar(
+    arr[Int]
+  )
