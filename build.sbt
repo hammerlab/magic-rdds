@@ -10,6 +10,7 @@ deps ++= Seq(
   io % "2.0.0",
   iterators % "1.4.0",
   math % "2.0.0",
+  monoids % "1.0.0-SNAPSHOT",
   paths % "1.3.1",
   slf4j,
   spark_util % "2.0.0",

@@ -1,6 +1,8 @@
 package org.hammerlab.magic.rdd.cmp
 
+import hammerlab.monoid._
 import org.apache.spark.rdd.RDD
+import org.hammerlab.magic.rdd.cmp.ElemCmp.Stats
 
 import scala.reflect.ClassTag
 
@@ -14,14 +16,14 @@ class ElemCmp[T: ClassTag] private(joined: RDD[(T, (Boolean, Boolean))]) {
       (e, (a, b)) ← joined
     } yield
       (a, b) match {
-        case (true, true) ⇒ ElemCmpStats(both = 1)
-        case (true, false) ⇒ ElemCmpStats(onlyA = 1)
-        case (false, true) ⇒ ElemCmpStats(onlyB = 1)
+        case (true, true) ⇒ Stats(both = 1)
+        case (true, false) ⇒ Stats(onlyA = 1)
+        case (false, true) ⇒ Stats(onlyB = 1)
         case (false, false) ⇒ throw new Exception(s"Invalid entry: $e")
       }
-    ).reduce(_ + _)
+    ).reduce(_ |+| _)
 
-  lazy val ElemCmpStats(eq, oa, ob) = stats
+  lazy val Stats(eq, oa, ob) = stats
   lazy val isEqual = stats.isEqual
 
   lazy val bothRDD =
@@ -64,4 +66,13 @@ object ElemCmp {
         e → (aO.isDefined, bO.isDefined)
       }
     )
+
+  /**
+   * Summable data type recording the number of elements that are present in either or both of two [[RDD]]s.
+   */
+  case class Stats(both: Long = 0, onlyA: Long = 0, onlyB: Long = 0) {
+    def isEqual: Boolean =
+      onlyA == 0 &&
+        onlyB == 0
+  }
 }

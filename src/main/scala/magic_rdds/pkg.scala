@@ -3,6 +3,13 @@ package magic_rdds
 import org.hammerlab.magic.rdd
 
 
+trait cmp
+  extends rdd.cmp.Equals
+     with rdd.cmp.SameValues
+
+object cmp extends cmp
+
+
 trait collect extends rdd.collect
 case object collect extends collect
 

@@ -1,6 +1,7 @@
 
 package object magic_rdds
   extends size  /** must come first because extends [[org.hammerlab.magic.rdd.cache.RDDCache]] class */
+     with cmp
      with collect
      with keyed
      with ordered
