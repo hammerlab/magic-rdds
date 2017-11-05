@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
+import hammerlab.iterator._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
@@ -89,7 +89,7 @@ trait ScanLeftRDD {
               if (includeCurrentValue)
                 scanned.drop(1)
               else
-                scanned.dropRight(1)
+                scanned.dropright(1)
           },
         partitionPrefixes,
         total

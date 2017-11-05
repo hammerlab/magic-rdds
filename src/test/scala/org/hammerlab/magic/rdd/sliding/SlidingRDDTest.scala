@@ -1,9 +1,8 @@
 package org.hammerlab.magic.rdd.sliding
 
+import hammerlab.iterator._
 import magic_rdds._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.sliding.Sliding2Iterator._
-import org.hammerlab.iterator.sliding.Sliding3Iterator._
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 

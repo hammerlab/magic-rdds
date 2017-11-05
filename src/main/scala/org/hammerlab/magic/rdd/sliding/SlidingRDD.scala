@@ -1,11 +1,8 @@
 package org.hammerlab.magic.rdd.sliding
 
-import magic_rdds.partitions._
-import magic_rdds.zip._
+import hammerlab.iterator._
+import magic_rdds._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.DropRightIterator._
-import org.hammerlab.iterator.sliding.SlidingIterator._
-import org.hammerlab.iterator.{ NextOptionIterator, SimpleBufferedIterator }
 import org.hammerlab.kryo._
 import org.hammerlab.spark.PartitionIndex
 
@@ -178,7 +175,7 @@ trait Sliding {
                     .zipWithIndex
                     .buffered
 
-                new SimpleBufferedIterator[((PartitionIndex, (PartitionIndex, Int)), T)] {
+                new SimpleIterator[((PartitionIndex, (PartitionIndex, Int)), T)] {
 
                   var nextElems: List[((PartitionIndex, (PartitionIndex, Int)), T)] = Nil
 
@@ -239,7 +236,7 @@ trait Sliding {
                 .slide(n)
                 // Emitted elements should correspond exactly to each partition's extant elements; "tail" elements are
                 // only used as succeeding context.
-                .dropRight(tail.size)
+                .dropright(tail.size)
                 .buffered
 
             val extraBeginElems =
@@ -264,7 +261,7 @@ trait Sliding {
                 Iterator()
 
             extraBeginElems ++
-              new SimpleBufferedIterator[Window] {
+              new SimpleIterator[Window] {
                 override protected def _advance: Option[Window] = {
                   slid
                     .nextOption

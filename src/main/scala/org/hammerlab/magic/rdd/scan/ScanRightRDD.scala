@@ -1,11 +1,9 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
-import magic_rdds.rev._
-import magic_rdds.scan._
-import magic_rdds.zip._
+import hammerlab.iterator._
+import magic_rdds._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
@@ -147,7 +145,7 @@ trait ScanRightRDD {
                     )
 
                 if (includeCurrentValue)
-                  scanned.dropRight(1)
+                  scanned.dropright(1)
                 else
                   scanned.drop(1)
             },

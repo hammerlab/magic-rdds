@@ -1,8 +1,7 @@
 package org.hammerlab.magic.rdd.ordered
 
+import hammerlab.iterator._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.HeadOptionIterator
-import org.hammerlab.iterator.bulk.BufferedBulkIterator._
 import org.hammerlab.magic.rdd.ordered.SortedRDD.Bounds
 
 import scala.reflect.ClassTag

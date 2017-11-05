@@ -1,10 +1,8 @@
 package org.hammerlab.magic.rdd
 
-import magic_rdds.partitions._
-import magic_rdds.sliding._
+import hammerlab.iterator._
+import magic_rdds._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.RangeAccruingIterator
-import org.hammerlab.iterator.RunLengthIterator._
 import org.hammerlab.kryo._
 
 import scala.math.max
@@ -25,7 +23,7 @@ trait run_length {
 
       val partitionOverrides =
         (for {
-          range ← new RangeAccruingIterator(oneOrFewerElementPartitions.iterator)
+          range ← oneOrFewerElementPartitions.contiguousRanges
           sendTo = max(0, range.start - 1)
           i ← range
         } yield
@@ -39,11 +37,9 @@ trait run_length {
           partitionOverrides
         )
         .mapPartitions(
-          it ⇒
-            reencode(
-              it
-                .map(t ⇒ t._1 → t._2.toLong)
-            )
+          _
+            .map(t ⇒ t._1 → t._2.toLong)
+            .reencode
         )
     }
   }

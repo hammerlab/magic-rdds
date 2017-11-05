@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.ordered
 
 import magic_rdds.partitions._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.sliding.Sliding2Iterator._
+import hammerlab.iterator.sliding._
 import org.hammerlab.magic.rdd.ordered.SortedRDD.Bounds
 import org.hammerlab.spark.NumPartitions
 
