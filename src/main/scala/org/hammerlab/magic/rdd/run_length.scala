@@ -39,7 +39,7 @@ trait run_length {
         .mapPartitions(
           _
             .map(t ⇒ t._1 → t._2.toLong)
-            .reencode
+            .runLengthReencode
         )
     }
   }
