@@ -15,5 +15,5 @@ deps ++= Seq(
   spark_util % "2.0.0",
   spire,
   stats % "1.0.1",
-  types % "1.0.0-SNAPSHOT"
+  types % "1.0.1"
 )
