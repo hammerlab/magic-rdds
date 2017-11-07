@@ -5,12 +5,12 @@
 [![Coverage Status](https://coveralls.io/repos/github/hammerlab/magic-rdds/badge.svg?branch=master)](https://coveralls.io/github/hammerlab/magic-rdds?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/org.hammerlab/magic-rdds_2.11.svg?maxAge=600)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22magic-rdds%22)
 
-Miscellaneous functionality for manipulating [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds), typically exposed as methods on RDDs via implicit conversions, e.g.:
+Enrichment methods for [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds):
 
 ```scala
-$ spark-shell --packages org.hammerlab:magic-rdds_2.11:3.1.0
+$ spark-shell --packages org.hammerlab:magic-rdds_2.11:4.0.0
 …
-scala> import org.hammerlab.magic.rdd.RunLengthRDD._
+scala> import magic_rdds._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
 res0: Array[(Int, Int)] = Array((1,3), (2,6), (10,1))
 ```
@@ -23,14 +23,14 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 <dependency>
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds_2.11</artifactId>
-  <version>3.1.0</version>
+  <version>4.0.0</version>
 </dependency>
 ```
 
 In SBT, use:
 
 ```
-"org.hammerlab" %% "magic-rdds" % "3.1.0"
+"org.hammerlab" %% "magic-rdds" % "4.0.0"
 ```
 
 ## Overview
@@ -251,21 +251,12 @@ See [the package README](src/main/scala/org/apache/spark/batch) for more info!
 Browse the code and tests, file an issue, or drop by [Gitter](https://gitter.im/hammerlab/magic-rdds) for more info.
 
 ## Building
-Typical SBT commands will build/test/package the project for Scala 2.11.8:
+Typical SBT commands will build/test/package the project:
 
 ```bash
 sbt test
 sbt assembly
 ```
-
-To build for Scala 2.10.6, use `++2.10.6` as usual:
-
-```bash
-sbt ++2.10.6 test
-sbt ++2.10.6 assembly
-```
-
-This is enabled by inheriting [hammerlab/scala-parent-pom](https://github.com/hammerlab/scala-parent-pom).
 
 ## Releasing
 While set to a `-SNAPSHOT` version:
@@ -277,5 +268,5 @@ sbt publish
 To release a non-`-SNAPSHOT` version:
 
 ```bash
-sbt +publishSigned sonatypeRelease
+sbt publishSigned sonatypeRelease
 ```
