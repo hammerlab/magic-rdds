@@ -30,6 +30,18 @@ trait ScanLeftRDD {
     def scanLeftInclusive(implicit m: Monoid[T]): ScanRDD[T] =
       scanLeft(includeCurrentValue = true)
 
+    def scanLeft(
+                    identity: T
+                )(
+                    combine: (T, T) ⇒ T
+                ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        includeCurrentValue = false
+      )(
+        combine
+      )
+
     def scanLeft(identity: T,
                  includeCurrentValue: Boolean
     )(

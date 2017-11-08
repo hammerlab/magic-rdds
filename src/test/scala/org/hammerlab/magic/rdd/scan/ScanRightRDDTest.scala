@@ -50,9 +50,14 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
     val rdd = sc.parallelize(input.toSeq)
 
     val actualArr =
-      rdd
-        .scanRight(inclusive, useRDDReversal)
-        .collect()
+      if (inclusive)
+        rdd
+          .scanRightInclusive(useRDDReversal)
+          .collect()
+      else
+        rdd
+          .scanRight(useRDDReversal)
+          .collect()
 
     val expectedArr =
       expectedOpt.getOrElse(

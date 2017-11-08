@@ -39,14 +39,19 @@ Following are explanations of some of the RDDs provided by this repo and the fun
 ### RDDs
 RDD-helpers found in [the `org.hammerlab.magic.rdd` package](https://github.com/hammerlab/magic-rdds/tree/master/src/main/scala/org/hammerlab/magic/rdd).
 
-#### [RunLengthRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/RunLengthRDD.scala)
+#### [Run-length encoding](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/run_length.scala)
 Exposes a `runLengthEncode` method on RDDs, per the example above.
 
-#### [ScanLeftRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanLeftRDD.scala)
+#### [Scans](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan)
+
+- [`.scanLeft`](), [`.scanRight`]()
+- optionally include each element in the sum that replaces it
+- can operate on elements directly or on "value"s of key-values pairs
+- use [`cats.Monoid`]() or explicit empty/combine parameters
+
 Exposes `.scanLeft` on RDDs:
 
 ```scala
-scala> import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
 scala> sc.parallelize(1 to 10).scanLeft(0)(_ + _).collect
 res1: Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
 ```
