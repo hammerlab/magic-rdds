@@ -42,12 +42,24 @@ trait ScanLeftRDD {
         combine
       )
 
+    def scanLeftInclusive(
+                             identity: T
+                         )(
+        combine: (T, T) ⇒ T
+    ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        includeCurrentValue = true
+      )(
+        combine
+      )
+
     def scanLeft(identity: T,
                  includeCurrentValue: Boolean
     )(
         combine: (T, T) ⇒ T
     ): ScanRDD[T] =
-      scanLeft(
+      scanLeftImpl(
         identity,
         combine,
         combine,
@@ -56,8 +68,28 @@ trait ScanLeftRDD {
 
     def scanLeft[U: ClassTag](identity: U,
                               aggregate: (U, T) ⇒ U,
-                              combine: (U, U) ⇒ U,
-                              includeCurrentValue: Boolean): ScanRDD[U] = {
+                              combine: (U, U) ⇒ U): ScanRDD[U] =
+      scanLeftImpl(
+        identity,
+        aggregate,
+        combine,
+        includeCurrentValue = false
+      )
+
+    def scanLeftInclusive[U: ClassTag](identity: U,
+                                       aggregate: (U, T) ⇒ U,
+                                       combine: (U, U) ⇒ U): ScanRDD[U] =
+      scanLeftImpl(
+        identity,
+        aggregate,
+        combine,
+        includeCurrentValue = true
+      )
+
+    def scanLeftImpl[U: ClassTag](identity: U,
+                                  aggregate: (U, T) ⇒ U,
+                                  combine: (U, U) ⇒ U,
+                                  includeCurrentValue: Boolean): ScanRDD[U] = {
       val numPartitions = rdd.getNumPartitions
       val (partitionPrefixes, total) = {
         val sums =

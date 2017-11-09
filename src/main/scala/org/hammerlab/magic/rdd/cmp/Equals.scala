@@ -13,26 +13,22 @@ trait Equals {
   implicit class EqualsOps[T: ClassTag](rdd: RDD[T]) extends Serializable {
 
     /**
-     * Compute statistics about the number of identical elements at identical indices in [[rdd]] vs. another [[RDD]].
+     * Compute statistics about numbers of common elements between two [[RDD]]s, distinguishing those at identical
+     * indices to those that aren't.
      */
-    def compare(o: RDD[T]): Cmp[Long, T] = {
-      val indexedRDD = rdd.zipWithIndex().map(_.swap)
-      val indexedOther = o.zipWithIndex().map(_.swap)
-
-      indexedRDD.compareByKey(indexedOther)
-    }
+    def orderedCmp(o: RDD[T]): Ordered[T] = Ordered(rdd, o)
 
     /**
-     * Compare the elements in [[rdd]] to those in another [[RDD]], disregarding the order of each.
+     * Compare the elements in [[rdd]] to those in another [[RDD]], disregarding order/positions of elements.
      */
-    def compareElements(o: RDD[T]): ElemCmp[T] = ElemCmp(rdd, o)
+    def unorderedCmp(o: RDD[T]): Unordered[T] = Unordered(rdd, o)
 
     /**
      * Determine whether [[rdd]] has equal elements in the same order as another [[RDD]].
      */
-    def isEqual(o: RDD[T]): Boolean = {
-      compare(o).isEqual
-    }
+    def isEqual(o: RDD[T]): Boolean = orderedCmp(o).isEqual
+
+    def sameElements(o: RDD[T]): Boolean = unorderedCmp(o).isEqual
   }
 }
 

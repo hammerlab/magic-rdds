@@ -50,11 +50,17 @@ abstract class ScanLeftRDDTest(inclusive: Boolean)
         "e" → 5
       )
 
+    val rdd = sc.parallelize(seq, numPartitions)
+
     val actual =
-      sc
-        .parallelize(seq, numPartitions)
-        .scanLeftValues(inclusive)
-        .collect()
+      if (inclusive)
+        rdd
+          .scanLeftValuesInclusive
+          .collect
+      else
+        rdd
+          .scanLeftValues
+          .collect
 
     actual should be(
       byKeyOutput

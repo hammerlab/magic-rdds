@@ -17,25 +17,13 @@ trait ScanLeftValuesRDD {
     // Dummy key "identity" value, not exposed in returned RDD
     private var k: K = _
 
-    def scanLeftValues(includeCurrentValue: Boolean = false)(implicit m: Monoid[V]): ScanValuesRDD[K, V] =
-      scanLeftValues(
-        m.empty,
-        includeCurrentValue
-      )(
-        m.combine
-      )
+    def scanLeftValues(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanLeftValues(m.empty)(m.combine)
+    def scanLeftValues(identity: V)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanLeftValues[V](identity)(combine)(combine)
+    def scanLeftValues[W: ClassTag](identity: W)(aggregate: (W, V) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanLeftValues(identity, aggregate, combine, includeCurrentValue = false)
 
-    def scanLeftValues(identity: V,
-                       includeCurrentValue: Boolean
-                      )(
-        combine: (V, V) ⇒ V
-    ): ScanValuesRDD[K, V] =
-      scanLeftValues[V](
-        identity,
-        combine,
-        combine,
-        includeCurrentValue
-      )
+    def scanLeftValuesInclusive(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanLeftValuesInclusive(m.empty)(m.combine)
+    def scanLeftValuesInclusive(identity: V)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanLeftValuesInclusive[V](identity)(combine)(combine)
+    def scanLeftValuesInclusive[W: ClassTag](identity: W)(aggregate: (W, V) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanLeftValues(identity, aggregate, combine, includeCurrentValue = true)
 
     def scanLeftValues[W: ClassTag](identity: W,
                                     aggregate: (W, V) ⇒ W,
@@ -44,7 +32,7 @@ trait ScanLeftValuesRDD {
     ): ScanValuesRDD[K, W] = {
       val ScanRDD(scanRDD, bounds, total) =
         rdd
-          .scanLeft[(K, W, W)](
+        .scanLeftInclusive[(K, W, W)](
             (k, identity, identity),
             {
               case ((_, _, prevW2), (k, v)) ⇒
@@ -61,8 +49,7 @@ trait ScanLeftValuesRDD {
                   combine(prevW, w1),
                   combine(prevW, w2)
                 )
-            },
-            includeCurrentValue = true
+            }
           )
 
       val project: ((K, W, W)) ⇒ (K, W) =

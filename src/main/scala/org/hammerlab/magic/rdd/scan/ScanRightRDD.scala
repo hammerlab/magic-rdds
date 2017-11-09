@@ -103,8 +103,8 @@ trait ScanRightRDD {
       if (useRDDReversal) {
         val ScanRDD(scanRDD, bounds, total) =
           rdd
-            .reverse()
-            .scanLeft[U](
+          .reverse()
+          .scanLeftImpl[U](
               identity,
               (u, t) ⇒ aggregate(t, u),
               (u1, u2) ⇒ combine(u2, u1),

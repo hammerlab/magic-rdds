@@ -31,11 +31,17 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
         "e" → 5
       )
 
+    val rdd = sc.parallelize(seq, numPartitions)
+
     val actual =
-      sc
-        .parallelize(seq)
-        .scanRightValues(inclusive, useRDDReversal)
-        .collect()
+      if (inclusive)
+        rdd
+          .scanRightValuesInclusive
+          .collect
+      else
+        rdd
+          .scanRightValues
+          .collect
 
     actual should be(
       byKeysOutput

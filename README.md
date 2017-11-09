@@ -44,68 +44,136 @@ Exposes a `runLengthEncode` method on RDDs, per the example above.
 
 #### [Scans](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan)
 
-- [`.scanLeft`](), [`.scanRight`]()
-- optionally include each element in the sum that replaces it
-- can operate on elements directly or on "value"s of key-values pairs
-- use [`cats.Monoid`]() or explicit empty/combine parameters
-
-Exposes `.scanLeft` on RDDs:
+##### Basic `.scanLeft` / `.scanRight`
 
 ```scala
-scala> sc.parallelize(1 to 10).scanLeft(0)(_ + _).collect
-res1: Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+val rdd = sc.parallelize(1 to 10)
+
+rdd.scanLeft(0)(_ + _).collect
+// Array(0, 1, 3, 6, 10, 15, 21, 28, 36, 45)
+
+rdd.scanRight(0)(_ + _).collect
+// Array(54, 52, 49, 45, 40, 34, 27, 19, 10, 0)
 ```
 
-See also:
-- [ScanRightRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanRightRDD.scala) (`.scanRight`)
-- [ScanLeftByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanLeftByKeyRDD.scala) (`.scanLeftByKey`)
-- [ScanRightByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/scan/ScanRightByKeyRDD.scala) (`.scanRightByKey`)
+Before the `.collect`, these each return a [`ScanRDD`](src/main/scala/org/hammerlab/magic/rdd/scan/ScanRDD.scala), which is a wrapper around the post-scan `RDD`, the total sum, and an array with the first element in each partition, and is automatically implicitly-convertible to its contained `RDD`.
 
-Additionally, note that `.scanRight` and `.scanRightByKey` expose two implementations with performance tradeoffs:
-- the default implementation calls `Iterator.scanRight` on each partition at one point, which materializes the entire partition into memory.
-- an alternate implementation, enabled by passing `true` to the `useReverseRDD` parameter, achieves a `scanRight` by sequencing the following operations:
+##### Include each element in the partial-sum that replaces it
+
+```scala
+rdd.scanLeftInclusive(0)(_ + _).collect
+// Array[Int] = Array(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+
+rdd.scanRightInclusive(0)(_ + _).collect
+// Array(55, 54, 52, 49, 45, 40, 34, 27, 19, 10)
+```
+
+##### Use [`cats.Monoid`s](https://typelevel.org/cats/typeclasses/monoid.html)
+
+```scala
+import cats.instances.int._
+
+rdd.scanLeft
+rdd.scanRight
+rdd.scanLeftInclusive
+rdd.scanRightInclusive
+```
+
+##### Operate on "value"s of key-values pairs
+
+
+```scala
+val pairRDD = sc.parallelize('a' to 'j' zip (1 to 10))
+
+pairRDD.scanLeftValues.collect
+// Array((a,0), (b,1), (c,3), (d,6), (e,10), (f,15), (g,21), (h,28), (i,36), (j,45))
+
+pairRDD.scanLeftValuesInclusive.collect
+// Array((a,1), (b,3), (c,6), (d,10), (e,15), (f,21), (g,28), (h,36), (i,45), (j,55))
+
+pairRDD.scanRightValues.collect
+// Array((a,54), (b,52), (c,49), (d,45), (e,40), (f,34), (g,27), (h,19), (i,10), (j,0))
+
+pairRDD.scanRightValuesInclusive.collect
+// Array((a,55), (b,54), (c,52), (d,49), (e,45), (f,40), (g,34), (h,27), (i,19), (j,10))
+```
+
+Additionally, `.scanRight` and `.scanRightValues` expose two implementations with performance tradeoffs:
+
+- the default implementation achieves a `scanRight` by sequencing the following operations:
   - `reverse`
   - `scanLeft`
   - `reverse`
 
-#### [ReverseRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/rev/ReverseRDD.scala)
+- an alternate implementation, enabled by setting `useRDDReversal = false` in the first parameter list, calls `Iterator.scanRight` on each partition at one point, which materializes the entire partition into memory:
+
+  ```scala
+  pairRDD.scanRightValues(useRDDReversal = false).collect
+  // Array((a,54), (b,52), (c,49), (d,45), (e,40), (f,34), (g,27), (h,19), (i,10), (j,0))
+  ```
+
+  This is generally dangerous with Spark RDDs, where the assumption is typically that a partition is larger than the available executor memory, meaning such an operation is likely to cause an OOM.
+
+#### `.reverse`
 Reverse the elements in an RDD, optionally preserving (though still inverting) their partitioning:
 
 ```scala
-import org.hammerlab.magic.rdd.rev.ReverseRDD._
 sc.parallelize(1 to 10).reverse().collect
 res2: Array[Int] = Array(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 ```
 
-#### [ReduceByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/ReduceByKeyRDD.scala)
-Given an `RDD[(K, V)]` and an implicit `Ordering[V]`, provides `maxByKey` and `minByKey` methods.
+#### `reduceByKey` extensions
+Self-explanatory: `.maxByKey`, `.minByKey`
 
-#### [EqualsRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/cmp/EqualsRDD.scala)
-Provides methods for "diff"ing two RDDs:
+#### RDD Comparisons / Diffs
 
-* `compareElements`: perform a `fullOuterJoin` on two RDDs, and return various methods for inspecting the number of elements that are common to both or only found in one or the other.
-* `compare`: similar to the above, but requires elements' rank (i.e. index within the RDD) to match.
-
-Example:
+Example setup:
 
 ```scala
-import org.hammerlab.magic.rdd.cmp.EqualsRDD._
-import org.hammerlab.magic.rdd.ElemCmpStats
+val rdd1 = sc.parallelize(1 to 10)
+val rdd2 = sc.parallelize((1 to 5) ++ (12 to 7 by -1))
 
-val a = sc.parallelize(1 to 10)
-val b = sc.parallelize(15 to 2 by -1)
-
-val stats = a.compareElements(b).stats
-// ElemCmpStats(9,1,5)
-
-val ElemCmpStats(both, onlyA, onlyB) = stats
-// both: Long = 9
-// onlyA: Long = 1
-// onlyB: Long = 5
+import cmp._
 ```
 
-#### [SameElementsRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/cmp/SameElementsRDD.scala)
-Similar to EqualsRDD, but operates on an `RDD[(K, V)]`, joins elements by key, and compares their values.
+##### `unorderedCmp`: compare, disregarding order/position of elements:
+
+```scala
+val Unordered.Stats(both, onlyA, onlyB) = rdd1.unorderedCmp(rdd2).stats
+both = 9   (1 to 5, 7 to 10)
+onlyA = 1  (6)
+onlyB = 2  (11, 12)
+```
+
+##### `orderedCmp`: distinguish between common elements at the same vs. different indices:
+
+```scala
+val Ordered.Stats(eq, reordered, onlyA, onlyB) = rdd1.orderedCmp(rdd2).stats
+// eq = 6        (1, 2, 3, 4, 5, 9)
+// reordered = 3 (7, 8, 10)
+// onlyA = 1     (6)
+// onlyB = 2     (11, 12)
+```
+
+##### `compareByKey`: unordered comparison of values for each key of paired-RDDs:
+
+```scala
+import hammerlab.iterator._
+
+val chars10  = ('a' to 'j') zipWithIndex
+val chars4   = chars10.take(4)
+val chars5_2 = chars10.mapValues(_ + 10).takeEager(5)
+
+val rdd1 = sc.parallelize(chars10  ++ chars4)
+val rdd2 = sc.parallelize(chars5_2 ++ chars4)
+
+val Keyed.Stats(eq, extraA, extraB, onlyA, onlyB) = rdd1.compareByKey(rdd2).stats
+// eq     = 4 (a →  1, b →  2, c →  3, d →  4)
+// extraA = 4 (a →  1, b →  2, c →  3, d →  4; second copy of each)
+// extraB = 0 
+// onlyA  = 6 (e →  5, f →  6, g →  7, h →  8, i →  9, j →  10)
+// onlyB  = 5 (a → 11, b → 12, c → 13, d → 14, e → 15)
+```
 
 #### [CollectPartitionsRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/partitions/CollectPartitionsRDD.scala)
 Exposes one method, for `collect`ing an `RDD` to the driver while keeping elements in their respective partitions:

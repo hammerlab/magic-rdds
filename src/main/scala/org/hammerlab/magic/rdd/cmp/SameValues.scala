@@ -15,13 +15,7 @@ trait SameValues {
      * Compare [[rdd]] with another [[RDD]] by considering how many keys have the same values in each, or are only present
      * in one or the other.
      */
-    def compareByKey(o: RDD[(K, V)]): Cmp[K, V] = Cmp(rdd, o)
-
-    /**
-     * Return true iff [[rdd]] and another [[RDD]] have the same (key, value) pairs, disregarding whether they're in the
-     * same order.
-     */
-    def sameElements(o: RDD[(K, V)]): Boolean = compareByKey(o).isEqual
+    def compareByKey(o: RDD[(K, V)]): Keyed[K, V] = Keyed(rdd, o)
   }
 }
 
