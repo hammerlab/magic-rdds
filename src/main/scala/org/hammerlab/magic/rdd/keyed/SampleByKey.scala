@@ -5,10 +5,13 @@ import org.hammerlab.kryo._
 import org.hammerlab.math.HypergeometricDistribution
 
 import scala.collection.mutable.ArrayBuffer
+import scala.math.min
 import scala.reflect.ClassTag
-import scala.util.Random
+import scala.util.Random.{nextDouble, nextInt}
 
-class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
+class KeySamples[V](var num: Long,
+                    var vs: ArrayBuffer[V],
+                    max: Int)
   extends Serializable {
 
   /**
@@ -17,7 +20,7 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
    */
   private var _values: Option[ArrayBuffer[V]] = Some(vs)
 
-  def values: ArrayBuffer[V] = {
+  def values: ArrayBuffer[V] =
     _values match {
       case Some(v) ⇒ v
       case None ⇒
@@ -25,25 +28,22 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
         _values = Some(vals)
         vals
     }
-  }
 
-  def sample(num: Int): ArrayBuffer[V] = {
+  def sample(num: Int): ArrayBuffer[V] =
     if (vs.length > num) {
       val v = ArrayBuffer[V]()
       val n = vs.length
       var remaining = num
-      (0 until n).foreach(i ⇒ {
+      0 until n foreach { i ⇒
         val eligible = n - i
-        if (Random.nextInt(eligible) < remaining) {
+        if (nextInt(eligible) < remaining) {
           v += vs(i)
           remaining -= 1
         }
-      })
+      }
       v
-    } else {
+    } else
       vs
-    }
-  }
 
   def ++=(o: KeySamples[V]): KeySamples[V] = {
     val finalNum = num + o.num
@@ -51,11 +51,12 @@ class KeySamples[V](var num: Long, var vs: ArrayBuffer[V], max: Int)
     val vals = values
     val oVals = o.values
 
-    val finalNumSamples = math.min(vals.length + oVals.length, max)
+    val finalNumSamples = min(vals.length + oVals.length, max)
 
     val hgd = HypergeometricDistribution(finalNum, num, finalNumSamples)
 
-    val selfNumToTake = hgd.invCDF(Random.nextDouble())
+    val d = nextDouble()
+    val selfNumToTake = hgd.invCDF(d)
 
     val otherNumToTake = finalNumSamples - selfNumToTake
 

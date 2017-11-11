@@ -10,7 +10,7 @@ deps ++= Seq(
   case_app,
   io % "3.0.0",
   iterators % "2.0.0",
-  math % "2.1.0",
+  math % "2.1.1",
   hammerlab("iterator-macros") % "1.1.0",
   paths % "1.3.1",
   slf4j,

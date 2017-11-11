@@ -6,8 +6,6 @@ import org.hammerlab.spark.test.suite.SparkSuite
 
 import scala.reflect.ClassTag
 
-import magic_rdds.ScanRDD
-
 trait ScanRDDTest
   extends SparkSuite {
 
