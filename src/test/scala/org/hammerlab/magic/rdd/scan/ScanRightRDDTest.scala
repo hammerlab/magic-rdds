@@ -33,17 +33,15 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
 
     val rdd = sc.parallelize(seq, numPartitions)
 
-    val actual =
-      if (inclusive)
-        rdd
-          .scanRightValuesInclusive
-          .collect
-      else
-        rdd
-          .scanRightValues
-          .collect
+    val scanned =
+      (inclusive, useRDDReversal) match {
+        case ( true,  true) ⇒ rdd.scanRightValuesInclusive
+        case ( true, false) ⇒ rdd.scanRightValuesInclusive(useRDDReversal)
+        case (false,  true) ⇒ rdd.scanRightValues
+        case (false, false) ⇒ rdd.scanRightValues(useRDDReversal)
+      }
 
-    actual should be(
+    scanned.collect should be(
       byKeysOutput
     )
   }
@@ -55,22 +53,20 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
 
     val rdd = sc.parallelize(input.toSeq)
 
-    val actualArr =
-      if (inclusive)
-        rdd
-          .scanRightInclusive(useRDDReversal)
-          .collect()
-      else
-        rdd
-          .scanRight(useRDDReversal)
-          .collect()
+    val scanned =
+      (inclusive, useRDDReversal) match {
+        case ( true,  true) ⇒ rdd.scanRightInclusive
+        case ( true, false) ⇒ rdd.scanRightInclusive(useRDDReversal)
+        case (false,  true) ⇒ rdd.scanRight
+        case (false, false) ⇒ rdd.scanRight(useRDDReversal)
+      }
 
     val expectedArr =
       expectedOpt.getOrElse(
         getExpected(input)
       )
 
-    actualArr should be(expectedArr)
+    scanned.collect should be(expectedArr)
   }
 }
 

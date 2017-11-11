@@ -3,7 +3,6 @@ package org.hammerlab.magic.rdd.scan
 import cats.Monoid
 import magic_rdds.scan._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.rdd.scan.ScanRightRDD.UseRDDReversal
 
 import scala.reflect.ClassTag
 

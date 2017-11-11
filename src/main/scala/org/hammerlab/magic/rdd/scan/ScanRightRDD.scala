@@ -181,37 +181,5 @@ trait ScanRightRDD {
           total
         )
       }
-
-    def scanRight(identity: T,
-                  includeCurrentValue: Boolean,
-                  useRDDReversal: Boolean)(
-        combine: (T, T) ⇒ T
-    ): ScanRDD[T] =
-      scanRight(
-        identity,
-        combine,
-        combine,
-        includeCurrentValue,
-        useRDDReversal
-      )
-
-  }
-}
-
-object ScanRightRDD {
-  implicit class IncludeCurrentValue(val value: Boolean) extends AnyVal
-  trait LowPriorityIncludeCurrentValue {
-    implicit val True = IncludeCurrentValue(true)
-  }
-  object IncludeCurrentValue extends LowPriorityIncludeCurrentValue {
-    implicit val False = IncludeCurrentValue(false)
-  }
-
-  implicit class UseRDDReversal     (val value: Boolean) extends AnyVal
-  trait LowPriorityUseRDDReversal {
-    implicit val False = UseRDDReversal(false)
-  }
-  object UseRDDReversal extends LowPriorityUseRDDReversal {
-    implicit val True = UseRDDReversal(true)
   }
 }
