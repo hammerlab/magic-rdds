@@ -1,30 +1,36 @@
 package org.hammerlab.magic.rdd.grid
 
 import org.apache.spark.Partitioner
+import org.hammerlab.magic.rdd.grid.PrefixSum.{ Col, Row }
+import org.hammerlab.spark.{ NumPartitions, PartitionIndex }
 
-case class GridPartitioner(maxElemRow: Int,
-                           maxElemCol: Int,
-                           rHeight: Int,
-                           cWidth: Int)
+/**
+ * Partitioner that breaks a [[org.hammerlab.magic.rdd.grid.PrefixSum.GridRDD GridRDD]] into rectangles of fixed width
+ * and height
+ */
+case class GridPartitioner(maxRow: Row,
+                           maxCol: Col,
+                           rHeight: Row,
+                           cWidth: Col)
   extends Partitioner {
 
-  val numPartitionRows = (maxElemRow + rHeight) / rHeight
-  val numPartitionCols = (maxElemCol + cWidth) / cWidth
+  val numPartitionRows = (maxRow + rHeight) / rHeight
+  val numPartitionCols = (maxCol + cWidth) / cWidth
 
-  override def numPartitions: Int =
+  override def numPartitions: NumPartitions =
     numPartitionRows * numPartitionCols
 
-  override def getPartition(key: Any): Int = {
-    val (r, c) = key.asInstanceOf[(Int, Int)]
+  override def getPartition(key: Any): PartitionIndex = {
+    val (r, c) = key.asInstanceOf[(Row, Col)]
     numPartitionCols * (r / rHeight) + c / cWidth
   }
 
-  def getPartitionCoords(partitionIdx: Int): (Int, Int) =
+  def getCoords(partitionIdx: PartitionIndex): (Row, Col) =
     (partitionIdx / numPartitionCols, partitionIdx % numPartitionCols)
 }
 
 object GridPartitioner {
-  def apply(maxRow: Int, maxCol: Int, partitionPenalty: Int = 100): GridPartitioner = {
+  def apply(maxRow: Row, maxCol: Col, partitionPenalty: Int = 100): GridPartitioner = {
     val sqrtPenalty = math.sqrt(partitionPenalty)
 
     /**

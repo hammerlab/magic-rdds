@@ -11,7 +11,8 @@ import scala.reflect.ClassTag
  * Given an outer-join of two [[RDD]]s, expose statistics about how many identical elements at identical positions they
  * have.
  */
-class Keyed[K: ClassTag, V: ClassTag] private(cogrouped: RDD[(K, (Iterable[V], Iterable[V]))]) {
+class Keyed[K: ClassTag, V: ClassTag] private(cogrouped: RDD[(K, (Iterable[V], Iterable[V]))])
+  extends Serializable {
 
   lazy val keyCmps =
     cogrouped
@@ -66,7 +67,7 @@ class Keyed[K: ClassTag, V: ClassTag] private(cogrouped: RDD[(K, (Iterable[V], I
   ) = stats
 }
 
-object Keyed {
+object Keyed extends Serializable {
   def apply[K: ClassTag, V: ClassTag](rdd1: RDD[(K, V)], rdd2: RDD[(K, V)]): Keyed[K, V] =
     new Keyed(
       rdd1.cogroup(rdd2)

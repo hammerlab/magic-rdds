@@ -175,39 +175,21 @@ val Keyed.Stats(eq, extraA, extraB, onlyA, onlyB) = rdd1.compareByKey(rdd2).stat
 // onlyB  = 5 (a → 11, b → 12, c → 13, d → 14, e → 15)
 ```
 
-#### [CollectPartitionsRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/partitions/CollectPartitionsRDD.scala)
-Exposes one method, for `collect`ing an `RDD` to the driver while keeping elements in their respective partitions:
+#### `collectParts`
+`collect` an `RDD` while keeping elements in their respective partitions:
 
 ```scala
-import org.hammerlab.magic.rdd.CollectPartitionsRDD._
 sc.parallelize(1 to 12).collectParts
 // Array(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9), Array(10, 11, 12))
 ```
 
-#### [BorrowElemsRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/BorrowElemsRDD.scala)
-Exposes a variety of methods for shuffling elements between the start of each partition and the end of the previous partition:
+#### `.size`
 
-```scala
-import org.hammerlab.magic.rdd.BorrowElemsRDD._
-sc.parallelize(1 to 12).shiftLeft(1).collectPartitions
-// Array(Array(1, 2, 3, 4), Array(5, 6, 7), Array(8, 9, 10), Array(11, 12))
+A smarter version of `RDD.count`:
 
-sc.parallelize(1 to 12).shiftLeft(2).collectPartitions
-// Array(Array(1, 2, 3, 4, 5), Array(6, 7, 8), Array(9, 10, 11), Array(12))
-
-sc.parallelize(1 to 12).copyLeft(1).collectPartitions
-// Array(Array(1, 2, 3, 4), Array(4, 5, 6, 7), Array(7, 8, 9, 10), Array(10, 11, 12))
-```
-
-#### [rdd.size](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/size/package.scala)
-
-Implicit classes in this package:
-
-- expose `.size` on RDDs, which is identical to `.count` but is cached!
-- perform optimizations in the presence of [UnionRDDs](https://github.com/apache/spark/blob/v1.6.1/core/src/main/scala/org/apache/spark/rdd/UnionRDD.scala), caching sizes for the union and its components.
-- expose `.sizes` and `.total` on sequences and tuples of RDDs, computing their respective sizes in one Spark job.
-
-  Instead of code like:
+- results are cached; subsequent calls don't recompute
+- `size` of a [UnionRDDs](https://github.com/apache/spark/blob/v2.2.0/core/src/main/scala/org/apache/spark/rdd/UnionRDD.scala) also computes and caches sizes of its constituent RDDs
+- `.sizes`, `.total`: compute sizes of sequences / tuples of RDDs in one Spark job. For example, instead of:
 
 	```scala
 	val count1 = rdd1.count
@@ -220,72 +202,116 @@ Implicit classes in this package:
 	val (count1, count2) = (rdd1, rdd2).sizes
 	````
 
-	and save one job.
+	and save a job.
 
-	`sizes`/`total` integrate optimally with the caching and UnionRDD-optimizations above.
+#### `.lazyZipWithIndex`
 
-#### [LazyZippedWithIndexRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/zip/LazyZippedWithIndexRDD.scala)
+Functionally equivalent to [`RDD.zipWithIndex`](https://github.com/apache/spark/blob/v2.2.0/core/src/main/scala/org/apache/spark/rdd/RDD.scala#L1280-L1295), but runs the first of the two necessary jobs (computing per-partition sizes and cumulative offsets) lazily, in a manner truer to the spirit of the lazy-wherever-possible RDD API than the `.zipWithIndex` implementation.
 
-Adds `.lazyZipWithIndex`, which is functionally equivalent to [`RDD.zipWithIndex`](https://github.com/apache/spark/blob/v1.6.1/core/src/main/scala/org/apache/spark/rdd/RDD.scala#L1258), but runs the first of the two necessary jobs (computing per-partition sizes and cumulative offsets) lazily, in a manner truer to the spirit of the lazy-wherever-possible RDD API than the `.zipWithIndex` implementation.
+- `.saveAsSequenceFile`, `.saveCompressed` for non-paired RDDs.
 
-#### [SequenceFileSerializableRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/serde/SequenceFileSerializableRDD.scala)
+#### Sliding / Windowed Traversals
 
-`.saveAsSequenceFile` and `.saveCompressed` methods for non-paired RDDs.
+Exposes several methods in the spirit of [Scala collections' similar API](https://github.com/scala/scala/blob/v2.11.12/src/library/scala/collection/IterableLike.scala#L180-L208).
 
-#### [SlidingRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/sliding/SlidingRDD.scala)
-
-Exposes `.sliding` methods (and several variants) in the spirit of [Scala collections' similar API](https://github.com/scala/scala/blob/v2.10.5/src/library/scala/collection/IterableLike.scala#L164):
+`Tuple2` / `Tuple3`:
 
 ```scala
-scala> import org.hammerlab.magic.rdd.SlidingRDD._
-…
-scala> sc.parallelize(0 to 10).sliding2().collect
-res1: Array[(Int, Int)] = Array((0,1), (1,2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,8), (8,9), (9,10))
+sc.parallelize(1 to 6).sliding2.collect
+// Array((1,2), (2,3), (3,4), (4,5), (5,6))
+
+sc.parallelize(1 to 6).sliding3.collect
+// Array((1,2,3), (2,3,4), (3,4,5), (4,5,6))
 ```
 
-#### [CappedGroupByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/CappedGroupByKeyRDD.scala)
+2- and 3-element windows with `Option` contexts; input and output RDDs have same number of eleemnts:
 
-Exposes `.cappedGroupByKey(maxPerKey: Int)`, which is like []`RDD.groupByKey`](https://github.com/apache/spark/blob/v1.6.1/core/src/main/scala/org/apache/spark/rdd/PairRDDFunctions.scala#L631) but helps you not to OOM yourself by only taking the first `maxPerKey` elements for each key!
+```scala
+sc.parallelize(1 to 6).sliding2Next.collect
+// Array((1,Some(2)), (2,Some(3)), (3,Some(4)), (4,Some(5)), (5,Some(6)), (6,None))
 
-#### [SampleByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/SampleByKeyRDD.scala)
+sc.parallelize(1 to 6).sliding2Prev.collect
+// Array((None,1), (Some(1),2), (Some(2),3), (Some(3),4), (Some(4),5), (Some(5),6))
 
-Exposes `.sampleByKey`, which functions similarly to `.cappedGroupByKey` above, but samples elements from each key in an unbiased manner.
+sc.parallelize(1 to 6).sliding3Opt.collect
+// Array((None,1,Some(2)), (Some(1),2,Some(3)), (Some(2),3,Some(4)), (Some(3),4,Some(5)), (Some(4),5,Some(6)), (Some(5),6,None))
 
-Powered by a custom [HyperGeometricDistribution](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/math/HyperGeometricDistribution.scala) implementation that can operate on 8-byte-`Long` population sizes.
+sc.parallelize(1 to 6).sliding3Next.collect
+// Array((1,Some(2),Some(3)), (2,Some(3),Some(4)), (3,Some(4),Some(5)), (4,Some(5),Some(6)), (5,Some(6),None), (6,None,None))
+```
 
-#### [SplitByKeyRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/keyed/SplitByKeyRDD.scala)
+Arbitrary number of elements in `Seq`s, optionally preserving total number of elements by keeping partial entries:
+
+```scala
+sc.parallelize(1 to 6).sliding(4).collect
+// Array(List(1, 2, 3, 4), List(2, 3, 4, 5), List(3, 4, 5, 6))
+
+scala> sc.parallelize(1 to 6).sliding(4, includePartial = true).collect
+// Array(List(1, 2, 3, 4), List(2, 3, 4, 5), List(3, 4, 5, 6), List(4, 5, 6), List(5, 6), List(6))
+```
+
+#### `.cappedGroupByKey`
+
+Like [`RDD.groupByKey`](https://github.com/apache/spark/blob/v2.2.0/core/src/main/scala/org/apache/spark/rdd/PairRDDFunctions.scala#L643) but takes only the first `maxPerKey` elements for each key:
+
+```scala
+sc.parallelize(1 to 10).keyBy(_ % 2).cappedGroupByKey(3).collect
+// Array((0,Vector(2, 4, 6)), (1,Vector(1, 3, 5)))
+```
+
+#### `.sampleByKey`
+
+Similar to `.cappedGroupByKey`, but samples elements from each key in an unbiased manner:
+
+```scala
+sc.parallelize(1 to 100).keyBy(_ % 2).sampleByKey(3).collect
+// Array((0,ArrayBuffer(24, 78, 98)), (1,ArrayBuffer(17, 47, 49)))
+```
+
+#### `.splitByKey`
 
 Split an `RDD[(K, V)]` into a `Map[K, RDD[V]]`, i.e. multiple RDDs each containing the values corresponding to one key.
 
- This is generally a questionable thing to want to do, as subsequent operations on each RDD lose out on Spark's ability to parallelize things.
+This is generally a questionable thing to want to do, as subsequent operations on each RDD lose out on Spark's ability to parallelize things.
 
- However, if you are going to do it, this implementation is much better than what you might do naively, i.e. using `.filter` N times on the original RDD.
+However, if you are going to do it, this implementation is much better than what you might do naively, i.e. using `.filter` N times on the original RDD.
 
- Instead, we shuffle the full RDD once, into a partitioning where each key's pairs occupy a contiguous range of partitions, then partition-slice views over those ranges are exposed as standalone, per-key RDDs.
+Instead, this shuffles the full RDD once, into a partitioning where each key's pairs occupy a contiguous range of partitions; it then partition-slices views over those ranges and exposes them as standalone, per-key RDDs.
 
-#### [PartialSumGridRDD](https://github.com/hammerlab/magic-rdds/blob/master/src/main/scala/org/hammerlab/magic/rdd/grid/PartialSumGridRDD.scala)
+#### 2-D prefix sum
 
-Given an RDD of elements that each have a logical "row", "column", and "summable" value (an `RDD[((Int, Int), V)]`), generate an RDD that replaces each value with the sum of all values at greater (or equal) rows and columns.
+Given an RDD of elements that each have a logical "row", "column", and "summable" value (an `RDD[((Int, Int), V)]`), generate an RDD that replaces each value with the sum of all values at greater (or equal) (row,col) positions:
 
-[Examples from the tests](https://github.com/hammerlab/magic-rdds/blob/master/src/test/scala/org/hammerlab/magic/rdd/grid/PartialSumGridRDDTest.scala#L101-L123) should help clarify:
+```scala
+val n = 4
+val rdd = sc.parallelize(1 to n flatMap { r ⇒ 1 to n map { c ⇒ r -> c -> r*c } })
+def printGrid(rdd: RDD[((Int, Int), Int)]) = {
+  val map = rdd.collectAsMap.toMap
+  for {
+    r ← n to 1 by -1
+    c ← 1 to n
+  } {
+    print("% 4d".format(map((r, c))))
+    if (c == n) print("\n")
+  }
+}
 
-Input:
+printGrid(rdd)
+//   4   8  12  16
+//   3   6   9  12
+//   2   4   6   8
+//   1   2   3   4
 
+val prefix_sum.Result(_, cdf, _, _) = rdd.prefixSum2D()
+
+printGrid(cdf)
+//  40  36  28  16
+//  70  63  49  28
+//  90  81  63  36
+// 100  90  70  40
 ```
- 3   2   1   0    
- 7   6   5   4    
-11  10   9   8    
-15  14  13  12    
-```
 
-Output:
-
-```
-  6   3   1   0
- 28  18  10   4
- 66  45  27  12
-120  84  52  24
-```
+[Examples from the tests](https://github.com/hammerlab/magic-rdds/blob/master/src/test/scala/org/hammerlab/magic/rdd/grid) may clarify further.
 
 ### ["Batch" execution](src/main/scala/org/apache/spark/batch)
 This feature exposes a coarse avenue for forcing fewer than `spark.executor.cores` tasks to run concurrently on each 
@@ -306,16 +332,16 @@ before combining the results into single RDD:
 ```scala
 scala> import org.hammerlab.magic.rdd.batch.implicits._
 // create RDD of 10 partitions
-scala> val rdd = sc.parallelize(0 until 100, 10)
-scala> val res = rdd.batch(numPartitionsPerBatch = 4)
+val rdd = sc.parallelize(0 until 100, 10)
+val res = rdd.batch(numPartitionsPerBatch = 4)
+
 // print operations graph to see how many batches are selected
-scala> res.toDebugString
-res0: String =
-(10) ReduceRDD[4] at RDD at ReduceRDD.scala:19 []
- +-(2) MapRDD[3] at RDD at MapRDD.scala:21 []
-    +-(4) MapRDD[2] at RDD at MapRDD.scala:21 []
-       +-(4) MapRDD[1] at RDD at MapRDD.scala:21 []
-          |  ParallelCollectionRDD[0] at parallelize at <console>:27 []
+res.toDebugString
+// (10) ReduceRDD[4] at RDD at ReduceRDD.scala:19 []
+//  +-(2) MapRDD[3] at RDD at MapRDD.scala:21 []
+//     +-(4) MapRDD[2] at RDD at MapRDD.scala:21 []
+//        +-(4) MapRDD[1] at RDD at MapRDD.scala:21 []
+//           |  ParallelCollectionRDD[0] at parallelize at <console>:27 []
 ```
 
 See [the package README](src/main/scala/org/apache/spark/batch) for more info!

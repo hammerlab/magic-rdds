@@ -10,7 +10,8 @@ import scala.reflect.ClassTag
 /**
  * Result-container for an ordered comparison of two [[RDD]]s' elements; see [[Stats]]
  */
-class Ordered[T: ClassTag] private(joined: RDD[(T, (Iterable[Long], Iterable[Long]))]) {
+class Ordered[T: ClassTag] private(joined: RDD[(T, (Iterable[Long], Iterable[Long]))])
+  extends Serializable {
   lazy val stats =
     joined
       .values
@@ -32,7 +33,7 @@ class Ordered[T: ClassTag] private(joined: RDD[(T, (Iterable[Long], Iterable[Lon
   def isEqual: Boolean = stats.isEqual
 }
 
-object Ordered {
+object Ordered extends Serializable {
 
   def apply[T: ClassTag](rdd1: RDD[T], rdd2: RDD[T]): Ordered[T] =
     new Ordered[T](

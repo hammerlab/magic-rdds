@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-abstract class RDDCache[T: ClassTag, U] {
+abstract class RDDCache[T: ClassTag, U] extends Serializable {
 
   def apply(rdd: RDD[T]): U = cache.getOrElseUpdate(rdd, compute(rdd))
 
@@ -30,7 +30,9 @@ abstract class RDDCache[T: ClassTag, U] {
       id → value
 }
 
-abstract class MultiRDDCache[T: ClassTag, U] extends RDDCache[T, U] {
+abstract class MultiRDDCache[T: ClassTag, U]
+  extends RDDCache[T, U]
+    with Serializable {
 
   def apply(rdds: Seq[RDD[T]]): Seq[U] = {
     val uncachedRDDs = rdds.filterNot(contains)

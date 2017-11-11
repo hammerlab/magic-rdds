@@ -23,8 +23,8 @@ trait Sliding {
      * Works in the presence of partitions of any size, including empty.
      */
     def sliding2: RDD[(T, T)] =
-      sliding2Opt
-        .flatMap {
+      sliding2Next
+      .flatMap {
           case (elem, Some(next)) ⇒
             Some(elem → next)
           case _ ⇒
@@ -36,14 +36,14 @@ trait Sliding {
      *
      * Emits one tuple for each element in [[rdd]]; works in the presence of partitions of any size, including empty.
      */
-    def sliding2Opt: RDD[(T, Option[T])] =
+    def sliding2Next: RDD[(T, Option[T])] =
       window(0, 1).map {
         case Window(_, elem, next) ⇒
           elem → next.headOption
       }
 
     def sliding2(pad: T): RDD[(T, T)] =
-      sliding2Opt.mapValues(_.getOrElse(pad))
+      sliding2Next.mapValues(_.getOrElse(pad))
 
     def sliding2Prev: RDD[(Option[T], T)] =
       window(1, 0).map {
@@ -59,8 +59,8 @@ trait Sliding {
      * Works in the presence of partitions of any size, including empty.
      */
     def sliding3: RDD[(T, T, T)] =
-      sliding3NextOpts
-        .flatMap {
+      sliding3Next
+      .flatMap {
           case (cur, Some(next1), Some(next2)) ⇒
             Some((cur, next1, next2))
           case _ ⇒
@@ -87,7 +87,7 @@ trait Sliding {
      *
      * Emits one triplet for each element in [[rdd]]; works in the presence of partitions of any size, including empty.
      */
-    def sliding3NextOpts: RDD[(T, Option[T], Option[T])] =
+    def sliding3Next: RDD[(T, Option[T], Option[T])] =
       window(0, 2).map {
         case Window(_, elem, next) ⇒
           (

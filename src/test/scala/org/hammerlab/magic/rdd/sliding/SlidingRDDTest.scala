@@ -58,14 +58,14 @@ class SlidingRDDTest
 
     test("sliding2") {
       rdd.sliding2.collect() should be((0 until 5).sliding2.toArray)
-      rdd.sliding2Opt.collect() should be((0 until 5).sliding2Opt.toArray)
+      rdd.sliding2Next.collect() should be((0 until 5).sliding2Opt.toArray)
       rdd.sliding2Prev.collect() should be((0 until 5).sliding2Prev.toArray)
     }
 
     test("sliding3") {
       rdd.sliding3.collect() should be((0 until 5).sliding3.toArray)
       rdd.sliding3Opt.collect() should be((0 until 5).sliding3Opt.toArray)
-      rdd.sliding3NextOpts.collect() should be((0 until 5).sliding3NextOpts.toArray)
+      rdd.sliding3Next.collect() should be((0 until 5).sliding3NextOpts.toArray)
     }
 
     test("sliding4") {

@@ -3,6 +3,7 @@ name := "magic-rdds"
 version := "4.0.0-SNAPSHOT"
 
 addSparkDeps
+scalameta
 
 deps ++= Seq(
   bytes % "1.0.3",
@@ -10,6 +11,7 @@ deps ++= Seq(
   io % "3.0.0",
   iterators % "2.0.0",
   math % "2.1.0",
+  hammerlab("iterator-macros") % "1.1.0-SNAPSHOT",
   paths % "1.3.1",
   slf4j,
   spark_util % "2.0.0",

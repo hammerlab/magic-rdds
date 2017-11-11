@@ -1,5 +1,6 @@
 package magic_rdds
 
+import hammerlab.iterator.macros.obj
 import org.hammerlab.magic.rdd
 
 /**
@@ -12,47 +13,33 @@ import org.hammerlab.magic.rdd
  * magic_rdds._ or only via a sub-package thereof.
  */
 
-trait batch extends rdd.batch
-object batch extends batch
-
+@obj trait batch extends rdd.batch
 
 import rdd.cmp._
-trait cmp
+@obj trait cmp
   extends Equals
-     with SameValues
-
-object cmp extends cmp {
+     with SameValues {
   val Keyed = rdd.cmp.Keyed
   val Ordered = rdd.cmp.Ordered
   val Unordered = rdd.cmp.Unordered
 }
 
+@obj trait collect extends rdd.collect
 
-trait collect extends rdd.collect
-case object collect extends collect
-
+@obj trait fold extends rdd.fold
 
 import rdd.keyed._
-
-trait keyed
+@obj trait keyed
   extends CappedGroupByKey
     with FilterKeys
     with ReduceByKey
     with SampleByKey
     with SplitByKey
 
-object keyed extends keyed
-
-
-import rdd.ordered.SortedRepartition
-
-trait ordered extends SortedRepartition
-object ordered extends ordered
-
+@obj trait ordered extends rdd.ordered.SortedRepartition
 
 import rdd.partitions._
-
-trait partitions
+@obj trait partitions
   extends FilterPartitionIdxs
      with OrderedRepartition
      with PartitionByKey
@@ -61,24 +48,20 @@ trait partitions
      with PrependOrderedIDs
      with ReducePartitions
 
-object partitions extends partitions
+@obj trait prefix_sum extends rdd.grid.PrefixSum
+object prefix_sum {
+  type Result[V] = rdd.grid.Result[V]
+  val Result = rdd.grid.Result
+}
 
+@obj trait rev extends rdd.rev
 
-trait rev extends rdd.rev
-object rev extends rev
+@obj trait run_length extends rdd.run_length
 
-
-trait run_length extends rdd.run_length
-object run_length extends run_length
-
-
-trait sample extends rdd.sample
-object sample extends sample
-
+@obj trait sample extends rdd.sample
 
 import rdd.scan._
-
-trait scan
+@obj trait scan
   extends ScanLeftRDD
      with ScanLeftValuesRDD
      with ScanRightRDD
@@ -86,30 +69,16 @@ trait scan
   type ScanRDD[T] = rdd.scan.ScanRDD[T]
 }
 
-object scan extends scan
-
-
-trait size extends rdd.size
-object size extends size
-
+@obj trait size extends rdd.size
 
 import rdd.sliding._
-
-trait sliding
+@obj trait sliding
   extends Sliding
      with BorrowElems
 
-object sliding extends sliding
-
-
-trait sort extends rdd.sort
-object sort extends sort
-
+@obj trait sort extends rdd.sort
 
 import rdd.zip._
-
-trait zip
+@obj trait zip
   extends ZipPartitions
     with ZipPartitionsWithIndex
-
-object zip extends zip
