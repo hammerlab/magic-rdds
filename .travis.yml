@@ -7,7 +7,7 @@ jdk:
 scala:
   - 2.11.11
 
-script: sbt clean coverageTest
+script: sbt clean test
 
 cache:
   directories:
@@ -15,7 +15,7 @@ cache:
   - $HOME/.sbt/boot/
   - $HOME/.zinc
 
-after_success: sbt travis-report
+# Scalameta-annotation-macro-generated code breaks scoverage: https://github.com/scoverage/scalac-scoverage-plugin/issues/210
 
 before_cache:
   # Tricks to avoid unnecessary cache updates
