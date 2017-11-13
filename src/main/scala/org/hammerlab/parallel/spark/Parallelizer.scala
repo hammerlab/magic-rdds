@@ -1,7 +1,7 @@
 package org.hammerlab.parallel.spark
 
+import hammerlab.iterator.end._
 import org.hammerlab.parallel
-import org.hammerlab.iterator.FinishingIterator._
 
 import scala.reflect.ClassTag
 

@@ -1,12 +1,12 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
+import hammerlab.iterator._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.iterator.DropRightIterator._
 
 import scala.reflect.ClassTag
 
-object ScanLeftRDD {
+trait ScanLeftRDD {
 
   /**
    * RDD wrapper supporting methods that compute partial-sums across the RDD.
@@ -30,12 +30,36 @@ object ScanLeftRDD {
     def scanLeftInclusive(implicit m: Monoid[T]): ScanRDD[T] =
       scanLeft(includeCurrentValue = true)
 
+    def scanLeft(
+                    identity: T
+                )(
+                    combine: (T, T) ⇒ T
+                ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        includeCurrentValue = false
+      )(
+        combine
+      )
+
+    def scanLeftInclusive(
+                             identity: T
+                         )(
+        combine: (T, T) ⇒ T
+    ): ScanRDD[T] =
+      scanLeft(
+        identity,
+        includeCurrentValue = true
+      )(
+        combine
+      )
+
     def scanLeft(identity: T,
                  includeCurrentValue: Boolean
     )(
         combine: (T, T) ⇒ T
     ): ScanRDD[T] =
-      scanLeft(
+      scanLeftImpl(
         identity,
         combine,
         combine,
@@ -44,8 +68,28 @@ object ScanLeftRDD {
 
     def scanLeft[U: ClassTag](identity: U,
                               aggregate: (U, T) ⇒ U,
-                              combine: (U, U) ⇒ U,
-                              includeCurrentValue: Boolean): ScanRDD[U] = {
+                              combine: (U, U) ⇒ U): ScanRDD[U] =
+      scanLeftImpl(
+        identity,
+        aggregate,
+        combine,
+        includeCurrentValue = false
+      )
+
+    def scanLeftInclusive[U: ClassTag](identity: U,
+                                       aggregate: (U, T) ⇒ U,
+                                       combine: (U, U) ⇒ U): ScanRDD[U] =
+      scanLeftImpl(
+        identity,
+        aggregate,
+        combine,
+        includeCurrentValue = true
+      )
+
+    def scanLeftImpl[U: ClassTag](identity: U,
+                                  aggregate: (U, T) ⇒ U,
+                                  combine: (U, U) ⇒ U,
+                                  includeCurrentValue: Boolean): ScanRDD[U] = {
       val numPartitions = rdd.getNumPartitions
       val (partitionPrefixes, total) = {
         val sums =
@@ -89,7 +133,7 @@ object ScanLeftRDD {
               if (includeCurrentValue)
                 scanned.drop(1)
               else
-                scanned.dropRight(1)
+                scanned.dropright(1)
           },
         partitionPrefixes,
         total

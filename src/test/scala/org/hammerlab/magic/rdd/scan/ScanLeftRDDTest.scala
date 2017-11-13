@@ -1,9 +1,8 @@
 package org.hammerlab.magic.rdd.scan
 
+import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
-import cats.kernel.Monoid
-import org.hammerlab.magic.rdd.scan.ScanLeftValuesRDD._
-import org.hammerlab.magic.rdd.scan.ScanLeftRDD._
+import magic_rdds.scan._
 
 import scala.reflect.ClassTag
 
@@ -51,11 +50,17 @@ abstract class ScanLeftRDDTest(inclusive: Boolean)
         "e" → 5
       )
 
+    val rdd = sc.parallelize(seq, numPartitions)
+
     val actual =
-      sc
-        .parallelize(seq, numPartitions)
-        .scanLeftValues(inclusive)
-        .collect()
+      if (inclusive)
+        rdd
+          .scanLeftValuesInclusive
+          .collect
+      else
+        rdd
+          .scanLeftValues
+          .collect
 
     actual should be(
       byKeyOutput

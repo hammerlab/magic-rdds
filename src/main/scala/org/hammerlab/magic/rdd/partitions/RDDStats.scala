@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd.partitions
 
-import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.{RDD, UnionRDD}
+import org.apache.spark.rdd.{ RDD, UnionRDD }
+import org.hammerlab.kryo._
 import org.hammerlab.stats.Stats
 
 import scala.collection.mutable
@@ -32,23 +32,20 @@ case class UnsortedRDDStats[T: ClassTag] private[partitions](partitionSizes: Seq
 
 private case class PartitionStats[T: ClassTag](boundsOpt: Option[(T, T)], count: Long, isSorted: Boolean)
 
-object RDDStats {
+object RDDStats extends Registrar {
 
-  def register(kryo: Kryo): Unit = {
-    kryo.register(classOf[Array[PartitionStats[_]]])
-    kryo.register(classOf[PartitionStats[_]])
-  }
+  register(
+    arr[PartitionStats[_]]
+  )
 
   private val rddMap = mutable.Map[(SparkContext, Int), RDDStats[_]]()
-  implicit def rddToPartitionBoundsRDD[T: ClassTag](
-    rdd: RDD[T]
-  )(
-    implicit ordering: PartialOrdering[T]
-  ): RDDStats[T] =
-    rddMap.getOrElseUpdate(
-      (rdd.sparkContext, rdd.id),
-      RDDStats[T](rdd)
-    ).asInstanceOf[RDDStats[T]]
+  implicit def rddToPartitionBoundsRDD[T: ClassTag: PartialOrdering](rdd: RDD[T]): RDDStats[T] =
+    rddMap
+      .getOrElseUpdate(
+        (rdd.sparkContext, rdd.id),
+        RDDStats[T](rdd)
+      )
+      .asInstanceOf[RDDStats[T]]
 
   private def apply[T: ClassTag](
     partitionStats: Iterable[PartitionStats[T]]

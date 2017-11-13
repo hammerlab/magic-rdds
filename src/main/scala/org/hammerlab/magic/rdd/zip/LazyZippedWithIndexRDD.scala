@@ -10,7 +10,8 @@ import scala.reflect.ClassTag
  * Slight modification of [[org.apache.spark.rdd.ZippedWithIndexRDD]] from Spark that does not run job when created,
  * it only triggers job on action or computing partitions.
  */
-class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T]) extends RDD[(T, Long)](rdd) {
+class LazyZippedWithIndexRDD[T: ClassTag](private var rdd: RDD[T])
+  extends RDD[(T, Long)](rdd) {
   private var startIndices: Array[Long] = _
 
   val iteratorSize: Iterator[_] ⇒ Long = iter ⇒ iter.size

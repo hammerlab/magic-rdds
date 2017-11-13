@@ -2,8 +2,7 @@ package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
-import org.hammerlab.magic.rdd.scan.ScanRightValuesRDD._
-import org.hammerlab.magic.rdd.scan.ScanRightRDD._
+import magic_rdds.scan._
 
 import scala.reflect.ClassTag
 
@@ -32,13 +31,17 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
         "e" → 5
       )
 
-    val actual =
-      sc
-        .parallelize(seq)
-        .scanRightValues(inclusive, useRDDReversal)
-        .collect()
+    val rdd = sc.parallelize(seq, numPartitions)
 
-    actual should be(
+    val scanned =
+      (inclusive, useRDDReversal) match {
+        case ( true,  true) ⇒ rdd.scanRightValuesInclusive
+        case ( true, false) ⇒ rdd.scanRightValuesInclusive(useRDDReversal)
+        case (false,  true) ⇒ rdd.scanRightValues
+        case (false, false) ⇒ rdd.scanRightValues(useRDDReversal)
+      }
+
+    scanned.collect should be(
       byKeysOutput
     )
   }
@@ -50,17 +53,20 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
 
     val rdd = sc.parallelize(input.toSeq)
 
-    val actualArr =
-      rdd
-        .scanRight(inclusive, useRDDReversal)
-        .collect()
+    val scanned =
+      (inclusive, useRDDReversal) match {
+        case ( true,  true) ⇒ rdd.scanRightInclusive
+        case ( true, false) ⇒ rdd.scanRightInclusive(useRDDReversal)
+        case (false,  true) ⇒ rdd.scanRight
+        case (false, false) ⇒ rdd.scanRight(useRDDReversal)
+      }
 
     val expectedArr =
       expectedOpt.getOrElse(
         getExpected(input)
       )
 
-    actualArr should be(expectedArr)
+    scanned.collect should be(expectedArr)
   }
 }
 

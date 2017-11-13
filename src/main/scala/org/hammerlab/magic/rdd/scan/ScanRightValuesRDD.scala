@@ -1,12 +1,12 @@
 package org.hammerlab.magic.rdd.scan
 
 import cats.Monoid
+import magic_rdds.scan._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.magic.rdd.scan.ScanRightRDD._
 
 import scala.reflect.ClassTag
 
-object ScanRightValuesRDD {
+trait ScanRightValuesRDD {
 
   /**
    * Expose methods on paired-RDDs for performing a scan-right over the values.
@@ -17,31 +17,33 @@ object ScanRightValuesRDD {
     // Dummy key value, not exposed in returned RDD
     private var k: K = _
 
-    def scanRightValues(includeCurrentValue: Boolean = false,
-                        useRDDReversal: Boolean = false
-                       )(
-        implicit m: Monoid[V]
-    ): ScanValuesRDD[K, V] =
-      scanRightValues(
-        m.empty,
-        useRDDReversal,
-        includeCurrentValue
-      )(
-        m.combine
-      )
+    /** `scanRightValues` using a [[cats.Monoid]], optionally  the RDD vs materializing whole partitions */
 
-    def scanRightValues(identity: V,
-                        useRDDReversal: Boolean,
-                        includeCurrentValue: Boolean)(
-                           combine: (V, V) ⇒ V
-                       ): ScanValuesRDD[K, V] =
-      scanRightValues(
-        identity,
-        combine,
-        combine,
-        useRDDReversal,
-        includeCurrentValue
-      )
+    def scanRightValues(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanRightValues(useRDDReversal = true)
+    def scanRightValues(useRDDReversal: Boolean)(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanRightValues(m.empty, useRDDReversal = useRDDReversal)(m.combine)
+
+    /** `scanRightValues` where the input type matches the output type */
+
+    def scanRightValues(identity: V)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanRightValues[V](identity)(combine)(combine)
+    def scanRightValues(identity: V, useRDDReversal: Boolean)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanRightValues[V](identity, useRDDReversal = useRDDReversal)(combine)(combine)
+
+    /** scanRightValues where the input type may not match the output type */
+
+    def scanRightValues[W: ClassTag](identity: W)(aggregate: (V, W) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanRightValues[W](identity, aggregate, combine, useRDDReversal = false, includeCurrentValue = false)
+    def scanRightValues[W: ClassTag](identity: W, useRDDReversal: Boolean)(aggregate: (V, W) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanRightValues[W](identity, aggregate, combine, useRDDReversal = useRDDReversal, includeCurrentValue = false)
+
+    /** `scanRightValuesInclusive`: include each element in the sum that replaces it */
+
+    def scanRightValuesInclusive(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanRightValuesInclusive(m.empty)(m.combine)
+    def scanRightValuesInclusive(useRDDReversal: Boolean)(implicit m: Monoid[V]): ScanValuesRDD[K, V] = scanRightValuesInclusive(m.empty, useRDDReversal = true)(m.combine)
+
+    def scanRightValuesInclusive(identity: V)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanRightValuesInclusive[V](identity)(combine)(combine)
+    def scanRightValuesInclusive(identity: V, useRDDReversal: Boolean)(combine: (V, V) ⇒ V): ScanValuesRDD[K, V] = scanRightValuesInclusive[V](identity, useRDDReversal = useRDDReversal)(combine)(combine)
+
+    def scanRightValuesInclusive[W: ClassTag](identity: W)(aggregate: (V, W) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanRightValues[W](identity, aggregate, combine, useRDDReversal = false, includeCurrentValue = true)
+    def scanRightValuesInclusive[W: ClassTag](identity: W, useRDDReversal: Boolean)(aggregate: (V, W) ⇒ W)(combine: (W, W) ⇒ W): ScanValuesRDD[K, W] = scanRightValues[W](identity, aggregate, combine, useRDDReversal = useRDDReversal, includeCurrentValue = true)
+
+    /** General implementation */
 
     def scanRightValues[W: ClassTag](identity: W,
                                      aggregate: (V, W) ⇒ W,
