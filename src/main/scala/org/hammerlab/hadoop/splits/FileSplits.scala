@@ -1,11 +1,11 @@
 package org.hammerlab.hadoop.splits
 
+import hammerlab.path._
 import org.apache.hadoop.mapreduce.lib.input
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat.{ SPLIT_MAXSIZE, setInputPaths }
 import org.apache.hadoop.mapreduce.{ InputSplit, Job, TaskAttemptContext }
 import org.apache.hadoop.{ fs, mapreduce }
 import org.hammerlab.hadoop.Configuration
-import org.hammerlab.paths.Path
 
 import scala.collection.JavaConverters._
 
