@@ -14,7 +14,7 @@ deps ++= Seq(
   io % "4.0.0-SNAPSHOT",
   iterator_macros % "1.1.0",
   iterators % "2.0.0",
-  math % "2.1.1",
+  math % "2.1.2-SNAPSHOT",
   paths % "1.4.0",
   slf4j,
   spark_util % "2.0.1",
