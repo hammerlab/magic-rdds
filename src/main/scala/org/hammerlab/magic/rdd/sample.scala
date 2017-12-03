@@ -1,8 +1,8 @@
 package org.hammerlab.magic.rdd
 
+import hammerlab.print.SampleSize
 import magic_rdds.size._
 import org.apache.spark.rdd.RDD
-import org.hammerlab.io.SampleSize
 
 import scala.reflect.ClassTag
 

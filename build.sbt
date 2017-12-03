@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-version := "4.0.1-SNAPSHOT"
+version := "4.1.0-SNAPSHOT"
 
 addSparkDeps
 scalameta
@@ -11,7 +11,7 @@ emptyDocJar
 deps ++= Seq(
   bytes % "1.1.0",
   case_app,
-  io % "3.1.0",
+  io % "4.0.0-SNAPSHOT",
   iterator_macros % "1.1.0",
   iterators % "2.0.0",
   math % "2.1.1",
@@ -19,6 +19,6 @@ deps ++= Seq(
   slf4j,
   spark_util % "2.0.1",
   spire,
-  stats % "1.1.1",
+  stats % "1.2.0-SNAPSHOT",
   types % "1.0.1"
 )
