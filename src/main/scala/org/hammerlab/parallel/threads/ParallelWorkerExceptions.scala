@@ -4,25 +4,24 @@ import hammerlab.indent.implicits.tab
 import hammerlab.print._
 import hammerlab.show._
 import org.hammerlab.exception.Error
-import org.hammerlab.parallel.threads.ParallelWorkerExceptions.lines
+import org.hammerlab.parallel.threads.ParallelWorkerExceptions._
 
-case class ParallelWorkerExceptions[T](exceptions: Seq[ParallelWorkerException[T]])
+case class ParallelWorkerExceptions[T](exceptions: Exceptions[T])
   extends RuntimeException(
     exceptions.showLines
   )
 
 object ParallelWorkerExceptions {
-  implicit def lines[T]: ToLines[Seq[ParallelWorkerException[T]]] =
-    new Print(_: Seq[ParallelWorkerException[T]]) {
-      write(
-        s"${t.length} uncaught exceptions thrown in parallel worker threads:"
-      )
-      ind {
-        for {
-          ParallelWorkerException(_, _, exception) ← t
-        } {
-          write(Error(exception))
+  type Exceptions[T] = Seq[ParallelWorkerException[T]]
+  implicit def lines[T]: ToLines[Exceptions[T]] =
+    (es: Exceptions[T]) ⇒
+      Lines(
+        s"${es.length} uncaught exceptions thrown in parallel worker threads:",
+        indent {
+          for {
+            ParallelWorkerException(_, _, exception) ← es
+          } yield
+            Error(exception)
         }
-      }
-    }
+      )
 }
