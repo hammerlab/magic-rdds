@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-version := "4.0.0"
+v"4.1.0"
 
 addSparkDeps
 scalameta
@@ -8,17 +8,17 @@ scalameta
 // Skip compilation during doc-generation; otherwise it fails due to macro-annotations not being expanded
 emptyDocJar
 
-deps ++= Seq(
-  bytes % "1.0.3",
-  case_app,
-  io % "3.0.0",
-  iterators % "2.0.0",
-  math % "2.1.1",
-  hammerlab("iterator-macros") % "1.1.0",
-  paths % "1.3.1",
-  slf4j,
-  spark_util % "2.0.1",
-  spire,
-  stats % "1.1.1",
-  types % "1.0.1"
+dep(
+            bytes % "1.1.0",
+         case_app,
+               io % "4.0.0",
+  iterator_macros % "1.1.0",
+        iterators % "2.0.0",
+             math % "2.1.2",
+            paths % "1.4.0",
+            slf4j,
+       spark_util % "2.0.1",
+            spire,
+            stats % "1.2.0",
+            types % "1.0.1"
 )

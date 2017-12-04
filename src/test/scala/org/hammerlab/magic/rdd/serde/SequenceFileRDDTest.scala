@@ -1,10 +1,10 @@
 package org.hammerlab.magic.rdd.serde
 
+import hammerlab.path._
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.spark.rdd.RDD
 import org.hammerlab.magic.rdd.serde.SequenceFileSerializableRDD._
 import org.hammerlab.spark.test.rdd.RDDSerialization
-import org.hammerlab.paths.Path
 
 import scala.reflect.ClassTag
 
