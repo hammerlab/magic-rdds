@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-v"4.1.0"
+r"4.1.0"
 
 addSparkDeps
 scalameta
