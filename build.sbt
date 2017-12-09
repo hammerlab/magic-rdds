@@ -11,7 +11,7 @@ emptyDocJar
 dep(
             bytes % "1.1.0",
          case_app,
-               io % "4.0.0",
+         io_utils % "4.0.0",
   iterator_macros % "1.1.0",
         iterators % "2.0.0",
              math % "2.1.2",
