@@ -3,6 +3,7 @@ package org.hammerlab.magic.rdd
 import hammerlab.iterator._
 import magic_rdds._
 import org.apache.spark.rdd.RDD
+import org.hammerlab.iterator.group.Cmp
 import org.hammerlab.kryo._
 
 import scala.math.max
@@ -12,10 +13,11 @@ trait run_length {
   /**
    * Helper for run-length encoding an [[RDD]].
    */
-  implicit class RunLengthOps[T: ClassTag](rdd: RDD[T]) extends Serializable {
+  implicit class RunLengthOps[T: ClassTag : Cmp](rdd: RDD[T])
+    extends Serializable {
     lazy val runLengthEncode: RDD[(T, Long)] = {
       val runLengthPartitions =
-        rdd.mapPartitions(_.runLengthEncode())
+        rdd.mapPartitions(_.runLengthEncode)
 
       val oneOrFewerElementPartitions =
         runLengthPartitions

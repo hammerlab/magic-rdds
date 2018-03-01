@@ -1,7 +1,6 @@
 package org.hammerlab.hadoop.splits
 
-import caseapp.core.ArgParser
-import caseapp.core.ArgParser.instance
+import caseapp.core.argparser._
 import hammerlab.bytes._
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat.SPLIT_MAXSIZE
 import org.hammerlab.hadoop.Configuration
@@ -31,7 +30,7 @@ object MaxSplitSize {
       )
 
   implicit val parseSize: ArgParser[MaxSplitSize] =
-    instance("path") {
+    SimpleArgParser.from("path") {
       bytesStr ⇒
         Right(
           MaxSplitSize(

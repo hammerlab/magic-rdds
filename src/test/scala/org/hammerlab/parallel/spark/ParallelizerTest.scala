@@ -1,6 +1,6 @@
 package org.hammerlab.parallel.spark
 
-import org.hammerlab.math.ceil
+import hammerlab.math.utils.ceil
 import org.hammerlab.parallel
 import org.hammerlab.parallel.spark.SerdeBuffer.{ numCloses, numOpens }
 import org.hammerlab.spark.test.AtomicLongAccumulator

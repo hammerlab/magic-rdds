@@ -6,7 +6,8 @@ import org.hammerlab.spark.PartitionIndex
 import scala.collection.SortedSet
 
 trait FilterPartitionIdxs {
-  implicit class FilterPartitionIdxsOps[T](rdd: RDD[T]) extends Serializable {
+  implicit class FilterPartitionIdxsOps[T](rdd: RDD[T])
+    extends Serializable {
     def filterPartitionIdxs(fn: Iterator[T] ⇒ Boolean): SortedSet[PartitionIndex] =
       SortedSet(
         rdd
