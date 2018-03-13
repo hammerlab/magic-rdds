@@ -1,6 +1,6 @@
 package org.hammerlab.parallel.spark
 
-import org.hammerlab.math.ceil
+import hammerlab.math.utils.ceil
 
 /**
  * Configuration for how to parallelize with Spark using a fixed number of partitions [[NumPartitions]] or

@@ -2,7 +2,7 @@ package org.hammerlab.magic.rdd.grid
 
 import org.hammerlab.spark.test.suite.SparkSuite
 
-import org.hammerlab.math.ceil
+import hammerlab.math.utils.ceil
 
 abstract class PrefixSumTest(n: Int)
   extends SparkSuite {
