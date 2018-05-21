@@ -3,16 +3,21 @@ package org.hammerlab.magic.rdd.scan
 import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
 import magic_rdds.scan._
+import org.hammerlab.test.Cmp
 
 import scala.reflect.ClassTag
 
 abstract class ScanLeftRDDTest(inclusive: Boolean)
   extends ScanRDDTest {
 
-  override def check[T: ClassTag](input: Iterable[T],
-                                  expectedOpt: Option[Seq[T]] = None)(
-      implicit
-      m: Monoid[T]
+  override def check[
+    T
+      : ClassTag
+      : Cmp
+      : Monoid
+  ](
+    input: Iterable[T],
+    expectedOpt: Option[Seq[T]] = None
   ): Unit = {
 
     val actualArr =
@@ -26,7 +31,7 @@ abstract class ScanLeftRDDTest(inclusive: Boolean)
         getExpected(input)
       )
 
-    actualArr should be(expectedArr)
+    ==(actualArr, expectedArr)
   }
 
   def stringsOutput: Seq[String]
@@ -62,9 +67,7 @@ abstract class ScanLeftRDDTest(inclusive: Boolean)
           .scanLeftValues
           .collect
 
-    actual should be(
-      byKeyOutput
-    )
+    ==(actual, byKeyOutput)
   }
 }
 

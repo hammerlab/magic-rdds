@@ -2,11 +2,18 @@ package org.hammerlab.magic.rdd.ordered
 
 import magic_rdds.collect._
 import magic_rdds.ordered._
+import org.hammerlab.cmp.CanEq
 import org.hammerlab.spark.test.rdd.Util.makeRDD
 import org.hammerlab.spark.test.suite.SparkSuite
 
 class RangePartitionRDDTest
   extends SparkSuite {
+
+  import scala.collection.immutable.Seq
+  import scala.collection.immutable.IndexedSeq
+  implicit val arrayCanEqualSeq = CanEq.by[Array[Int], Seq[Int]](_.toSeq.toIndexedSeq)
+  implicit val arrayCanEqualIndexedSeq = CanEq.by[Array[Int], IndexedSeq[Int]](_.toSeq.toIndexedSeq)
+
   test("sorted zip") {
     val rdd1 =
       SortedRDD(
@@ -31,7 +38,8 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd1.sortedRepartition(rdd2)
 
-      bounds.partitions should be(
+      ==(
+        bounds.partitions,
         Array(
           Some( 1, Some( 6)),
           Some( 6, Some(20)),
@@ -41,7 +49,8 @@ class RangePartitionRDDTest
         )
       )
 
-      repartitioned.collectPartitions should be(
+      ==(
+        repartitioned.collectPartitions,
         Array(
           1 to 5,
           (6 to 10) ++ (11 until 20 by 3),
@@ -55,7 +64,8 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd2.sortedRepartition(rdd1)
 
-      bounds.partitions should be(
+      ==(
+        bounds.partitions,
         Array(
           Some(1, Some(11)),
           Some(11, Some(41)),
@@ -63,10 +73,11 @@ class RangePartitionRDDTest
         )
       )
 
-      repartitioned.collectPartitions should be(
+      ==(
+        repartitioned.collectPartitions,
         Array(
           (1 to 5) ++ (6 to 10 by 2),
-          Array(12, 14) ++ (20 to 25) ++ (30 to 33) ++ Array(40),
+          Seq(12, 14) ++ (20 to 25) ++ (30 to 33) ++ Seq(40),
           43 to 70 by 3
         )
       )
@@ -106,7 +117,8 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd1.sortedRepartition(rdd2)
 
-      bounds.partitions should be(
+      ==(
+        bounds.partitions,
         Array(
           None,
           Some( 1, Some( 5)),
@@ -122,7 +134,8 @@ class RangePartitionRDDTest
         )
       )
 
-      repartitioned.collectPartitions should be(
+      ==(
+        repartitioned.collectPartitions,
         Array(
           Nil,                           //  0
           Nil,                           //  1
@@ -142,7 +155,8 @@ class RangePartitionRDDTest
     {
       val SortedRDD(repartitioned, bounds) = rdd2.sortedRepartition(rdd1)
 
-      bounds.toArray should be(
+      ==(
+        bounds.toArray,
         Array(
           None,
           Some(10, Some(25)),
@@ -153,7 +167,8 @@ class RangePartitionRDDTest
         )
       )
 
-      repartitioned.collectPartitions should be(
+      ==(
+        repartitioned.collectPartitions,
         Array(
           Nil,                                            // 0
           (11 to 15 by 2) ++ (20 until 25),               // 1

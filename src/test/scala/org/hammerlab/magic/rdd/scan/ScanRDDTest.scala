@@ -3,13 +3,14 @@ package org.hammerlab.magic.rdd.scan
 import cats.Monoid
 import cats.instances.int.catsKernelStdGroupForInt
 import org.hammerlab.spark.test.suite.SparkSuite
+import org.hammerlab.test.Cmp
 
 import scala.reflect.ClassTag
 
 trait ScanRDDTest
   extends SparkSuite {
 
-  def getExpected[T](expected: Iterable[T])(implicit m: Monoid[T]): Seq[T]
+  def getExpected[T: Monoid](expected: Iterable[T]): Seq[T]
 
   def numPartitions: Int
 
@@ -25,19 +26,27 @@ trait ScanRDDTest
   test( "9") { check(1 to  9) }
   test("10") { check(1 to 10) }
 
-  def check[T: ClassTag](input: Iterable[T],
-                         expected: Seq[T])(
-      implicit
-      m: Monoid[T]
+  def check[
+    T
+      : ClassTag
+      : Cmp
+      : Monoid
+  ](
+    input: Iterable[T],
+    expected: Seq[T]
   ): Unit =
     check(
       input,
       Some(expected)
     )
 
-  def check[T: ClassTag](input: Iterable[T],
-                         expectedOpt: Option[Seq[T]] = None)(
-                            implicit
-                            m: Monoid[T]
-                        ): Unit
+  def check[
+    T
+      : ClassTag
+      : Cmp
+      : Monoid
+  ](
+    input: Iterable[T],
+    expectedOpt: Option[Seq[T]] = None
+  ): Unit
 }

@@ -12,7 +12,7 @@ class UnorderedCmpTest
     val rdd1 = sc.parallelize(elems1, numSlices = 4)
     val rdd2 = sc.parallelize(elems2, numSlices = 4)
 
-    rdd1.unorderedCmp(rdd2).stats should be(expected)
+    ==(rdd1.unorderedCmp(rdd2).stats, expected)
   }
 
   test("some alignment") {

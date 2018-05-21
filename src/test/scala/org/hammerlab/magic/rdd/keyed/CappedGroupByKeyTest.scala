@@ -18,8 +18,9 @@ class CappedGroupByKeyTest
     .keyBy(_ % 4)
 
   test("take 1") {
-    rdd.cappedGroupByKey(1).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(1).collect(),
+      Array(
         0 → Vector(12),
         1 → Vector( 9),
         2 → Vector(14),
@@ -29,8 +30,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 2") {
-    rdd.cappedGroupByKey(2).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(2).collect(),
+      Array(
         0 → Vector(12, 16),
         1 → Vector( 9,  5),
         2 → Vector(14,  2),
@@ -40,8 +42,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 3") {
-    rdd.cappedGroupByKey(3).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(3).collect(),
+      Array(
         0 → Vector(12, 16,  0),
         1 → Vector( 9,  5, 17),
         2 → Vector(14,  2,  2),
@@ -51,8 +54,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 4") {
-    rdd.cappedGroupByKey(4).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(4).collect(),
+      Array(
         0 → Vector(12, 16,  0, 12),
         1 → Vector( 9,  5, 17,  9),
         2 → Vector(14,  2,  2, 10),
@@ -62,8 +66,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 5") {
-    rdd.cappedGroupByKey(5).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(5).collect(),
+      Array(
         0 → Vector(12, 16,  0, 12,  0),
         1 → Vector( 9,  5, 17,  9,  1),
         2 → Vector(14,  2,  2, 10, 18),
@@ -73,8 +78,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 10") {
-    rdd.cappedGroupByKey(10).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(10).collect(),
+      Array(
         0 → Vector(12, 16,  0, 12,  0, 16, 12, 16,  0,  4),
         1 → Vector( 9,  5, 17,  9,  1,  5,  5, 13, 17, 13),
         2 → Vector(14,  2,  2, 10, 18, 18, 10, 14,  2, 14),
@@ -84,8 +90,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 20") {
-    rdd.cappedGroupByKey(20).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(20).collect(),
+      Array(
         0 → Vector(12, 16,  0, 12,  0, 16, 12, 16,  0,  4,  8,  4,  8,  0, 16,  4,  8, 16, 16, 12),  // 20 of 20
         1 → Vector( 9,  5, 17,  9,  1,  5,  5, 13, 17, 13,  5,  1,  9, 17,  1,  5, 13,  1,  1,  1),  // 20 of 25
         2 → Vector(14,  2,  2, 10, 18, 18, 10, 14,  2, 14, 14,  2,  2, 10,  6, 14, 18),              // 17 of 20
@@ -95,8 +102,9 @@ class CappedGroupByKeyTest
   }
 
   test("take 30") {
-    rdd.cappedGroupByKey(30).collect() should be(
-      List(
+    ==(
+      rdd.cappedGroupByKey(30).collect(),
+      Array(
         0 → Vector(12, 16,  0, 12,  0, 16, 12, 16,  0,  4,  8,  4,  8,  0, 16,  4,  8, 16, 16, 12),                      // 20
         1 → Vector( 9,  5, 17,  9,  1,  5,  5, 13, 17, 13,  5,  1,  9, 17,  1,  5, 13,  1,  1,  1, 13,  1, 17,  1,  5),  // 25
         2 → Vector(14,  2,  2, 10, 18, 18, 10, 14,  2, 14, 14,  2,  2, 10,  6, 14, 18),                                  // 17

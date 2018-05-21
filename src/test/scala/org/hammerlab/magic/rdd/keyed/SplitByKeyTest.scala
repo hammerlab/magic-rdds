@@ -3,6 +3,7 @@ package org.hammerlab.magic.rdd.keyed
 import magic_rdds.collect._
 import magic_rdds.keyed._
 import org.hammerlab.spark.test.suite.SparkSuite
+import org.hammerlab.test.Cmp
 
 import scala.Vector.fill
 import scala.reflect.ClassTag
@@ -26,26 +27,47 @@ class SplitByKeyTest
       2, 5, 7, 3, 1, 4, 7, 9, 5, 0
     )
 
-  def check[K: ClassTag](elems: Seq[Int],
-                                      numPartitions: Int,
-                                      keyFn: Int ⇒ K)(expected: (K, Seq[Seq[Int]])*): Unit =
-    check(elems.map(i ⇒ keyFn(i) → i), numPartitions)(expected: _*)
+  def check[K: ClassTag : Cmp](
+    elems: Seq[Int],
+    numPartitions: Int,
+    keyFn: Int ⇒ K
+  )(
+    expected: (K, Seq[Seq[Int]])*
+  ):
+    Unit =
+    check(
+      elems
+        .map {
+          i ⇒
+            keyFn(i) → i
+        },
+      numPartitions
+    )(
+      expected: _*
+    )
 
-  def check[K: ClassTag, V: ClassTag](elems: Seq[(K, V)],
-                                      numPartitions: Int)(
-      expected: (K, Seq[Seq[V]])*
-  ): Unit = {
+  def check[
+    K: ClassTag : Cmp,
+    V: ClassTag : Cmp
+  ](
+    elems: Seq[(K, V)],
+    numPartitions: Int
+  )(
+    expected: (K, Seq[Seq[V]])*
+  ):
+    Unit = {
     val rdd = sc.parallelize(elems, numPartitions)
 
     val perKeyRDDs = rdd.splitByKey
 
-    perKeyRDDs
-      .mapValues(
-        _
-          .collectParts
-          .map(_.toList)
-          .toList
-      ) should be(
+    ==(
+      perKeyRDDs
+        .mapValues(
+          _
+            .collectParts
+            .map(_.toList)
+            .toList
+        ),
       expected.toMap
     )
   }

@@ -35,8 +35,8 @@ class ParallelizerTest
 
   override def check(arr: Array[Int]): Unit = {
     super.check(arr)
-    numOpens.value should be(ceil(arr.length, 2))
-    numCloses.value should be(ceil(arr.length, 2))
+    ==(numOpens .value, ceil(arr.length, 2))
+    ==(numCloses.value, ceil(arr.length, 2))
   }
 }
 

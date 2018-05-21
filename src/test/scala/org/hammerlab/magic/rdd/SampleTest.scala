@@ -3,7 +3,7 @@ package org.hammerlab.magic.rdd
 import magic_rdds._
 import org.hammerlab.spark.test.suite.SparkSuite
 
-import Array.fill
+import Seq.fill
 import scala.reflect.ClassTag
 
 class SampleTest
@@ -24,15 +24,16 @@ class SampleTest
   test("sample") {
     val Seq((0, evens), (1, odds)) = ints(100, 10)
 
-    evens.size should be(10)
-    odds .size should be(10)
+    ==(evens.size, 10)
+    ==(odds .size, 10)
 
-    evens map(_ % 2) should be(fill(10)(0))
-    odds  map(_ % 2) should be(fill(10)(1))
+    ==(evens map(_ % 2), fill(10)(0))
+    ==(odds  map(_ % 2), fill(10)(1))
   }
 
   test("all") {
-    ints(10, 5) should be(
+    ==(
+      ints(10, 5),
       Seq(
         0 → (2 to 10 by 2),
         1 → (1 to  9 by 2)
@@ -42,8 +43,8 @@ class SampleTest
 
   test("oversample") {
     val Seq((false, other), (true, three)) = ints[Boolean](10, 5, _ % 10 == 3)
-    three should be(Seq(3))
-    other.size should be(5)
-    other.exists(_ == 3) should be(false)
+    ==(three, Seq(3))
+    ==(other.size, 5)
+    ==(other.contains(3), false)
   }
 }
