@@ -20,14 +20,17 @@ class ReverseTest extends SparkSuite {
 
     val rdd = makeRDD(elems: _*)
 
-    rdd.reverse(preservePartitioning = true).collectParts should be(
+    ==(
+      rdd.reverse(preservePartitioning = true).collectParts,
       elems
         .reverse
+        .toArray
         .map(_.reverse)
     )
 
-    rdd.reverse().collectParts should be(
-      Seq(
+    ==(
+      rdd.reverse().collectParts,
+      Array(
         Seq(9, 19, 13),
         Seq(14, 18, 5),
         Seq(20, 15, 17),

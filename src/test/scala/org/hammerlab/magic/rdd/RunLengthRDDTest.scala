@@ -17,7 +17,7 @@ class RunLengthRDDTest
         s"$num*$ch"
         ).mkString(" ")
 
-    str should ===(expected)
+    ==(str, expected)
   }
 
   test("simple") {

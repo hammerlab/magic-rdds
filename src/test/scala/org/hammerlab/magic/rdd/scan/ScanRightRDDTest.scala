@@ -3,6 +3,7 @@ package org.hammerlab.magic.rdd.scan
 import cats.Monoid
 import cats.implicits.{ catsKernelStdGroupForInt, catsKernelStdMonoidForString }
 import magic_rdds.scan._
+import org.hammerlab.test.Cmp
 
 import scala.reflect.ClassTag
 
@@ -41,14 +42,20 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
         case (false, false) ⇒ rdd.scanRightValues(useRDDReversal)
       }
 
-    scanned.collect should be(
+    ==(
+      scanned.collect,
       byKeysOutput
     )
   }
 
-  def check[T: ClassTag](input: Iterable[T],
-                         expectedOpt: Option[Seq[T]] = None)(
-      implicit m: Monoid[T]
+  def check[
+    T
+      : ClassTag
+      : Cmp
+      : Monoid
+  ](
+    input: Iterable[T],
+    expectedOpt: Option[Seq[T]] = None
   ): Unit = {
 
     val rdd = sc.parallelize(input.toSeq)
@@ -66,7 +73,10 @@ abstract class ScanRightRDDTest(useRDDReversal: Boolean)
         getExpected(input)
       )
 
-    scanned.collect should be(expectedArr)
+    ==(
+      scanned.collect,
+      expectedArr
+    )
   }
 }
 

@@ -56,19 +56,16 @@ abstract class PrefixSumTest(n: Int)
     val pRows = ceil(n, rHeight)
     val pCols = ceil(n, cWidth)
 
-    partitioner.numPartitionRows should ===(pRows)
-    partitioner.numPartitionCols should ===(pCols)
-    partitioner.numPartitions should ===(pRows * pCols)
+    ==(partitioner.numPartitionRows, pRows)
+    ==(partitioner.numPartitionCols, pCols)
+    ==(partitioner.numPartitions, pRows * pCols)
 
-    pdf.count should ===(input.length)
+    ==(pdf.count, input.length)
 
     val partialSums = cdf.sortByKey().collect
 
     val actual = partialSums.grouped(n).toArray.map(_.map(_._2))
 
-    actual should ===(expected)
+    ==(actual, expected)
   }
-
 }
-
-

@@ -9,7 +9,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-sealed abstract class RDDStats[T: ClassTag] {
+sealed abstract class RDDStats[+T: ClassTag] {
   /** For each partition, holds the size of the partition. */
   def partitionSizes: Seq[Long]
 

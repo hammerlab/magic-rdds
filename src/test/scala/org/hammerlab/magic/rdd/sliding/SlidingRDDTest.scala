@@ -14,15 +14,14 @@ class SlidingRDDTest
    */
   def make(sizes: Int*): RDD[Int] =
     makeRDD(
-      (sizes
+      sizes
         .scanLeft(0)(_ + _)
         .sliding2
         .map {
           case (start, end) ⇒
             start until end
         }
-        .toList
-      ): _*
+        .toList: _*
     )
 
   def test2N(n: Int): Unit = {
@@ -31,7 +30,13 @@ class SlidingRDDTest
       val range = 1 to n
       var expectedSlid = range.sliding2.toArray
 
-      sc.parallelize(range).sliding2.collect() should be(expectedSlid)
+      ==(
+        sc
+          .parallelize(range)
+          .sliding2
+          .collect,
+        expectedSlid
+      )
     }
   }
 
@@ -57,20 +62,21 @@ class SlidingRDDTest
       )
 
     test("sliding2") {
-      rdd.sliding2.collect() should be((0 until 5).sliding2.toArray)
-      rdd.sliding2Next.collect() should be((0 until 5).sliding2Opt.toArray)
-      rdd.sliding2Prev.collect() should be((0 until 5).sliding2Prev.toArray)
+      ==(rdd.sliding2    .collect(), (0 until 5).sliding2    .toArray)
+      ==(rdd.sliding2Next.collect(), (0 until 5).sliding2Opt .toArray)
+      ==(rdd.sliding2Prev.collect(), (0 until 5).sliding2Prev.toArray)
     }
 
     test("sliding3") {
-      rdd.sliding3.collect() should be((0 until 5).sliding3.toArray)
-      rdd.sliding3Opt.collect() should be((0 until 5).sliding3Opt.toArray)
-      rdd.sliding3Next.collect() should be((0 until 5).sliding3NextOpts.toArray)
+      ==(rdd.sliding3    .collect(), (0 until 5).sliding3        .toArray)
+      ==(rdd.sliding3Opt .collect(), (0 until 5).sliding3Opt     .toArray)
+      ==(rdd.sliding3Next.collect(), (0 until 5).sliding3NextOpts.toArray)
     }
 
     test("sliding4") {
-      rdd.sliding(4).collect() should be((0 until 5).sliding(4).toArray)
-      rdd.sliding(4, includePartial = true).collect() should be(
+      ==(rdd.sliding(4).collect(), (0 until 5).sliding(4).toArray)
+      ==(
+        rdd.sliding(4, includePartial = true).collect(),
         Array(
           0 to 3,
           1 to 4,
@@ -80,7 +86,8 @@ class SlidingRDDTest
         )
       )
 
-      rdd.window(numPrev = 0, numNext = 3).collect() should be(
+      ==(
+        rdd.window(numPrev = 0, numNext = 3).collect(),
         Array(
           Window(Nil, 0, 1 to 3),
           Window(Nil, 1, 2 to 4),
@@ -92,8 +99,9 @@ class SlidingRDDTest
     }
 
     test("sliding5") {
-      rdd.sliding(5).collect() should be(Array(0 to 4))
-      rdd.sliding(5, includePartial = true).collect() should be(
+      ==(rdd.sliding(5).collect(), Array(0 to 4))
+      ==(
+        rdd.sliding(5, includePartial = true).collect(),
         Array(
           0 to 4,
           1 to 4,
@@ -105,8 +113,13 @@ class SlidingRDDTest
     }
 
     test("sliding6") {
-      rdd.sliding(6).collect() should be(Array())
-      rdd.sliding(6, includePartial = true).collect() should be(
+      ==(
+        rdd.sliding(6).collect()
+      )(
+        Array()
+      )
+      ==(
+        rdd.sliding(6, includePartial = true).collect(),
         Array(
           0 to 4,
           1 to 4,
@@ -124,7 +137,7 @@ class SlidingRDDTest
       val range = 1 to n
       var expectedSlid = range.sliding(3).map(lToT).toArray
 
-      sc.parallelize(range).sliding3.collect should ===(expectedSlid)
+      ==(sc.parallelize(range).sliding3.collect, expectedSlid)
     }
   }
 
@@ -143,9 +156,19 @@ class SlidingRDDTest
       val paddedRange: Iterable[Int] = range ++ Array.fill(n - 1)(0)
 
       {
-        val actual = sc.parallelize(range).sliding(n).collect.map(_.toArray)
-        val expected = range.sliding(n).map(_.toArray).toSeq
-        str(actual) should ===(str(expected))
+        val actual =
+          sc
+            .parallelize(range)
+            .sliding(n)
+            .collect
+            .map(_.toArray)
+
+        val expected =
+          range
+            .sliding(n)
+            .map(_.toArray)
+            .toSeq
+        ==(str(actual), str(expected))
       }
     }
   }
