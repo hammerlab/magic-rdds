@@ -1,6 +1,6 @@
 name := "magic-rdds"
 
-v"4.2.2"
+v"4.2.3"
 
 spark
 
@@ -18,7 +18,7 @@ dep(
         math.utils % "2.2.0",
              paths % "1.5.0",
              slf4j,
-        spark_util % "2.0.4",
+        spark_util % "3.0.0",
              spire,
              stats % "1.3.1",
              types % "1.2.0",
