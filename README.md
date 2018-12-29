@@ -8,7 +8,7 @@
 Enrichment methods for [Apache Spark RDDs](http://spark.apache.org/docs/latest/programming-guide.html#resilient-distributed-datasets-rdds):
 
 ```scala
-$ spark-shell --packages org.hammerlab:magic-rdds_2.11:4.0.0
+$ spark-shell --packages org.hammerlab:magic-rdds_2.11:4.3.0
 …
 scala> import magic_rdds._
 scala> sc.parallelize(List(1, 1, 1, 2, 2, 2, 2, 2, 2, 10)).runLengthEncode.collect()
@@ -23,14 +23,14 @@ Use these Maven coordinates to depend on `magic-rdds`' latest Scala 2.11 build:
 <dependency>
   <groupId>org.hammerlab</groupId>
   <artifactId>magic-rdds_2.11</artifactId>
-  <version>4.0.0</version>
+  <version>4.3.0</version>
 </dependency>
 ```
 
 In SBT, use:
 
 ```
-"org.hammerlab" %% "magic-rdds" % "4.0.0"
+"org.hammerlab" %% "magic-rdds" % "4.3.0"
 ```
 
 ## Overview
