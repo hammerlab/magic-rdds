@@ -30,18 +30,18 @@ class Unordered[T: ClassTag] private(joined: RDD[(T, (Long, Long))])
   lazy val isEqual = stats.isEqual
 
   lazy val aOnly =
-    for {
-      (e, (a, b)) ← joined
-      if a > b
-    } yield
-      e → (a - b)
+    joined.collect {
+      case (e, (a, b))
+        if a > b ⇒
+        e → (a - b)
+    }
 
   lazy val bOnly =
-    for {
-      (e, (a, b)) ← joined
-      if b > a
-    } yield
-      e → (b - a)
+    joined.collect {
+      case (e, (a, b))
+        if b > a ⇒
+        e → (b - a)
+    }
 }
 
 
